@@ -40,7 +40,7 @@ class Config:
     pseudo collectd Config class.
     """
 
-    def __init__(self, key=None, values=None):
+    def __init__(self, key=None, values=None) -> None:
         self.key = key
         self.values = values
         self.children = []
@@ -48,7 +48,7 @@ class Config:
 
 @test_utils.run_with_standalone_host_engine(20)
 @test_utils.run_only_with_live_gpus()
-def test_collectd_basic_integration(handle, gpuIds):
+def test_collectd_basic_integration(handle, gpuIds) -> None:
     """ 
     Verifies that we can inject specific data and get that same data back
     """
@@ -108,7 +108,7 @@ def test_collectd_basic_integration(handle, gpuIds):
             assert gpuDict[fieldTag] == fieldValues[i]
 
 
-def helper_collectd_config(gpuIds, config, verify_fields=True):
+def helper_collectd_config(gpuIds, config: Config, verify_fields: bool=True) -> None:
     """
     Verify config via dcgm plugin. Verify fields parsed, if desired.
     """
@@ -154,7 +154,7 @@ def helper_collectd_config(gpuIds, config, verify_fields=True):
 
 @test_utils.run_with_standalone_host_engine(20)
 @test_utils.run_only_with_live_gpus()
-def test_collectd_config_integration(handle, gpuIds):
+def test_collectd_config_integration(handle, gpuIds) -> None:
     """ 
     Verifies that we can parse config and get specified fields back.
     """
@@ -168,7 +168,7 @@ def test_collectd_config_integration(handle, gpuIds):
 
 @test_utils.run_with_standalone_host_engine(20)
 @test_utils.run_only_with_live_gpus()
-def test_collectd_config_bad_alpha_field(handle, gpuIds):
+def test_collectd_config_bad_alpha_field(handle, gpuIds) -> None:
     """ 
     Verifies that we can parse config and get specified fields back, despite a
     bad alpha field.
@@ -183,7 +183,7 @@ def test_collectd_config_bad_alpha_field(handle, gpuIds):
 
 @test_utils.run_with_standalone_host_engine(20)
 @test_utils.run_only_with_live_gpus()
-def test_collectd_config_bad_numeric_field(handle, gpuIds):
+def test_collectd_config_bad_numeric_field(handle, gpuIds) -> None:
     """ 
     Verifies that we can parse config and get specified fields back despite a
     bad numeric field.
@@ -198,7 +198,7 @@ def test_collectd_config_bad_numeric_field(handle, gpuIds):
 
 @test_utils.run_with_standalone_host_engine(20)
 @test_utils.run_only_with_live_gpus()
-def test_collectd_config_no_fields(handle, gpuIds):
+def test_collectd_config_no_fields(handle, gpuIds) -> None:
     """ 
     Verifies that we can parse config if no fields are specified.
     """

@@ -21,31 +21,31 @@ import dcgm_collectd
 ################################################################################
 
 
-def register_init(func_ptr):
+def register_init(func_ptr) -> None:
     collectd_tester_globals.gvars['init'] = func_ptr
 
 ################################################################################
 
 
-def register_read(func_ptr):
+def register_read(func_ptr) -> None:
     collectd_tester_globals.gvars['read'] = func_ptr
 
 ################################################################################
 
 
-def register_shutdown(func_ptr):
+def register_shutdown(func_ptr) -> None:
     collectd_tester_globals.gvars['shutdown'] = func_ptr
 
 ################################################################################
 
 
-def info(msg):
+def info(msg) -> None:
     print(msg)
 
 ################################################################################
 
 
-def debug(msg):
+def debug(msg) -> None:
     pass
 
 ################################################################################
@@ -54,13 +54,13 @@ def debug(msg):
 class Values:
 
     ############################################################################
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         # dcgm_collectd references these, so we'll reference them as well
         self.plugin = ''
         self.plugin_instance = ''
 
     ############################################################################
-    def dispatch(self, **kwargs):
+    def dispatch(self, **kwargs) -> None:
         if 'out' not in collectd_tester_globals.gvars:
             collectd_tester_globals.gvars['out'] = {}
 

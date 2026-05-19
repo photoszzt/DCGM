@@ -20,7 +20,7 @@ import logger
 import re
 
 
-def parse_options():
+def parse_options() -> None:
     """
     Parses command line options but doesn't perform error checking of them.
     For the entire process to be completed run later_parse next (after logging is initalized).
@@ -283,7 +283,7 @@ def parse_options():
 
 
 class OptionParserStub():
-    def __init__(self):
+    def __init__(self) -> None:
         self.profile = False
         self.eris = False
         self.break_at_failure = False
@@ -313,7 +313,7 @@ class OptionParserStub():
         self.ignore_init_diag = False
 
 
-def initialize_as_stub():
+def initialize_as_stub() -> None:
     """
     Initialize the values of this library as a stub module. This is so we can call DCGM framework classes
     from outside the DCGM framework
@@ -322,7 +322,7 @@ def initialize_as_stub():
     options = OptionParserStub()
 
 
-def validate():
+def validate() -> None:
     """
     Should be run after logging is enabled.
 

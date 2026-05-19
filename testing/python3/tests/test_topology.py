@@ -33,7 +33,7 @@ import DcgmSystem
 @test_utils.run_with_standalone_host_engine(20)
 @test_utils.run_only_with_all_supported_gpus()
 @test_utils.run_only_with_nvml()
-def test_dcgm_topology_device_standalone(handle, gpuIds):
+def test_dcgm_topology_device_standalone(handle, gpuIds) -> None:
     """
     Verifies that the topology get for the default group works
     """
@@ -63,7 +63,7 @@ def test_dcgm_topology_device_standalone(handle, gpuIds):
 @test_utils.run_with_standalone_host_engine(20)
 @test_utils.run_only_with_all_supported_gpus()
 @test_utils.run_only_with_nvml()
-def test_dcgm_topology_group_single_gpu_standalone(handle, gpuIds):
+def test_dcgm_topology_group_single_gpu_standalone(handle, gpuIds) -> None:
     """
     Verifies that the topology get for a group works for a single GPU
     """
@@ -87,7 +87,7 @@ def test_dcgm_topology_group_single_gpu_standalone(handle, gpuIds):
 
 @test_utils.run_with_standalone_host_engine(20)
 @test_utils.run_only_with_all_supported_gpus()
-def test_dcgm_topology_device_nvlink_standalone(handle, gpuIds):
+def test_dcgm_topology_device_nvlink_standalone(handle, gpuIds) -> None:
     """
     Verifies that the topology get for the default group returns valid NVLINK info
     """
@@ -108,7 +108,7 @@ def test_dcgm_topology_device_nvlink_standalone(handle, gpuIds):
             0), "No NVLINK state set when localNvLinkIds is > 0"
 
 
-def helper_test_select_gpus_by_topology(handle, gpuIds):
+def helper_test_select_gpus_by_topology(handle, gpuIds) -> None:
     '''
     Verifies basic selection of GPUs by topology. 
     '''
@@ -158,5 +158,5 @@ def helper_test_select_gpus_by_topology(handle, gpuIds):
 @test_utils.run_with_standalone_host_engine(20)
 @test_utils.run_only_with_all_supported_gpus()
 @test_utils.run_only_with_nvml()
-def test_select_gpus_by_topology_standalone(handle, gpuIds):
+def test_select_gpus_by_topology_standalone(handle, gpuIds) -> None:
     helper_test_select_gpus_by_topology(handle, gpuIds)

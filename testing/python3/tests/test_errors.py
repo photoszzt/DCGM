@@ -19,7 +19,7 @@ import test_utils
 import dcgm_errors
 
 
-def helper_test_dcgm_error_get_priority(handle, gpuIds):
+def helper_test_dcgm_error_get_priority(handle, gpuIds) -> None:
     prio = dcgm_errors.dcgmErrorGetPriorityByCode(
         dcgm_errors.DCGM_FR_VOLATILE_DBE_DETECTED)
     assert prio == dcgm_errors.DCGM_ERROR_ISOLATE, "DBE errors should be an isolate priority, but found %d" % prio
@@ -33,7 +33,7 @@ def helper_test_dcgm_error_get_priority(handle, gpuIds):
     assert prio == dcgm_errors.DCGM_ERROR_UNKNOWN, "The sentinel error error should be unknown priority, but found %d" % prio
 
 
-def helper_test_dcgm_error_get_msg(handle, gpuIds):
+def helper_test_dcgm_error_get_msg(handle, gpuIds) -> None:
     msg = dcgm_errors.dcgmErrorGetFormatMsgByCode(
         dcgm_errors.DCGM_FR_NVLINK_CRC_ERROR_THRESHOLD)
     assert msg == dcgm_errors.DCGM_FR_NVLINK_CRC_ERROR_THRESHOLD_MSG, \
@@ -56,11 +56,11 @@ def helper_test_dcgm_error_get_msg(handle, gpuIds):
 
 @test_utils.run_with_standalone_host_engine(20)
 @test_utils.run_only_with_live_gpus()
-def test_dcgm_error_get_priority_standalone(handle, gpuIds):
+def test_dcgm_error_get_priority_standalone(handle, gpuIds) -> None:
     helper_test_dcgm_error_get_priority(handle, gpuIds)
 
 
 @test_utils.run_with_standalone_host_engine(20)
 @test_utils.run_only_with_live_gpus()
-def test_dcgm_error_get_msg_standalone(handle, gpuIds):
+def test_dcgm_error_get_msg_standalone(handle, gpuIds) -> None:
     helper_test_dcgm_error_get_msg(handle, gpuIds)

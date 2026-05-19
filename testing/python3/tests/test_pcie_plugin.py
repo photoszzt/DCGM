@@ -26,7 +26,7 @@ import test_utils
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_only_with_live_gpus()
 @test_utils.for_all_same_sku_gpus()
-def test_pcie_libnuma_error_handling(handle, gpuIds):
+def test_pcie_libnuma_error_handling(handle, gpuIds) -> None:
     """
     Test PCIe diagnostic libnuma error handling.
 

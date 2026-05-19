@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from collections.abc import Sequence
+from typing import Protocol, TypeAlias
+
 import dcgm_structs
 import dcgm_fields
 import dcgm_agent
@@ -19,6 +22,22 @@ import logger
 
 g_latestDiagResponseVer = dcgm_structs.dcgmDiagResponse_version12
 g_latestRunDiagVer = dcgm_structs.dcgmRunDiag_version10
+
+_DiagResponse: TypeAlias = dcgm_structs.c_dcgmDiagResponse_v11 | dcgm_structs.c_dcgmDiagResponse_v12
+_LegacyDiagResponse: TypeAlias = dcgm_structs.c_dcgmDiagResponse_v9 | dcgm_structs.c_dcgmDiagResponse_v10
+_AnyDiagResponse: TypeAlias = _LegacyDiagResponse | _DiagResponse
+_DiagTestRun: TypeAlias = dcgm_structs.c_dcgmDiagTestRun_v1 | dcgm_structs.c_dcgmDiagTestRun_v2
+_RunDiag: TypeAlias = (
+    dcgm_structs.c_dcgmRunDiag_v7
+    | dcgm_structs.c_dcgmRunDiag_v8
+    | dcgm_structs.c_dcgmRunDiag_v9
+    | dcgm_structs.c_dcgmRunDiag_v10
+)
+
+
+class _Logger(Protocol):
+    def info(self, message: object) -> object:
+        ...
 
 
 class DcgmDiag:
@@ -32,14 +51,16 @@ class DcgmDiag:
         dcgm_structs.dcgmRunDiag_version10: 10,
     }
 
-    def __init__(self, gpuIds=None, cpuIds=None, testNamesStr='', paramsStr='',
-                 ignoreErrorCodesStr='', verbose=True, version=dcgm_structs.dcgmRunDiag_version10,
-                 timeout=0):
+    def __init__(self, gpuIds: Sequence[int] | None=None, cpuIds: Sequence[int] | None=None,
+                 testNamesStr: str='', paramsStr: str='', ignoreErrorCodesStr: str='',
+                 verbose: bool=True, version: int=dcgm_structs.dcgmRunDiag_version10,
+                 timeout: int=0) -> None:
         # Make sure version is valid
         if version not in DcgmDiag._versionMap:
             raise ValueError(
                 "'%s' is not a valid version for dcgmRunDiag." % version)
         self.version = version
+        self.runDiagInfo: _RunDiag
 
         if self.version == dcgm_structs.dcgmRunDiag_version10:
             self.runDiagInfo = dcgm_structs.c_dcgmRunDiag_v10()
@@ -50,8 +71,7 @@ class DcgmDiag:
         elif self.version == dcgm_structs.dcgmRunDiag_version7:
             self.runDiagInfo = dcgm_structs.c_dcgmRunDiag_v7()
         else:
-            logger.info("Unexpected runDiag version " +
-                        self.version + " using RunDiag_t")
+            logger.info("Unexpected runDiag version %s using RunDiag_t" % self.version)
             self.runDiagInfo = dcgm_structs.c_dcgmRunDiag_t()
 
         self.runDiagInfo.flags = 0
@@ -134,25 +154,25 @@ class DcgmDiag:
             self.SetDebugLogFile(logger.nvvs_trace_log_filename)
             self.SetDebugLevel(5)  # Collect logs at highest level for nvvs.
 
-    def SetVerbose(self, val):
+    def SetVerbose(self, val: bool) -> None:
         if val == True:
             self.runDiagInfo.flags |= dcgm_structs.DCGM_RUN_FLAGS_VERBOSE
         else:
             self.runDiagInfo.flags &= ~dcgm_structs.DCGM_RUN_FLAGS_VERBOSE
 
-    def SetEnableHeartbeat(self, val):
+    def SetEnableHeartbeat(self, val: bool) -> None:
         if val == True:
             self.runDiagInfo.flags |= dcgm_structs.DCGM_RUN_FLAGS_ENABLE_HEARTBEAT
         else:
             self.runDiagInfo.flags &= ~dcgm_structs.DCGM_RUN_FLAGS_ENABLE_HEARTBEAT
 
-    def UseFakeGpus(self):
+    def UseFakeGpus(self) -> None:
         self.runDiagInfo.fakeGpuList = self.gpuList
 
-    def GetStruct(self):
+    def GetStruct(self) -> _RunDiag:
         return self.runDiagInfo
 
-    def AddParameter(self, parameterStr):
+    def AddParameter(self, parameterStr: str) -> None:
         maxTestParamsLen = dcgm_structs.DCGM_MAX_TEST_PARMS_LEN
         if self.version == dcgm_structs.dcgmRunDiag_version8 or self.version == dcgm_structs.dcgmRunDiag_version9:
             maxTestParamsLen = dcgm_structs.DCGM_MAX_TEST_PARMS_LEN_V2
@@ -170,7 +190,7 @@ class DcgmDiag:
 
         self.numParams += 1
 
-    def AddTest(self, testNameStr):
+    def AddTest(self, testNameStr: str) -> None:
         if len(testNameStr) >= dcgm_structs.DCGM_MAX_TEST_NAMES_LEN:
             err = 'DcgmDiag cannot add test name \'%s\' because it exceeds max length %d.' % \
                   (testNameStr, dcgm_structs.DCGM_MAX_TEST_NAMES_LEN)
@@ -183,11 +203,11 @@ class DcgmDiag:
 
         self.numTests += 1
 
-    def SetStatsOnFail(self, val):
+    def SetStatsOnFail(self, val: bool | int) -> None:
         if val == True:
             self.runDiagInfo.flags |= dcgm_structs.DCGM_RUN_FLAGS_STATSONFAIL
 
-    def SetClocksEventMask(self, value):
+    def SetClocksEventMask(self, value: str | int) -> None:
         if DcgmDiag._versionMap[self.version] < 3:
             raise ValueError(
                 "Clocks event mask requires minimum version 3 for dcgmRunDiag.")
@@ -198,10 +218,10 @@ class DcgmDiag:
         self.runDiagInfo.clocksEventMask = str(value)
 
     # Deprecated: Use SetClocksEventMask instead
-    def SetThrottleMask(self, value):
+    def SetThrottleMask(self, value: str | int) -> None:
         self.SetClocksEventMask(value)
 
-    def SetFailEarly(self, enable=True, checkInterval=5):
+    def SetFailEarly(self, enable: bool=True, checkInterval: int=5) -> None:
         if DcgmDiag._versionMap[self.version] < 5:
             raise ValueError(
                 "Fail early requires minimum version 5 for dcgmRunDiag.")
@@ -214,10 +234,10 @@ class DcgmDiag:
         else:
             self.runDiagInfo.flags &= ~dcgm_structs.DCGM_RUN_FLAGS_FAIL_EARLY
 
-    def Execute(self, handle):
+    def Execute(self, handle: object) -> _DiagResponse:
         return dcgm_agent.dcgmActionValidate_v2(handle, self.runDiagInfo, self.version)
 
-    def SetStatsPath(self, statsPath):
+    def SetStatsPath(self, statsPath: str) -> None:
         if len(statsPath) >= dcgm_structs.DCGM_PATH_LEN:
             err = "DcgmDiag cannot set statsPath '%s' because it exceeds max length %d." % \
                 (statsPath, dcgm_structs.DCGM_PATH_LEN)
@@ -225,7 +245,7 @@ class DcgmDiag:
 
         self.runDiagInfo.statsPath = statsPath
 
-    def SetConfigFileContents(self, configFileContents):
+    def SetConfigFileContents(self, configFileContents: str) -> None:
         if len(configFileContents) >= dcgm_structs.DCGM_MAX_CONFIG_FILE_LEN:
             err = "Dcgm Diag cannot set config file contents to '%s' because it exceeds max length %d." \
                   % (configFileContents, dcgm_structs.DCGM_MAX_CONFIG_FILE_LEN)
@@ -233,21 +253,21 @@ class DcgmDiag:
 
         self.runDiagInfo.configFileContents = configFileContents
 
-    def SetDebugLogFile(self, logFileName):
+    def SetDebugLogFile(self, logFileName: str) -> None:
         if len(logFileName) >= dcgm_structs.DCGM_PATH_LEN:
             raise ValueError("Cannot set debug file to '%s' because it exceeds max length %d."
                              % (logFileName, dcgm_structs.DCGM_PATH_LEN))
 
         self.runDiagInfo.debugLogFile = logFileName
 
-    def SetDebugLevel(self, debugLevel):
+    def SetDebugLevel(self, debugLevel: int) -> None:
         if debugLevel < 0 or debugLevel > 5:
             raise ValueError(
                 "Cannot set debug level to %d. Debug Level must be a value from 0-5 inclusive.")
 
         self.runDiagInfo.debugLevel = debugLevel
 
-    def SetWatchFrequency(self, val):
+    def SetWatchFrequency(self, val: int) -> None:
         if val < 100000 or val > 60000000:
             err = "Cannot set debug level to {}. Watch frequency must be a value from 100000-60000000 inclusive." \
                   % (val)
@@ -257,7 +277,7 @@ class DcgmDiag:
 ################# General helpers #################
 
 
-def find_test_in_response(response, testName):
+def find_test_in_response(response: _DiagResponse, testName: str) -> _DiagTestRun | None:
     assert hasattr(response, 'tests') and hasattr(
         response, 'results'), "Response does not have tests or results"
     for test in response.tests[:min(response.numTests, dcgm_structs.DCGM_DIAG_RESPONSE_TESTS_MAX)]:
@@ -267,7 +287,11 @@ def find_test_in_response(response, testName):
     return None
 
 
-def retrieve_diag_failure_message(response, entityPair, testName):
+def retrieve_diag_failure_message(
+    response: _DiagResponse,
+    entityPair: dcgm_structs.c_dcgmGroupEntityPair_t,
+    testName: str,
+) -> str | None:
     test = find_test_in_response(response, testName)
     if not test:
         return None
@@ -278,7 +302,11 @@ def retrieve_diag_failure_message(response, entityPair, testName):
     return None
 
 
-def check_diag_result_fail(response, entityPair, testName):
+def check_diag_result_fail(
+    response: _DiagResponse,
+    entityPair: dcgm_structs.c_dcgmGroupEntityPair_t,
+    testName: str,
+) -> bool:
     # Returns `True` when there is a FAIL result associated with the specified `entityPair` and `testName`, `False` otherwise.
     test = find_test_in_response(response, testName)
     assert test, "Expected fail result for test %s but none was found" % testName
@@ -292,7 +320,11 @@ def check_diag_result_fail(response, entityPair, testName):
     return False
 
 
-def check_diag_result_pass(response, entityPair, testName):
+def check_diag_result_pass(
+    response: _DiagResponse,
+    entityPair: dcgm_structs.c_dcgmGroupEntityPair_t,
+    testName: str,
+) -> bool:
     # Returns `True` when there is a PASS result associated with the specified `entityPair` and `testName`, `False` otherwise.
     test = find_test_in_response(response, testName)
     assert test, "Expected pass result for test %s but none was found" % testName
@@ -308,17 +340,29 @@ def check_diag_result_pass(response, entityPair, testName):
     return False
 
 
-def check_diag_result_non_passing(response, entityPair, testName):
+def check_diag_result_non_passing(
+    response: _DiagResponse,
+    entityPair: dcgm_structs.c_dcgmGroupEntityPair_t,
+    testName: str,
+) -> bool:
     # Returns `False` if there are one or more passing results for `entityPair` and `testName`, `True` otherwise.
     return not check_diag_result_pass(response, entityPair, testName)
 
 
-def check_diag_result_non_failing(response, entityPair, testName):
+def check_diag_result_non_failing(
+    response: _DiagResponse,
+    entityPair: dcgm_structs.c_dcgmGroupEntityPair_t,
+    testName: str,
+) -> bool:
     # Returns `False` if there are one or more failing results for `entityPair` and `testName`, `True` otherwise.
     return not check_diag_result_fail(response, entityPair, testName)
 
 
-def check_diag_result_non_running(response, entityPair, testName):
+def check_diag_result_non_running(
+    response: _DiagResponse,
+    entityPair: dcgm_structs.c_dcgmGroupEntityPair_t,
+    testName: str,
+) -> bool:
     # Returns `False` if there are one or more tests running for `entityPair` and `testName`, `True` otherwise.
     # "nonrunning" in this sense matches [ SKIP, NOT_RUN ]
     for test in response.tests[:min(response.numTests, dcgm_structs.DCGM_DIAG_RESPONSE_TESTS_MAX)]:
@@ -336,7 +380,7 @@ def check_diag_result_non_running(response, entityPair, testName):
     return True
 
 
-def GetEntityCount(response, entityGroupId):
+def GetEntityCount(response: _AnyDiagResponse, entityGroupId: int) -> int:
     # Returns the count of the specified entity group associated with the response.
     if hasattr(response, 'entities'):
         return sum(1 for entity in response.entities[:min(response.numEntities, dcgm_structs.DCGM_DIAG_RESPONSE_ENTITIES_MAX)]
@@ -348,11 +392,11 @@ def GetEntityCount(response, entityGroupId):
             entityGroupId, response.version))
 
 
-def GetGpuCount(response):
+def GetGpuCount(response: _AnyDiagResponse) -> int:
     return GetEntityCount(response, dcgm_fields.DCGM_FE_GPU)
 
 
-def ResultToString(result):
+def ResultToString(result: int) -> str:
     # Return a string that reflects the specified `result`.
     # This may exist elsewhere, but wasn't found when needed. Replace/remove as makes sense.
     # Well suited to structural match, but pylint doesn't seem to like this.
@@ -371,7 +415,7 @@ def ResultToString(result):
         raise ValueError("Invalid result {} specified" % result)
 
 
-def DumpTestResults(logger, response, testNames=[]):
+def DumpTestResults(logger: _Logger, response: _DiagResponse, testNames: Sequence[str]=()) -> None:
     # Utility for debugging. Dump test results from the response, optionally for specified tests.
     for test in response.tests[:min(response.numTests, dcgm_structs.DCGM_DIAG_RESPONSE_TESTS_MAX)]:
         if not testNames or test.name in testNames:

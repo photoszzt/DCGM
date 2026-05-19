@@ -30,7 +30,7 @@ from dcgm_field_injection_helpers import inject_value
 
 class FieldReader(DcgmReader):
 
-    def __init__(self, expectedValue, desiredNumMatches, *args, **kwargs):
+    def __init__(self, expectedValue, desiredNumMatches, *args, **kwargs) -> None:
         super(FieldReader, self).__init__(*args, **kwargs)
         self._expectedValue = expectedValue
         self._desiredNumMatches = desiredNumMatches
@@ -38,7 +38,7 @@ class FieldReader(DcgmReader):
         self.numMatchesSeen = 0
         self.passed = False
 
-    def CustomFieldHandler(self, gpuId, fieldId, fieldTag, val):
+    def CustomFieldHandler(self, gpuId, fieldId, fieldTag, val) -> None:
         """
         This method is called once for each field for each GPU each
         time that its Process() method is invoked, and it will be skipped
@@ -60,7 +60,7 @@ class FieldReader(DcgmReader):
 STANDALONE_DENYLIST_SCRIPT_NAME = "denylist_recommendations.py"
 
 
-def createDenylistApp(numGpus=None, numSwitches=None, testNames=None, instantaneous=False):
+def createDenylistApp(numGpus=None, numSwitches=None, testNames=None, instantaneous: bool=False) -> AppRunner:
     args = ["./%s" % STANDALONE_DENYLIST_SCRIPT_NAME]
     if numGpus == None or numSwitches == None:
         args.append("-d")
@@ -86,7 +86,7 @@ def createDenylistApp(numGpus=None, numSwitches=None, testNames=None, instantane
 STANDALONE_VALUE_VERIFICATION_SCRIPT_NAME = "verify_field_value.py"
 
 
-def verify_field_value(gpuId, fieldId, expectedValue, maxWait=2, checkInterval=0.1, numMatches=3):
+def verify_field_value(gpuId, fieldId, expectedValue, maxWait: int=2, checkInterval: float=0.1, numMatches: int=3) -> bool:
     """
     Verify that DCGM sees the expected value for the specified field ID. Waits a maximum of maxWait seconds to see
     the given value.
@@ -117,7 +117,7 @@ def verify_field_value(gpuId, fieldId, expectedValue, maxWait=2, checkInterval=0
 # and hoping that the NVVS process has started at the end of the sleep
 
 
-def check_nvvs_process(want_running, delay=0.5, attempts=20):
+def check_nvvs_process(want_running, delay: float=0.5, attempts: int=20) -> tuple[bool, str | bytes] | tuple[bool, bytes]:
     """
     Checks status of nvvs process.
     If want_running is True, method returns True if nvvs is running.

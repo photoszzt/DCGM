@@ -39,7 +39,7 @@ class DcgmFieldGroup:
     fieldGroupId - If provided, this is used to initialize the object from an existing field group ID
     '''
 
-    def __init__(self, dcgmHandle, name="", fieldIds=None, fieldGroupId=None):
+    def __init__(self, dcgmHandle, name: str="", fieldIds=None, fieldGroupId=None) -> None:
         fieldIds = fieldIds or []
         self.name = name
         self.fieldIds = fieldIds
@@ -68,7 +68,7 @@ class DcgmFieldGroup:
     Remove this field group from DCGM. This object can no longer be passed to other APIs after this call.
     '''
 
-    def Delete(self):
+    def Delete(self) -> None:
         """
         We need to see if this shadows a FieldGroupId that was already created
         by us. If so, we need to actually have the hostengine delete the
@@ -96,14 +96,14 @@ class DcgmFieldGroup:
     # reset if you wish to delete them in a running standalone hostengine as
     # well
     @classmethod
-    def clear(cls):
+    def clear(cls) -> None:
         with cls.groupLock:
             cls.groups.clear()
 
     # Besides calling clear() above, this also calls Delete() on the groups,
     # which has them deleted in the running standlone hostengine.
     @classmethod
-    def reset(cls):
+    def reset(cls) -> None:
         with cls.groupLock:
             remove = list(cls.groups)
 
@@ -113,7 +113,7 @@ class DcgmFieldGroup:
         cls.clear()
 
     # Destructor
-    def __del__(self):
+    def __del__(self) -> None:
         if self._dcgmHandle != None:
             try:
                 self.Delete()

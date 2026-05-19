@@ -29,7 +29,7 @@ from subprocess import check_output, check_call, Popen, CalledProcessError
 @test_utils.run_with_embedded_host_engine()
 @test_utils.run_only_with_live_gpus()
 @test_utils.skip_denylisted_gpus(["GeForce GT 640"])
-def test_dcgm_agent_get_values_for_fields(handle, gpuIds):
+def test_dcgm_agent_get_values_for_fields(handle, gpuIds) -> None:
     """
     Verifies that DCGM Engine can be initialized successfully
     """
@@ -56,7 +56,7 @@ def test_dcgm_agent_get_values_for_fields(handle, gpuIds):
 
 @test_utils.run_with_embedded_host_engine()
 @test_utils.run_only_with_live_gpus()
-def test_dcgm_engine_watch_field_values(handle, gpuIds):
+def test_dcgm_engine_watch_field_values(handle, gpuIds) -> None:
     """
     Verifies that cache manager can watch a field value
     """
@@ -88,7 +88,7 @@ def test_dcgm_engine_watch_field_values(handle, gpuIds):
 
 @test_utils.run_with_embedded_host_engine()
 @test_utils.run_only_with_live_gpus()
-def test_dcgm_engine_unwatch_field_value(handle, gpuIds):
+def test_dcgm_engine_unwatch_field_value(handle, gpuIds) -> None:
     """
     Verifies that the cache manager can unwatch a field value
     """
@@ -122,7 +122,7 @@ def test_dcgm_engine_unwatch_field_value(handle, gpuIds):
                                       ), "Expected no watch. got flags %08X" % fieldInfo.flags
 
 
-def helper_unwatch_field_values_public(handle, gpuIds):
+def helper_unwatch_field_values_public(handle, gpuIds) -> None:
     """
     Verifies that dcgm can unwatch a field value
     """
@@ -180,17 +180,17 @@ def helper_unwatch_field_values_public(handle, gpuIds):
 
 @test_utils.run_with_embedded_host_engine()
 @test_utils.run_only_with_live_gpus()
-def test_dcgm_unwatch_field_values_public_embedded(handle, gpuIds):
+def test_dcgm_unwatch_field_values_public_embedded(handle, gpuIds) -> None:
     helper_unwatch_field_values_public(handle, gpuIds)
 
 
 @test_utils.run_with_standalone_host_engine(20)
 @test_utils.run_only_with_live_gpus()
-def test_dcgm_unwatch_field_values_public_remote(handle, gpuIds):
+def test_dcgm_unwatch_field_values_public_remote(handle, gpuIds) -> None:
     helper_unwatch_field_values_public(handle, gpuIds)
 
 
-def helper_promote_field_values_watch_public(handle, gpuIds):
+def helper_promote_field_values_watch_public(handle, gpuIds) -> None:
     """
     Verifies that dcgm can update a field value watch
     """
@@ -242,18 +242,18 @@ def helper_promote_field_values_watch_public(handle, gpuIds):
 
 @test_utils.run_with_embedded_host_engine()
 @test_utils.run_only_with_live_gpus()
-def test_dcgm_promote_field_values_watch_public_embedded(handle, gpuIds):
+def test_dcgm_promote_field_values_watch_public_embedded(handle, gpuIds) -> None:
     helper_promote_field_values_watch_public(handle, gpuIds)
 
 
 @test_utils.run_with_standalone_host_engine(20)
 @test_utils.run_only_with_live_gpus()
-def test_dcgm_promote_field_values_watch_public_remote(handle, gpuIds):
+def test_dcgm_promote_field_values_watch_public_remote(handle, gpuIds) -> None:
     helper_promote_field_values_watch_public(handle, gpuIds)
 
 
 @test_utils.run_with_embedded_host_engine()
-def test_dcgm_engine_update_all_fields(handle):
+def test_dcgm_engine_update_all_fields(handle) -> None:
     """
     Verifies that the cache manager can update all fields
     """
@@ -265,7 +265,7 @@ def test_dcgm_engine_update_all_fields(handle):
 
 @test_utils.run_only_on_linux()
 @test_utils.run_only_as_root()
-def test_dcgm_cgroups_device_block():
+def test_dcgm_cgroups_device_block() -> None:
     """
     Test whether the correct device uuid is found when a
     device is blocked by cgroups.
@@ -335,7 +335,7 @@ def test_dcgm_cgroups_device_block():
 
 @test_utils.run_with_embedded_host_engine()
 @test_utils.run_only_with_live_gpus()
-def test_dcgm_entity_api_sanity(handle, gpuIds):
+def test_dcgm_entity_api_sanity(handle, gpuIds) -> None:
     '''
     Test that the basic entity APIs behave sanely
     '''
@@ -359,7 +359,7 @@ def test_dcgm_entity_api_sanity(handle, gpuIds):
 @test_utils.run_only_with_all_supported_gpus()
 @test_utils.skip_denylisted_gpus(["GeForce GT 640"])
 @test_utils.run_with_injection_nvswitches(2)
-def test_dcgm_nvlink_link_state(handle, gpuIds, switchIds):
+def test_dcgm_nvlink_link_state(handle, gpuIds, switchIds) -> None:
     handleObj = pydcgm.DcgmHandle(handle=handle)
     systemObj = handleObj.GetSystem()
 
@@ -402,7 +402,7 @@ def test_dcgm_nvlink_link_state(handle, gpuIds, switchIds):
                 ls, i, j)
 
 
-def helper_execute_dcgm_hostengine_environment_variable_api(handle, version, envVarToGet):
+def helper_execute_dcgm_hostengine_environment_variable_api(handle, version: int, envVarToGet: str):
     envVarInfo = dcgm_structs.c_dcgmEnvVarInfo_t()
     envVarInfo.version = version
     envVarInfo.envVarName = envVarToGet.encode('utf-8')
@@ -418,7 +418,7 @@ def helper_execute_dcgm_hostengine_environment_variable_api(handle, version, env
 @test_utils.run_with_standalone_host_engine(20, heEnv={"CUDA_VISIBLE_DEVICES": "0,1,2"})
 @test_utils.run_only_with_live_gpus()
 @test_utils.run_only_if_mig_is_disabled()
-def test_dcgm_hostengine_environment_variable_ok(handle, gpuIds):
+def test_dcgm_hostengine_environment_variable_ok(handle, gpuIds) -> None:
     ret = helper_execute_dcgm_hostengine_environment_variable_api(
         handle, dcgm_structs.dcgmEnvVarInfo_version, "CUDA_VISIBLE_DEVICES")
     assert ret == dcgm_structs.DCGM_ST_OK, f"Expected DCGM_ST_OK, got {ret}"
@@ -427,7 +427,7 @@ def test_dcgm_hostengine_environment_variable_ok(handle, gpuIds):
 @test_utils.run_with_standalone_host_engine(20)
 @test_utils.run_only_with_live_gpus()
 @test_utils.run_only_if_mig_is_disabled()
-def test_dcgm_hostengine_environment_variable_not_configured(handle, gpuIds):
+def test_dcgm_hostengine_environment_variable_not_configured(handle, gpuIds) -> None:
     ret = helper_execute_dcgm_hostengine_environment_variable_api(
         handle, dcgm_structs.dcgmEnvVarInfo_version, "CUDA_VISIBLE_DEVICES")
     assert ret == dcgm_structs.DCGM_ST_NOT_CONFIGURED, f"Expected DCGM_ST_NOT_CONFIGURED, got {ret}"
@@ -436,7 +436,7 @@ def test_dcgm_hostengine_environment_variable_not_configured(handle, gpuIds):
 @test_utils.run_with_standalone_host_engine(20, heEnv={"CUDA_VISIBLE_DEVICES": "0,1,2"})
 @test_utils.run_only_with_live_gpus()
 @test_utils.run_only_if_mig_is_disabled()
-def test_dcgm_hostengine_environment_variable_badparam_invalid(handle, gpuIds):
+def test_dcgm_hostengine_environment_variable_badparam_invalid(handle, gpuIds) -> None:
     ret = helper_execute_dcgm_hostengine_environment_variable_api(
         handle, dcgm_structs.dcgmEnvVarInfo_version, "INVALID_VAR")
     assert ret == dcgm_structs.DCGM_ST_BADPARAM, f"Expected DCGM_ST_BADPARAM, got {ret}"
@@ -445,7 +445,7 @@ def test_dcgm_hostengine_environment_variable_badparam_invalid(handle, gpuIds):
 @test_utils.run_with_standalone_host_engine(20, heEnv={"CUDA_VISIBLE_DEVICES": "0,1,2"})
 @test_utils.run_only_with_live_gpus()
 @test_utils.run_only_if_mig_is_disabled()
-def test_dcgm_hostengine_environment_variable_badparam_empty(handle, gpuIds):
+def test_dcgm_hostengine_environment_variable_badparam_empty(handle, gpuIds) -> None:
     ret = helper_execute_dcgm_hostengine_environment_variable_api(
         handle, dcgm_structs.dcgmEnvVarInfo_version, "")
     assert ret == dcgm_structs.DCGM_ST_BADPARAM, f"Expected DCGM_ST_BADPARAM, got {ret}"
@@ -454,7 +454,7 @@ def test_dcgm_hostengine_environment_variable_badparam_empty(handle, gpuIds):
 @test_utils.run_with_standalone_host_engine(20, heEnv={"CUDA_VISIBLE_DEVICES": "0,1,2"})
 @test_utils.run_only_with_live_gpus()
 @test_utils.run_only_if_mig_is_disabled()
-def test_dcgm_hostengine_environment_variable_ver_mismatch(handle, gpuIds):
+def test_dcgm_hostengine_environment_variable_ver_mismatch(handle, gpuIds) -> None:
     ret = helper_execute_dcgm_hostengine_environment_variable_api(
         handle, 999, "CUDA_VISIBLE_DEVICES")
     assert ret == dcgm_structs.DCGM_ST_VER_MISMATCH

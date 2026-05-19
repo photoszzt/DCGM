@@ -88,7 +88,7 @@ nameIncrement = 0
 
 
 class FieldWatcher:
-    def __init__(self, dcgmHandle, gpuIds, fieldIds, watchIntervalSecs):
+    def __init__(self, dcgmHandle, gpuIds, fieldIds, watchIntervalSecs) -> None:
         global nameIncrement
 
         self._dcgmHandle = dcgmHandle
@@ -107,18 +107,18 @@ class FieldWatcher:
         self._dcgmFieldGroup = pydcgm.DcgmFieldGroup(
             dcgmHandle, fieldGroupName, fieldIds, None)
 
-    def Watch(self):
+    def Watch(self) -> None:
         self._dcgmGroup.samples.WatchFields(
             self._dcgmFieldGroup, int(self._watchIntervalSecs * 1000000), 0, 1)
 
-    def Unwatch(self):
+    def Unwatch(self) -> None:
         self._dcgmGroup.samples.UnwatchFields(
             self._dcgmFieldGroup, self._dcgmFieldGroup)
 
     def GetLatestSample(self):
         return self._dcgmGroup.samples.GetLatest(self._dcgmFieldGroup)
 
-    def __del__(self):
+    def __del__(self) -> None:
         del self._dcgmFieldGroup
         del self._dcgmGroup
 

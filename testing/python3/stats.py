@@ -43,7 +43,7 @@ def correlation_coefficient(x, y):
     return (xyBar - xBar * yBar) / (math.sqrt((xSquaredBar - xBar**2) * (ySquaredBar - yBar**2)))
 
 
-def standard_deviation(x):
+def standard_deviation(x) -> float:
     '''
     taken from: https://en.wikipedia.org/wiki/Standard_deviation#Corrected_sample_standard_deviation
     '''

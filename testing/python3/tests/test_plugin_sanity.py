@@ -61,7 +61,7 @@ OUTPUT_DIR = "./test_plugin_sanity_out"
 
 
 @test_utils.run_first()
-def test_create_output_dir():
+def test_create_output_dir() -> None:
     """
     Ensure we have a new results directory on every run. This "test" is called first when no filters are used
     """
@@ -70,7 +70,7 @@ def test_create_output_dir():
     os.makedirs(OUTPUT_DIR)
 
 
-def log_app_output_to_file(app, filename):
+def log_app_output_to_file(app: DcgmiApp, filename: str) -> None:
     with open(filename, 'w') as f:
         for line in app.stdout_lines:
             f.write(line + "\n")
@@ -78,7 +78,7 @@ def log_app_output_to_file(app, filename):
             f.write(line + "\n")
 
 
-def log_app_output_to_stdout(app):
+def log_app_output_to_stdout(app) -> None:
     logger.info("app output:")
     for line in app.stdout_lines:
         logger.info(line)
@@ -86,7 +86,7 @@ def log_app_output_to_stdout(app):
         logger.info(line)
 
 
-def copy_nvvs_log(nvvsLogFile, outputLogFile):
+def copy_nvvs_log(nvvsLogFile: str, outputLogFile: str) -> None:
     """
     Copy nvvs log file to the output dir. This method is needed because of path length limitations when using DCGM
     to run NVVS.
@@ -100,7 +100,7 @@ def copy_nvvs_log(nvvsLogFile, outputLogFile):
 
 
 # Main test helper methods
-def no_errors_run(handle, gpuIds, name, testname, parms=None):
+def no_errors_run(handle, gpuIds, name: str, testname: str, parms: str | None=None) -> None:
     """
     Runs the given test (testname) without inserting errors, and ensures that dcgmi returns with a exit code of 0.
     name is the name of the plugin in nvvs (e.g. constant_perf)
@@ -130,7 +130,7 @@ def no_errors_run(handle, gpuIds, name, testname, parms=None):
     log_app_output_to_file(dcgmi, output_file)
 
 
-def with_error_run(handle, gpuIds, name, testname, parms=None):
+def with_error_run(handle, gpuIds, name: str, testname: str, parms: str | None=None) -> None:
     """
     Runs the given test (testname) and inserts throttling / REPLAY_COUNTER errors depending on the test.
     name is the name of the plugin in nvvs (e.g. constant_perf)
@@ -184,7 +184,7 @@ def with_error_run(handle, gpuIds, name, testname, parms=None):
 @test_utils.run_with_standalone_host_engine()
 @test_utils.run_only_with_live_gpus()
 @test_utils.for_all_same_sku_gpus()
-def test_busgrind_no_errors(handle, gpuIds):
+def test_busgrind_no_errors(handle, gpuIds) -> None:
     no_errors_run(handle, gpuIds, "busgrind", "PCIe")
 
 
@@ -192,7 +192,7 @@ def test_busgrind_no_errors(handle, gpuIds):
 @test_utils.run_with_standalone_host_engine()
 @test_utils.run_only_with_live_gpus()
 @test_utils.for_all_same_sku_gpus()
-def test_busgrind_with_error(handle, gpuIds):
+def test_busgrind_with_error(handle, gpuIds) -> None:
     with_error_run(handle, gpuIds, "busgrind", "PCIe")
 
 
@@ -201,7 +201,7 @@ def test_busgrind_with_error(handle, gpuIds):
 @test_utils.run_with_standalone_host_engine()
 @test_utils.run_only_with_live_gpus()
 @test_utils.for_all_same_sku_gpus()
-def test_constant_perf_no_errors(handle, gpuIds):
+def test_constant_perf_no_errors(handle, gpuIds) -> None:
     no_errors_run(handle, gpuIds, "constant_perf", "targeted stress")
 
 
@@ -209,7 +209,7 @@ def test_constant_perf_no_errors(handle, gpuIds):
 @test_utils.run_with_standalone_host_engine()
 @test_utils.run_only_with_live_gpus()
 @test_utils.for_all_same_sku_gpus()
-def test_constant_perf_with_error(handle, gpuIds):
+def test_constant_perf_with_error(handle, gpuIds) -> None:
     with_error_run(handle, gpuIds, "constant_perf", "targeted stress")
 
 
@@ -218,7 +218,7 @@ def test_constant_perf_with_error(handle, gpuIds):
 @test_utils.run_with_standalone_host_engine()
 @test_utils.run_only_with_live_gpus()
 @test_utils.for_all_same_sku_gpus()
-def test_constant_power_no_errors(handle, gpuIds):
+def test_constant_power_no_errors(handle, gpuIds) -> None:
     no_errors_run(handle, gpuIds, "constant_power", "targeted power")
 
 
@@ -226,7 +226,7 @@ def test_constant_power_no_errors(handle, gpuIds):
 @test_utils.run_with_standalone_host_engine()
 @test_utils.run_only_with_live_gpus()
 @test_utils.for_all_same_sku_gpus()
-def test_constant_power_with_error(handle, gpuIds):
+def test_constant_power_with_error(handle, gpuIds) -> None:
     with_error_run(handle, gpuIds, "constant_power", "targeted power")
 
 
@@ -235,7 +235,7 @@ def test_constant_power_with_error(handle, gpuIds):
 @test_utils.run_with_standalone_host_engine()
 @test_utils.run_only_with_live_gpus()
 @test_utils.for_all_same_sku_gpus()
-def test_context_create_no_errors(handle, gpuIds):
+def test_context_create_no_errors(handle, gpuIds) -> None:
     no_errors_run(handle, gpuIds, "context_create", "context create")
 
 
@@ -244,7 +244,7 @@ def test_context_create_no_errors(handle, gpuIds):
 @test_utils.run_with_standalone_host_engine()
 @test_utils.run_only_with_live_gpus()
 @test_utils.for_all_same_sku_gpus()
-def test_gpuburn_no_errors(handle, gpuIds):
+def test_gpuburn_no_errors(handle, gpuIds) -> None:
     no_errors_run(handle, gpuIds, "gpuburn", "diagnostic",
                   "diagnostic.test_duration=60")
 
@@ -253,7 +253,7 @@ def test_gpuburn_no_errors(handle, gpuIds):
 @test_utils.run_with_standalone_host_engine()
 @test_utils.run_only_with_live_gpus()
 @test_utils.for_all_same_sku_gpus()
-def test_gpuburn_with_error(handle, gpuIds):
+def test_gpuburn_with_error(handle, gpuIds) -> None:
     with_error_run(handle, gpuIds, "gpuburn", "diagnostic",
                    "diagnostic.test_duration=60")
 
@@ -263,7 +263,7 @@ def test_gpuburn_with_error(handle, gpuIds):
 @test_utils.run_with_standalone_host_engine()
 @test_utils.run_only_with_live_gpus()
 @test_utils.for_all_same_sku_gpus()
-def test_memory_no_errors(handle, gpuIds):
+def test_memory_no_errors(handle, gpuIds) -> None:
     no_errors_run(handle, gpuIds, "memory", "memory")
 
 # No run for memory plugin with inserted errors - memory test completes too quickly for reliably simulating a DBE
@@ -276,7 +276,7 @@ def test_memory_no_errors(handle, gpuIds):
 @test_utils.run_with_standalone_host_engine()
 @test_utils.run_only_with_live_gpus()
 @test_utils.for_all_same_sku_gpus()
-def test_memory_bandwidth_no_errors(handle, gpuIds):
+def test_memory_bandwidth_no_errors(handle, gpuIds) -> None:
     no_errors_run(handle, gpuIds, "memory_bandwidth",
                   "memory bandwidth", "memory bandwidth.is_allowed=true")
 
@@ -285,7 +285,7 @@ def test_memory_bandwidth_no_errors(handle, gpuIds):
 @test_utils.run_with_standalone_host_engine()
 @test_utils.run_only_with_live_gpus()
 @test_utils.for_all_same_sku_gpus()
-def test_memory_bandwidth_with_error(handle, gpuIds):
+def test_memory_bandwidth_with_error(handle, gpuIds) -> None:
     with_error_run(handle, gpuIds, "memory_bandwidth",
                    "memory bandwidth", "memory bandwidth.is_allowed=true")
 
@@ -295,7 +295,7 @@ def test_memory_bandwidth_with_error(handle, gpuIds):
 @test_utils.run_with_standalone_host_engine()
 @test_utils.run_only_with_live_gpus()
 @test_utils.for_all_same_sku_gpus()
-def test_memtest_no_errors(handle, gpuIds):
+def test_memtest_no_errors(handle, gpuIds) -> None:
     no_errors_run(handle, gpuIds, "memtest", "memtest")
 
 
@@ -303,7 +303,7 @@ def test_memtest_no_errors(handle, gpuIds):
 @test_utils.run_with_standalone_host_engine()
 @test_utils.run_only_with_live_gpus()
 @test_utils.for_all_same_sku_gpus()
-def test_memtest_with_error(handle, gpuIds):
+def test_memtest_with_error(handle, gpuIds) -> None:
     with_error_run(handle, gpuIds, "memtest", "memtest")
 
 # nvbandwidth
@@ -313,7 +313,7 @@ def test_memtest_with_error(handle, gpuIds):
 @test_utils.run_with_standalone_host_engine()
 @test_utils.run_only_with_live_gpus()
 @test_utils.for_all_same_sku_gpus()
-def test_nvbandwidth_no_errors(handle, gpuIds):
+def test_nvbandwidth_no_errors(handle, gpuIds) -> None:
     no_errors_run(handle, gpuIds, "nvbandwidth", "nvbandwidth",
                   "nvbandwidth.is_allowed=true;nvbandwidth.testcases=0,1")
 
@@ -322,7 +322,7 @@ def test_nvbandwidth_no_errors(handle, gpuIds):
 @test_utils.run_with_standalone_host_engine()
 @test_utils.run_only_with_live_gpus()
 @test_utils.for_all_same_sku_gpus()
-def test_nvbandwidth_with_error(handle, gpuIds):
+def test_nvbandwidth_with_error(handle, gpuIds) -> None:
     with_error_run(handle, gpuIds, "nvbandwidth", "nvbandwidth",
                    "nvbandwidth.is_allowed=true;nvbandwidth.testcases=0,1")
 
@@ -333,7 +333,7 @@ def test_nvbandwidth_with_error(handle, gpuIds):
 @test_utils.run_with_standalone_host_engine()
 @test_utils.run_only_with_live_gpus()
 @test_utils.for_all_same_sku_gpus()
-def test_short_no_errors(handle, gpuIds):
+def test_short_no_errors(handle, gpuIds) -> None:
     no_errors_run(handle, gpuIds, "short", "short")
 
 
@@ -341,7 +341,7 @@ def test_short_no_errors(handle, gpuIds):
 @test_utils.run_with_standalone_host_engine()
 @test_utils.run_only_with_live_gpus()
 @test_utils.for_all_same_sku_gpus()
-def test_short_with_error(handle, gpuIds):
+def test_short_with_error(handle, gpuIds) -> None:
     with_error_run(handle, gpuIds, "short", "short")
 
 
@@ -350,7 +350,7 @@ def test_short_with_error(handle, gpuIds):
 @test_utils.run_with_standalone_host_engine()
 @test_utils.run_only_with_live_gpus()
 @test_utils.for_all_same_sku_gpus()
-def test_medium_no_errors(handle, gpuIds):
+def test_medium_no_errors(handle, gpuIds) -> None:
     no_errors_run(handle, gpuIds, "medium", "medium")
 
 
@@ -358,7 +358,7 @@ def test_medium_no_errors(handle, gpuIds):
 @test_utils.run_with_standalone_host_engine()
 @test_utils.run_only_with_live_gpus()
 @test_utils.for_all_same_sku_gpus()
-def test_medium_with_error(handle, gpuIds):
+def test_medium_with_error(handle, gpuIds) -> None:
     with_error_run(handle, gpuIds, "medium", "medium")
 
 
@@ -367,7 +367,7 @@ def test_medium_with_error(handle, gpuIds):
 @test_utils.run_with_standalone_host_engine()
 @test_utils.run_only_with_live_gpus()
 @test_utils.for_all_same_sku_gpus()
-def test_long_no_errors(handle, gpuIds):
+def test_long_no_errors(handle, gpuIds) -> None:
     no_errors_run(handle, gpuIds, "long", "long")
 
 
@@ -375,5 +375,5 @@ def test_long_no_errors(handle, gpuIds):
 @test_utils.run_with_standalone_host_engine()
 @test_utils.run_only_with_live_gpus()
 @test_utils.for_all_same_sku_gpus()
-def test_long_with_error(handle, gpuIds):
+def test_long_with_error(handle, gpuIds) -> None:
     with_error_run(handle, gpuIds, "long", "long")

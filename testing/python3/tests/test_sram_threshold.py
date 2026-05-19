@@ -41,10 +41,10 @@ from ctypes import *
 @test_utils.run_with_injection_nvml_using_specific_sku('H200.yaml')
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_nvml_injected_gpus()
-def test_inject_sram_threshold(handle, gpuIds):
+def test_inject_sram_threshold(handle, gpuIds) -> None:
     gpuId = gpuIds[0]
 
-    def mock_sram_threshold_counter(handle, gpuId, threshold, nvmlRet):
+    def mock_sram_threshold_counter(handle, gpuId, threshold: int, nvmlRet: int) -> None:
         injectedRet = nvml_injection.c_injectNvmlRet_t()
         injectedRet.nvmlRet = nvmlRet
         injectedRet.values[0].type = nvml_injection_structs.c_injectionArgType_t.INJECTION_ECCSRAMERRORSTATUS
@@ -55,7 +55,7 @@ def test_inject_sram_threshold(handle, gpuIds):
             handle, gpuId, "SramEccErrorStatus", None, 0, injectedRet)
         assert (ret == dcgm_structs.DCGM_ST_OK)
 
-    def validate_sram_threshold(handle, gpuId, threshold):
+    def validate_sram_threshold(handle, gpuId, threshold: int) -> None:
         entity = dcgm_structs.c_dcgmGroupEntityPair_t()
         entity.entityGroupId = dcgm_fields.DCGM_FE_GPU
         entity.entityId = gpuId

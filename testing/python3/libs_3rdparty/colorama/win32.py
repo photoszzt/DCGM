@@ -48,7 +48,7 @@ else:
             ("srWindow", SMALL_RECT),
             ("dwMaximumWindowSize", COORD),
         ]
-        def __str__(self):
+        def __str__(self) -> str:
             return '(%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d)' % (
                 self.dwSize.Y, self.dwSize.X
                 , self.dwCursorPosition.Y, self.dwCursorPosition.X
@@ -57,7 +57,7 @@ else:
                 , self.dwMaximumWindowSize.Y, self.dwMaximumWindowSize.X
             )
 
-    def GetConsoleScreenBufferInfo(stream_id=STDOUT):
+    def GetConsoleScreenBufferInfo(stream_id: int=STDOUT) -> CONSOLE_SCREEN_BUFFER_INFO:
         handle = handles[stream_id]
         csbi = CONSOLE_SCREEN_BUFFER_INFO()
         success = windll.kernel32.GetConsoleScreenBufferInfo(
@@ -87,7 +87,7 @@ else:
         handle = handles[stream_id]
         return windll.kernel32.SetConsoleCursorPosition(handle, adjusted_position)
 
-    def FillConsoleOutputCharacter(stream_id, char, length, start):
+    def FillConsoleOutputCharacter(stream_id, char, length, start) -> int:
         handle = handles[stream_id]
         char = TCHAR(char)
         length = DWORD(length)

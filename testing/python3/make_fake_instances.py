@@ -83,7 +83,7 @@ def create_fake_compute_instances(handle, parentIds, ciCount):
     return fakeCIMap
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument('-g', '--gpu-count', type=int, default=1, dest='gpuCount',
                         help='Specify the number of fake GPUs to create')

@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from argparse import Namespace
 import argparse
 import collections
 import csv
@@ -19,7 +20,7 @@ import csv
 class ParseDcgmSingleMetric:
     "class for parsing a single metric"
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.d_cpunum_th = collections.OrderedDict()
         self.d_cpu_count = {}
 
@@ -27,14 +28,14 @@ class ParseDcgmSingleMetric:
         self.dcgm_val_gpu = []
         self.gpuCount = 1
 
-    def createFieldsFromMetricLabel(self, metricLabelString, gpu_list):
+    def createFieldsFromMetricLabel(self, metricLabelString: str, gpu_list) -> None:
         print(("GPU Count", gpuCount))
         for i in range(0, gpuCount):
             # self.metric_label_list.append(str(gpu_list[i]) + '_' + str(metricLabelString))
             self.metric_label_list.append(
                 str(metricLabelString) + '_' + str(gpu_list[i]))
 
-    def writeToCsv(self, sample_num):
+    def writeToCsv(self, sample_num: int):
         dict_row = {}
         if gpuCount == 8:
             dict_row = {'Sample Number': sample_num, self.metric_label_list[0]: self.dcgm_val_gpu[0], self.metric_label_list[1]: self.dcgm_val_gpu[1], self.metric_label_list[2]: self.dcgm_val_gpu[2], self.metric_label_list[3]: self.dcgm_val_gpu[3], self.metric_label_list[4]: self.dcgm_val_gpu[4], self.metric_label_list[5]: self.dcgm_val_gpu[5], self.metric_label_list[6]: self.dcgm_val_gpu[6], self.metric_label_list[7]: self.dcgm_val_gpu[7], }
@@ -60,7 +61,7 @@ class ParseDcgmSingleMetric:
 
         return dict_row
 
-    def parseAndWriteToCsv(self, fName, metric, gpu_list):
+    def parseAndWriteToCsv(self, fName, metric, gpu_list) -> None:
         global gpuCount
         csvFileName = 'dcgm_' + str(metric) + '.csv'
         sample_num = 0
@@ -103,7 +104,7 @@ class ParseDcgmSingleMetric:
         print("Done")
 
 
-def main(cmdArgs):
+def main(cmdArgs: Namespace) -> None:
     fName = cmdArgs.fileName
     metric = cmdArgs.metric
     gpu_list = cmdArgs.gpu_list
@@ -112,7 +113,7 @@ def main(cmdArgs):
     po.parseAndWriteToCsv(fName, metric, gpu_list)
 
 
-def parseCommandLine():
+def parseCommandLine() -> Namespace:
     parser = argparse.ArgumentParser(
         description="Parse logs from dcgmLogs into a csv")
     parser.add_argument("-f", "--fileName", required=True,

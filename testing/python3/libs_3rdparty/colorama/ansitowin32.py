@@ -21,7 +21,7 @@ class StreamWrapper(object):
     attribute access apart from method 'write()', which is delegated to our
     Converter instance.
     '''
-    def __init__(self, wrapped, converter):
+    def __init__(self, wrapped, converter) -> None:
         # double-underscore everything to prevent clashes with names of
         # attributes on the wrapped stream object.
         self.__wrapped = wrapped
@@ -30,7 +30,7 @@ class StreamWrapper(object):
     def __getattr__(self, name):
         return getattr(self.__wrapped, name)
 
-    def write(self, text):
+    def write(self, text) -> None:
         self.__convertor.write(text)
 
 
@@ -42,7 +42,7 @@ class AnsiToWin32(object):
     '''
     ANSI_RE = re.compile(r'\033\[((?:\d|;)*)([a-zA-Z])')
 
-    def __init__(self, wrapped, convert=None, strip=None, autoreset=False):
+    def __init__(self, wrapped, convert=None, strip=None, autoreset: bool=False) -> None:
         # The wrapped stream (normally sys.stdout or sys.stderr)
         self.wrapped = wrapped
 
@@ -110,7 +110,7 @@ class AnsiToWin32(object):
             }
 
 
-    def write(self, text):
+    def write(self, text) -> None:
         if self.strip or self.convert:
             self.write_and_convert(text)
         else:
@@ -120,14 +120,14 @@ class AnsiToWin32(object):
             self.reset_all()
 
 
-    def reset_all(self):
+    def reset_all(self) -> None:
         if self.convert:
             self.call_win32('m', (0,))
         elif is_a_tty(self.wrapped):
             self.wrapped.write(Style.RESET_ALL)
 
 
-    def write_and_convert(self, text):
+    def write_and_convert(self, text) -> None:
         '''
         Write the given text to our wrapped stream, stripping any ANSI
         sequences from the text, and optionally converting them into win32
@@ -142,19 +142,19 @@ class AnsiToWin32(object):
         self.write_plain_text(text, cursor, len(text))
 
 
-    def write_plain_text(self, text, start, end):
+    def write_plain_text(self, text, start: int, end: int) -> None:
         if start < end:
             self.wrapped.write(text[start:end])
             self.wrapped.flush()
 
 
-    def convert_ansi(self, paramstring, command):
+    def convert_ansi(self, paramstring, command) -> None:
         if self.convert:
             params = self.extract_params(paramstring)
             self.call_win32(command, params)
 
 
-    def extract_params(self, paramstring):
+    def extract_params(self, paramstring) -> tuple[int, ...]:
         def split(paramstring):
             for p in paramstring.split(';'):
                 if p != '':
@@ -162,7 +162,7 @@ class AnsiToWin32(object):
         return tuple(split(paramstring))
 
 
-    def call_win32(self, command, params):
+    def call_win32(self, command: str, params: tuple[int] | tuple[int, ...]) -> None:
         if params == []:
             params = [0]
         if command == 'm':

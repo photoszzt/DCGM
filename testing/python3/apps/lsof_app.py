@@ -34,19 +34,19 @@ class LsofApp(app_runner.AppRunner):
         "Linux_aarch64": "lsof",
     }
 
-    def __init__(self, fname):
+    def __init__(self, fname) -> None:
         path = LsofApp.paths[utils.platform_identifier]
         self.processes = None
         self.fname = fname
         super(LsofApp, self).__init__(path, ["-F", "-V", fname])
 
-    def start(self, timeout=app_runner.default_timeout):
+    def start(self, timeout: float=app_runner.default_timeout) -> None:
         # try to run as root, otherwise the list of processes might be incomplete
         # (e.g. it won't report processes running by other users)
         with test_utils.tryRunAsRoot():
             super(LsofApp, self).start(timeout)
 
-    def _process_finish(self, stdout_buf, stderr_buf):
+    def _process_finish(self, stdout_buf, stderr_buf) -> None:
         super(LsofApp, self)._process_finish(stdout_buf, stderr_buf)
 
         if self.retvalue() == 1 and self.stdout_lines and self.stdout_lines[0].startswith("lsof: no file use located: "):

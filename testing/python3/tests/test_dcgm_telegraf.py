@@ -17,12 +17,12 @@ from common.Struct import Struct
 from dcgm_telegraf import DcgmTelegraf
 
 
-def test_send_to_telegraf():
+def test_send_to_telegraf() -> None:
     # Can't create a proper closure in Python, so we create an object which acts
     # as a closure
     namespace = Struct(message=None, dest=None)
 
-    def mysendto(_message, _dest):
+    def mysendto(_message, _dest) -> None:
         namespace.message = _message
         namespace.dest = _dest
 
@@ -42,10 +42,10 @@ def test_send_to_telegraf():
     assert (namespace.dest == ('FAKE_HOST', 101010))
 
 
-def test_telegraph_custom_json_handler():
+def test_telegraph_custom_json_handler() -> None:
     namespace = Struct(arg=None)
 
-    def MySendToTelegraf(json):
+    def MySendToTelegraf(json) -> None:
         namespace.arg = json  # pylint: disable=no-member
 
     dr = DcgmTelegraf('FAKE_HOST', 101010)

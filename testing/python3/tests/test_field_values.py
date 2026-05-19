@@ -12,6 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from apps.cuda_ctx_create_app import CudaCtxCreateAdvancedApp
+from apps.cuda_assert_app import RunCudaAssert
+from DcgmSystem import DcgmSystem
+from DcgmGroup import DcgmGroup
 import pydcgm
 import dcgm_field_helpers
 import dcgm_structs
@@ -83,14 +87,14 @@ for fieldId in range(dcgm_fields.DCGM_FI_DEV_C2C_LINK_ERROR_INTR, dcgm_fields.DC
     g_profilingFieldIds.append(fieldId)
 
 
-def get_usec_since_1970():
+def get_usec_since_1970() -> int:
     sec = time.time()
     return int(sec * 1000000.0)
 
 
 @test_utils.run_with_embedded_host_engine()
 @test_utils.run_with_injection_gpus(1)
-def test_dcgm_field_values_since_agent(handle, gpuIds):
+def test_dcgm_field_values_since_agent(handle, gpuIds) -> None:
 
     handleObj = pydcgm.DcgmHandle(handle=handle)
     systemObj = handleObj.GetSystem()
@@ -158,7 +162,7 @@ def test_dcgm_field_values_since_agent(handle, gpuIds):
                 newValueCount, numValuesPerLoop)
 
 
-def helper_dcgm_values_since(handle, gpuIds):
+def helper_dcgm_values_since(handle, gpuIds) -> None:
     handleObj = pydcgm.DcgmHandle(handle=handle)
     systemObj = handleObj.GetSystem()
     groupObj = systemObj.GetDefaultGroup()
@@ -196,17 +200,17 @@ def helper_dcgm_values_since(handle, gpuIds):
 
 @test_utils.run_with_embedded_host_engine()
 @test_utils.run_only_with_live_gpus()
-def test_dcgm_values_since_agent(handle, gpuIds):
+def test_dcgm_values_since_agent(handle, gpuIds) -> None:
     helper_dcgm_values_since(handle, gpuIds)
 
 
 @test_utils.run_with_standalone_host_engine(20)
 @test_utils.run_only_with_live_gpus()
-def test_dcgm_values_since_remote(handle, gpuIds):
+def test_dcgm_values_since_remote(handle, gpuIds) -> None:
     helper_dcgm_values_since(handle, gpuIds)
 
 
-def helper_dcgm_values_since_entities(handle, gpuIds):
+def helper_dcgm_values_since_entities(handle, gpuIds) -> None:
     handleObj = pydcgm.DcgmHandle(handle=handle)
     systemObj = handleObj.GetSystem()
     groupObj = systemObj.GetDefaultGroup()
@@ -245,17 +249,17 @@ def helper_dcgm_values_since_entities(handle, gpuIds):
 
 @test_utils.run_with_embedded_host_engine()
 @test_utils.run_only_with_live_gpus()
-def test_dcgm_values_since_entities_agent(handle, gpuIds):
+def test_dcgm_values_since_entities_agent(handle, gpuIds) -> None:
     helper_dcgm_values_since_entities(handle, gpuIds)
 
 
 @test_utils.run_with_standalone_host_engine(20)
 @test_utils.run_only_with_live_gpus()
-def test_dcgm_values_since_entities_remote(handle, gpuIds):
+def test_dcgm_values_since_entities_remote(handle, gpuIds) -> None:
     helper_dcgm_values_since_entities(handle, gpuIds)
 
 
-def helper_dcgm_entity_get_latest_values(handle, gpuIds):
+def helper_dcgm_entity_get_latest_values(handle, gpuIds) -> None:
     handleObj = pydcgm.DcgmHandle(handle=handle)
     systemObj = handleObj.GetSystem()
     groupObj = systemObj.GetDefaultGroup()
@@ -292,7 +296,7 @@ def helper_dcgm_entity_get_latest_values(handle, gpuIds):
 @test_utils.run_with_embedded_host_engine()
 @test_utils.run_only_with_live_gpus()
 @test_utils.run_only_with_nvml()
-def test_dcgm_entity_get_latest_values_embedded(handle, gpuIds):
+def test_dcgm_entity_get_latest_values_embedded(handle, gpuIds) -> None:
     helper_dcgm_entity_get_latest_values(handle, gpuIds)
 
 
@@ -301,7 +305,7 @@ Verify that the returned field values match the requested ones for dcgmEntitiesG
 '''
 
 
-def helper_validate_entities_latest_values_request(handle, gpuIds, fieldIds):
+def helper_validate_entities_latest_values_request(handle, gpuIds, fieldIds: list[int]) -> None:
     entityPairList = []
     responses = {}
 
@@ -332,7 +336,7 @@ def helper_validate_entities_latest_values_request(handle, gpuIds, fieldIds):
         responses[dictKey] += 1
 
 
-def helper_dcgm_entities_get_latest_values(handle, gpuIds):
+def helper_dcgm_entities_get_latest_values(handle, gpuIds) -> None:
     # Request various combinations of DCGM field IDs. We're mixing field IDs that
     # have NVML mappings and those that don't in order to try and cause failures
 
@@ -362,7 +366,7 @@ def helper_dcgm_entities_get_latest_values(handle, gpuIds):
 
 @test_utils.run_with_embedded_host_engine()
 @test_utils.run_only_with_live_gpus()
-def test_dcgm_entities_get_latest_values_embedded(handle, gpuIds):
+def test_dcgm_entities_get_latest_values_embedded(handle, gpuIds) -> None:
     helper_dcgm_entities_get_latest_values(handle, gpuIds)
 
 # Skip this test when running in injection-only mode
@@ -372,7 +376,7 @@ def test_dcgm_entities_get_latest_values_embedded(handle, gpuIds):
 @test_utils.run_only_with_live_gpus()
 # This test relies on accounting data, which doesn't work with MIG mode
 @test_utils.run_only_if_mig_is_disabled()
-def test_dcgm_live_accounting_data(handle, gpuIds):
+def test_dcgm_live_accounting_data(handle, gpuIds) -> None:
     if test_utils.is_nvswitch_detected():
         test_utils.skip_test(
             "Skipping GPU Cuda tests on NvSwitch systems since they require the FM to be loaded")
@@ -452,7 +456,7 @@ def test_dcgm_live_accounting_data(handle, gpuIds):
         appPid, len(values), gpuId)
 
 
-def helper_dcgm_values_pid_stats(handle, gpuIds):
+def helper_dcgm_values_pid_stats(handle, gpuIds) -> None:
     handleObj = pydcgm.DcgmHandle(handle=handle)
     systemObj = handleObj.GetSystem()
     groupObj = systemObj.GetEmptyGroup("test1")
@@ -496,7 +500,7 @@ def helper_dcgm_values_pid_stats(handle, gpuIds):
     _assert_pid_cuda_assert_occurence(systemObj, groupObj, app.getpid())
 
 
-def _assert_pid_cuda_assert_occurence(dcgmSystem, dcgmGroup, appPid):
+def _assert_pid_cuda_assert_occurence(dcgmSystem: DcgmSystem, dcgmGroup: DcgmGroup, appPid) -> None:
     ''' Force an update and verifies that a xid error occurred during the life of the process '''
     dcgmSystem.UpdateAllFields(1)
     pidInfo = dcgmGroup.stats.GetPidInfo(appPid)
@@ -510,7 +514,7 @@ def _assert_pid_cuda_assert_occurence(dcgmSystem, dcgmGroup, appPid):
                      str(pidInfo.summary.xidCriticalErrorsTs[index]))
 
 
-def _assert_pid_utilization_rate(dcgmSystem, dcgmGroup, appPid):
+def _assert_pid_utilization_rate(dcgmSystem: DcgmSystem, dcgmGroup: DcgmGroup, appPid) -> None:
     '''Force an update and then assert that utilization rates are recorded for a PID'''
     dcgmSystem.UpdateAllFields(1)
     pidInfo = dcgmGroup.stats.GetPidInfo(appPid)
@@ -528,7 +532,7 @@ def _assert_pid_utilization_rate(dcgmSystem, dcgmGroup, appPid):
     # assert utilizationRate, "Expected non-zero utilization rates for the PID %d"  %appPid
 
 
-def _assert_other_compute_pid_seen(dcgmSystem, dcgmGroup, app1Pid, app2Pid):
+def _assert_other_compute_pid_seen(dcgmSystem: DcgmSystem, dcgmGroup: DcgmGroup, app1Pid, app2Pid) -> None:
     '''Force an update and then assert that PID 1 stats see PID2'''
     dcgmSystem.UpdateAllFields(1)
     pidInfo = dcgmGroup.stats.GetPidInfo(app1Pid)
@@ -550,7 +554,7 @@ def _assert_other_compute_pid_seen(dcgmSystem, dcgmGroup, app1Pid, app2Pid):
                                         pidInfo.summary.otherComputePids[6], pidInfo.summary.otherComputePids[7], pidInfo.summary.otherComputePids[8], pidInfo.summary.otherComputePids[9])
 
 
-def _create_cuda_app_for_pid_stats(handle, busId, appTimeout, gpuId):
+def _create_cuda_app_for_pid_stats(handle, busId, appTimeout: int, gpuId) -> CudaCtxCreateAdvancedApp:
     app = apps.CudaCtxCreateAdvancedApp(["--ctxCreate", busId,
                                          "--busyGpu", busId, str(appTimeout),
                                          "--ctxDestroy", busId], env=test_utils.get_cuda_visible_devices_env(handle, gpuId))
@@ -558,7 +562,7 @@ def _create_cuda_app_for_pid_stats(handle, busId, appTimeout, gpuId):
     return app
 
 
-def _create_cuda_assert_app_for_pid_stats(handle, busId, appTimeout, gpuId):
+def _create_cuda_assert_app_for_pid_stats(handle, busId, appTimeout: int, gpuId) -> RunCudaAssert:
     app = apps.RunCudaAssert(["--ctxCreate", busId,
                               "--cuMemAlloc", busId, "200",
                               "--cuMemFree", busId,
@@ -582,7 +586,7 @@ def _get_gpu_bus_id(gpuId, handle):
     return values[0].value.str
 
 
-def helper_dcgm_values_pid_stats_realtime(handle, gpuIds):
+def helper_dcgm_values_pid_stats_realtime(handle, gpuIds) -> None:
     handleObj = pydcgm.DcgmHandle(handle=handle)
     systemObj = handleObj.GetSystem()
     groupObj = systemObj.GetEmptyGroup("test1")
@@ -633,7 +637,7 @@ def helper_dcgm_values_pid_stats_realtime(handle, gpuIds):
 @test_utils.run_only_with_live_gpus()
 # This test relies on accounting data, which doesn't work with MIG mode
 @test_utils.run_only_if_mig_is_disabled()
-def test_dcgm_values_pid_stats_embedded(handle, gpuIds):
+def test_dcgm_values_pid_stats_embedded(handle, gpuIds) -> None:
     if test_utils.is_nvswitch_detected():
         test_utils.skip_test(
             "Skipping GPU Cuda tests on NvSwitch systems since they require the FM to be loaded")
@@ -646,7 +650,7 @@ def test_dcgm_values_pid_stats_embedded(handle, gpuIds):
 @test_utils.run_only_with_live_gpus()
 # This test relies on accounting data, which doesn't work with MIG mode
 @test_utils.run_only_if_mig_is_disabled()
-def test_dcgm_live_pid_stats_remote(handle, gpuIds):
+def test_dcgm_live_pid_stats_remote(handle, gpuIds) -> None:
 
     if test_utils.is_nvswitch_detected():
         test_utils.skip_test(
@@ -662,7 +666,7 @@ def test_dcgm_live_pid_stats_remote(handle, gpuIds):
 @test_utils.exclude_confidential_compute_gpus()
 # This test relies on accounting data, which doesn't work with MIG mode
 @test_utils.run_only_if_mig_is_disabled()
-def test_dcgm_values_pid_stats_realtime_embedded(handle, gpuIds):
+def test_dcgm_values_pid_stats_realtime_embedded(handle, gpuIds) -> None:
 
     if test_utils.is_nvswitch_detected():
         test_utils.skip_test(
@@ -678,7 +682,7 @@ def test_dcgm_values_pid_stats_realtime_embedded(handle, gpuIds):
 @test_utils.exclude_confidential_compute_gpus()
 # This test relies on accounting data, which doesn't work with MIG mode
 @test_utils.run_only_if_mig_is_disabled()
-def test_dcgm_values_pid_stats_realtime_remote(handle, gpuIds):
+def test_dcgm_values_pid_stats_realtime_remote(handle, gpuIds) -> None:
 
     if test_utils.is_nvswitch_detected():
         test_utils.skip_test(
@@ -689,7 +693,7 @@ def test_dcgm_values_pid_stats_realtime_remote(handle, gpuIds):
 
 @test_utils.run_with_embedded_host_engine()
 @test_utils.run_only_with_live_gpus()
-def test_dcgm_values_job_stats_remove(handle, gpuIds):
+def test_dcgm_values_job_stats_remove(handle, gpuIds) -> None:
 
     if test_utils.is_nvswitch_detected():
         test_utils.skip_test(
@@ -735,7 +739,7 @@ def test_dcgm_values_job_stats_remove(handle, gpuIds):
 @test_utils.run_only_with_live_gpus()
 # This test relies on accounting data, which doesn't work with MIG mode
 @test_utils.run_only_if_mig_is_disabled()
-def test_dcgm_values_job_stats_get(handle, gpuIds):
+def test_dcgm_values_job_stats_get(handle, gpuIds) -> None:
     if test_utils.is_nvswitch_detected():
         test_utils.skip_test(
             "Skipping GPU Cuda tests on NvSwitch systems since they require the FM to be loaded")
@@ -882,7 +886,7 @@ def test_dcgm_values_job_stats_get(handle, gpuIds):
 
 
 @test_utils.run_with_embedded_host_engine()
-def test_dcgm_field_by_id(handle):
+def test_dcgm_field_by_id(handle) -> None:
 
     handleObj = pydcgm.DcgmHandle(handle=handle)
     systemObj = handleObj.GetSystem()
@@ -899,7 +903,7 @@ def test_dcgm_field_by_id(handle):
 
 
 @test_utils.run_with_embedded_host_engine()
-def test_dcgm_field_by_tag(handle):
+def test_dcgm_field_by_tag(handle) -> None:
 
     handleObj = pydcgm.DcgmHandle(handle=handle)
     systemObj = handleObj.GetSystem()
@@ -916,7 +920,7 @@ def test_dcgm_field_by_tag(handle):
 
 @test_utils.run_with_embedded_host_engine()
 @test_utils.run_only_with_live_gpus()
-def test_dcgm_fields_all_fieldids_valid(handle, gpuIds):
+def test_dcgm_fields_all_fieldids_valid(handle, gpuIds) -> None:
     """
     Test that any field IDs that are defined are retrievable
     """
@@ -1108,7 +1112,7 @@ def test_dcgm_fields_all_fieldids_valid(handle, gpuIds):
 
 @test_utils.run_only_with_gpus_present()
 @test_utils.run_only_with_nvml()
-def test_dcgm_verify_manual_mode_behavior():
+def test_dcgm_verify_manual_mode_behavior() -> None:
     """
     Test to verify that field values cannot be
     retrieved automatically in manual operation mode
@@ -1160,7 +1164,7 @@ def test_dcgm_verify_manual_mode_behavior():
 
 @test_utils.run_only_with_gpus_present()
 @test_utils.run_only_with_nvml()
-def test_dcgm_verify_auto_mode_behavior():
+def test_dcgm_verify_auto_mode_behavior() -> None:
     """
     Test to verify that field values can be retrieved
     automatically in manual operation mode
@@ -1203,7 +1207,7 @@ def test_dcgm_verify_auto_mode_behavior():
 
 @test_utils.run_with_embedded_host_engine()
 @test_utils.run_only_with_live_gpus()
-def test_dcgm_device_attributes_v3(handle, gpuIds):
+def test_dcgm_device_attributes_v3(handle, gpuIds) -> None:
     handleObj = pydcgm.DcgmHandle(handle=handle)
     systemObj = handleObj.GetSystem()
 
@@ -1231,7 +1235,7 @@ def test_dcgm_device_attributes_v3(handle, gpuIds):
 
 @test_utils.run_with_embedded_host_engine()
 @test_utils.run_only_with_live_gpus()
-def test_dcgm_device_attributes_bad_gpuid(handle, gpuIds):
+def test_dcgm_device_attributes_bad_gpuid(handle, gpuIds) -> None:
     handleObj = pydcgm.DcgmHandle(handle=handle)
     systemObj = handleObj.GetSystem()
 
@@ -1244,7 +1248,7 @@ def test_dcgm_device_attributes_bad_gpuid(handle, gpuIds):
 
 @test_utils.run_with_embedded_host_engine()
 @test_utils.run_only_with_live_gpus()
-def test_dcgm_nvlink_bandwidth(handle, gpuIds):
+def test_dcgm_nvlink_bandwidth(handle, gpuIds) -> None:
     handleObj = pydcgm.DcgmHandle(handle=handle)
     systemObj = handleObj.GetSystem()
     groupObj = systemObj.GetDefaultGroup()
@@ -1333,7 +1337,7 @@ def test_dcgm_nvlink_bandwidth(handle, gpuIds):
                     ), "Unexpected error reading field %d on GPU %d" % (fieldId, gpuId)
 
 
-def helper_fields_monitoring(handle, entityIds, entityGroup, firstField, lastField, isBlank):
+def helper_fields_monitoring(handle, entityIds, entityGroup: int, firstField: int, lastField: int, isBlank: bool) -> None:
     handleObj = pydcgm.DcgmHandle(handle=handle)
     systemObj = handleObj.GetSystem()
 
@@ -1378,7 +1382,7 @@ def helper_fields_monitoring(handle, entityIds, entityGroup, firstField, lastFie
 
 @test_utils.run_with_standalone_host_engine(30)
 @test_utils.run_with_injection_nvswitches(switchCount=2)
-def test_nvswitch_monitoring_standalone(handle, switchIds):
+def test_nvswitch_monitoring_standalone(handle, switchIds) -> None:
     # For now, these should all be blank values. This test may be updated or deleted later
     # when the NSCQ library exists
     helper_fields_monitoring(handle, switchIds, dcgm_fields.DCGM_FE_SWITCH,
@@ -1389,7 +1393,7 @@ def test_nvswitch_monitoring_standalone(handle, switchIds):
 @test_utils.run_with_nvsdm_mock_config("one_cx.yaml")
 @test_utils.run_with_standalone_host_engine(30)
 @test_utils.run_with_nvsdm_mocked_cx()
-def test_cx_monitoring_mocked(handle, cxIds):
+def test_cx_monitoring_mocked(handle, cxIds) -> None:
     helper_fields_monitoring(handle, cxIds, dcgm_fields.DCGM_FE_CONNECTX,
                              dcgm_fields.DCGM_FI_DEV_FIRST_CONNECTX_FIELD_ID, dcgm_fields.DCGM_FI_DEV_LAST_CONNECTX_FIELD_ID,
                              False)
@@ -1397,7 +1401,7 @@ def test_cx_monitoring_mocked(handle, cxIds):
 
 @test_utils.run_with_standalone_host_engine(30)
 @test_utils.run_only_with_live_cx()
-def test_cx_monitoring_live(handle, cxIds):
+def test_cx_monitoring_live(handle, cxIds) -> None:
     helper_fields_monitoring(handle, cxIds, dcgm_fields.DCGM_FE_CONNECTX,
                              dcgm_fields.DCGM_FI_DEV_FIRST_CONNECTX_FIELD_ID, dcgm_fields.DCGM_FI_DEV_LAST_CONNECTX_FIELD_ID,
                              False)
@@ -1409,7 +1413,7 @@ def test_cx_monitoring_live(handle, cxIds):
 @test_utils.run_with_standalone_host_engine(30)
 @test_utils.run_only_if_mig_is_disabled()
 @test_utils.run_with_nvml_injected_gpus()
-def test_platform_info_fields(handle, gpuIds):
+def test_platform_info_fields(handle, gpuIds) -> None:
     """
     This test injects platform field values and verifies that they can be retrieved.
     """
@@ -1476,7 +1480,7 @@ def test_platform_info_fields(handle, gpuIds):
 @test_utils.run_with_standalone_host_engine(30)
 @test_utils.run_only_if_mig_is_disabled()
 @test_utils.run_with_nvml_injected_gpus()
-def test_platform_info_fields_invalid_values(handle, gpuIds):
+def test_platform_info_fields_invalid_values(handle, gpuIds) -> None:
     """
     This test injects invalid platform rack-based fields and verifies that null values
     are retrieved.
@@ -1554,7 +1558,7 @@ def test_platform_info_fields_invalid_values(handle, gpuIds):
 @test_utils.run_with_standalone_host_engine(30)
 @test_utils.run_only_if_mig_is_disabled()
 @test_utils.run_with_nvml_injected_gpus()
-def test_chassis_serial_number_empty_value(handle, gpuIds):
+def test_chassis_serial_number_empty_value(handle, gpuIds) -> None:
     """
     This test injects empty chassis serial number field and verifies that blank string value is retrieved.
     """
@@ -1579,7 +1583,7 @@ def test_chassis_serial_number_empty_value(handle, gpuIds):
             expectedValue), f"Expected value {expectedValue} for field {dcgm_fields.DCGM_FI_DEV_PLATFORM_CHASSIS_SERIAL_NUMBER}, but got {values[0].value.str}"
 
 
-def helper_inject_ber_float(handle, gpuIds, berFieldId, berFloatFieldId, fakeBer, expectedBerFloat):
+def helper_inject_ber_float(handle, gpuIds, berFieldId: int, berFloatFieldId: int, fakeBer: int, expectedBerFloat) -> None:
     """Helper function to inject and verify BER values
 
     Args:
@@ -1636,7 +1640,7 @@ def helper_inject_ber_float(handle, gpuIds, berFieldId, berFloatFieldId, fakeBer
 @test_utils.run_with_injection_nvml_using_specific_sku('B200.yaml')
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_nvml_injected_gpus()
-def test_nvlink_ber_fields(handle, gpuIds):
+def test_nvlink_ber_fields(handle, gpuIds) -> None:
     # Test various BER values and edge cases
     test_cases = [
         # Max value case
@@ -1670,7 +1674,7 @@ def test_nvlink_ber_fields(handle, gpuIds):
             )
 
 
-def helper_check_field_values(handle, gpuIds, field_id, test_values):
+def helper_check_field_values(handle, gpuIds, field_id: int, test_values: list[int]) -> None:
     """Helper to test fields with various values"""
     gpuId = gpuIds[0]
     injectionOffset = 1
@@ -1695,7 +1699,7 @@ def helper_check_field_values(handle, gpuIds, field_id, test_values):
 @test_utils.run_with_injection_nvml_using_specific_sku('B200.yaml')
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_nvml_injected_gpus()
-def test_nvlink_error_fields(handle, gpuIds):
+def test_nvlink_error_fields(handle, gpuIds) -> None:
     """Test NVLink error counter fields with various values"""
     test_values = [0, 42, 2**31 - 1, 2**63 - 1]
     helper_check_field_values(
@@ -1708,10 +1712,10 @@ def test_nvlink_error_fields(handle, gpuIds):
 @test_utils.run_with_injection_nvml_using_specific_sku('H200.yaml')
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_nvml_injected_gpus()
-def test_nvlink_error_counter(handle, gpuIds):
+def test_nvlink_error_counter(handle, gpuIds) -> None:
     gpuId = gpuIds[0]
 
-    def mock_nvlink_error_counter(handle, gpuId, linkId, counterType, value):
+    def mock_nvlink_error_counter(handle, gpuId, linkId: int, counterType: int, value: int) -> None:
         injectedRet = nvml_injection.c_injectNvmlRet_t()
         injectedRet.nvmlRet = dcgm_nvml.NVML_SUCCESS
         injectedRet.values[0].type = nvml_injection_structs.c_injectionArgType_t.INJECTION_ULONG_LONG
@@ -1729,7 +1733,7 @@ def test_nvlink_error_counter(handle, gpuIds):
             handle, gpuId, "NvLinkErrorCounter", extraKeys, 2, injectedRet)
         assert (ret == dcgm_structs.DCGM_ST_OK)
 
-    def validate_nvlink_error_value(handle, gpuId, fieldId, expectedValue):
+    def validate_nvlink_error_value(handle, gpuId, fieldId: int, expectedValue: int) -> None:
         entity = dcgm_structs.c_dcgmGroupEntityPair_t()
         entity.entityGroupId = dcgm_fields.DCGM_FE_GPU
         entity.entityId = gpuId
@@ -1856,7 +1860,7 @@ def test_nvlink_error_counter(handle, gpuIds):
 @test_utils.run_with_injection_nvml_using_specific_sku('H200.yaml')
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_nvml_injected_gpus()
-def test_unrepairable_memory_query(handle, gpuIds):
+def test_unrepairable_memory_query(handle, gpuIds) -> None:
     """Test unrepairable memory flag using runtime injection"""
     gpuId = gpuIds[0]
     fieldId = dcgm_fields.DCGM_FI_DEV_MEMORY_UNREPAIRABLE_FLAG
@@ -1887,7 +1891,7 @@ def test_unrepairable_memory_query(handle, gpuIds):
 
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_injection_gpus()
-def test_nvlink_state_field(handle, gpuIds):
+def test_nvlink_state_field(handle, gpuIds) -> None:
     """Test NVLink state field can be read and returns valid state values using dcgm_link_t entities"""
     handleObj = pydcgm.DcgmHandle(handle=handle)
     systemObj = handleObj.GetSystem()
@@ -1941,7 +1945,7 @@ def test_nvlink_state_field(handle, gpuIds):
 
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_injection_gpus()
-def test_nvlink_state_field_injection(handle, gpuIds):
+def test_nvlink_state_field_injection(handle, gpuIds) -> None:
     """Test NVLink state field injection works correctly using dcgm_link_t entities"""
     handleObj = pydcgm.DcgmHandle(handle=handle)
     systemObj = handleObj.GetSystem()
@@ -2005,7 +2009,7 @@ def test_nvlink_state_field_injection(handle, gpuIds):
 @skip_test_if_no_dcgm_nvml()
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_injection_gpus()
-def test_gpu_recovery_action_field_values(handle, gpuIds):
+def test_gpu_recovery_action_field_values(handle, gpuIds) -> None:
     """Test GPU recovery action field retrieval with all enum values and special cases"""
     field_id = dcgm_fields.DCGM_FI_DEV_GET_GPU_RECOVERY_ACTION
     gpuId = gpuIds[0]

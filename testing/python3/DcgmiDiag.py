@@ -66,7 +66,7 @@ errorTuples = [(dcgm_fields.DCGM_FI_DEV_CLOCKS_EVENT_REASONS, DIAG_CLOCKS_EVENT_
 ################################################################################
 class FailedTestInfo():
     ################################################################################
-    def __init__(self, testname, warnings, info=None, entityPair=None):
+    def __init__(self, testname, warnings, info=None, entityPair=None) -> None:
         self.m_warning = warnings
         self.m_testname = testname
         self.m_info = info
@@ -84,7 +84,7 @@ class FailedTestInfo():
                         self.m_suggestion = errorTuple[2]
 
     ################################################################################
-    def SetInfo(self, info):
+    def SetInfo(self, info) -> None:
         self.m_info = info
 
     ################################################################################
@@ -125,7 +125,7 @@ class FailedTestInfo():
         return self.m_testname
 
     ################################################################################
-    def SetFailureMessage(self, val, correct_val):
+    def SetFailureMessage(self, val, correct_val) -> None:
         fieldName = dcgm_fields.DcgmFieldGetTagById(self.m_fieldId)
         if fieldName is None:
             fieldName = "Cannot find field id %d" % self.m_fieldId
@@ -148,7 +148,7 @@ class FailedTestInfo():
                                   (self.GetFullError(), str(val), fieldName)
 
     ################################################################################
-    def IsAnError(self):
+    def IsAnError(self) -> bool:
         """
         Simply return the error status in m_isAnError.
         """
@@ -159,8 +159,8 @@ class FailedTestInfo():
 class DcgmiDiag:
 
     ################################################################################
-    def __init__(self, gpuIds=None, testNamesStr='', paramsStr='', verbose=True,
-                 dcgmiPrefix='', runMode=0, configFile='', debugLevel=0, debugFile=''):
+    def __init__(self, gpuIds=None, testNamesStr: str='', paramsStr: str='', verbose: bool=True,
+                 dcgmiPrefix: str='', runMode: int=0, configFile: str='', debugLevel: int=0, debugFile: str='') -> None:
         # gpuList is expected to be a string. Convert it if it was provided
         self.gpuList = None
         if gpuIds is not None:
@@ -179,7 +179,7 @@ class DcgmiDiag:
         self.debugFile = debugFile
 
     ################################################################################
-    def BuildDcgmiCommand(self):
+    def BuildDcgmiCommand(self) -> list[str]:
         cmd = []
 
         if self.dcgmiPrefix:
@@ -231,15 +231,15 @@ class DcgmiDiag:
         return cmd
 
     ################################################################################
-    def AddGpuList(self, gpu_list):
+    def AddGpuList(self, gpu_list) -> None:
         self.gpuList = gpu_list
 
     ################################################################################
-    def FindFailedTests(self, jsondict, failed_list):
+    def FindFailedTests(self, jsondict, failed_list) -> None:
         ENTITY_ID_FIELD = 'entity_id'
         ENTITY_GROUP_FIELD = 'entity_group'
 
-        def findFailuresInResults(testName, results, failed_list):
+        def findFailuresInResults(testName, results, failed_list) -> bool:
             # { status, warnings[], info[] }
             for result in results:
                 if result[STATUS_FIELD] == TEST_STATUS_FAIL:
@@ -253,7 +253,7 @@ class DcgmiDiag:
                         return True
             return False
 
-        def findFailuresInTestSummary(testName, summary, failed_list):
+        def findFailuresInTestSummary(testName, summary, failed_list) -> bool:
             # { status, warnings[], info[] }
             if summary[STATUS_FIELD] == TEST_STATUS_FAIL:
                 if WARNINGS_FIELD in summary:
@@ -313,7 +313,7 @@ class DcgmiDiag:
         return failed_list
 
     ################################################################################
-    def SetAndCheckOutput(self, stdout, stderr, ret=0, nsc=None):
+    def SetAndCheckOutput(self, stdout, stderr, ret: int=0, nsc=None):
         self.lastStdout = stdout
         self.lastStderr = stderr
         self.diagRet = ret
@@ -351,7 +351,7 @@ class DcgmiDiag:
         return failed_list, self.diagRet
 
     ################################################################################
-    def __RunDcgmiDiag__(self, cmd):
+    def __RunDcgmiDiag__(self, cmd: list[str]):
         self.lastCmd = cmd
         self.lastStdout = ''
         self.lastStderr = ''
@@ -370,7 +370,7 @@ class DcgmiDiag:
         return self.CheckOutput(nsc)
 
     ################################################################################
-    def DidIFail(self):
+    def DidIFail(self) -> bool:
         if self.failed_list:
             for failure in self.failed_list:
                 if failure.IsAnError():
@@ -383,7 +383,7 @@ class DcgmiDiag:
         return False
 
     ################################################################################
-    def RunDcgmiDiag(self, config_file, runMode=0):
+    def RunDcgmiDiag(self, config_file, runMode: int=0) -> bool:
         oldConfig = self.configFile
         oldRunMode = self.runMode
 
@@ -404,33 +404,33 @@ class DcgmiDiag:
         return self.DidIFail()
 
     ################################################################################
-    def RunAtLevel(self, runMode, configFile=None):
+    def RunAtLevel(self, runMode, configFile=None) -> bool | int:
         if runMode < 1 or runMode > 3:
             return dcgm_structs.DCGM_ST_BADPARAM
 
         return self.RunDcgmiDiag(configFile, runMode)
 
     ################################################################################
-    def Run(self):
+    def Run(self) -> bool:
         cmd = self.BuildDcgmiCommand()
         self.failed_list, self.diagRet = self.__RunDcgmiDiag__(cmd)
         return self.DidIFail()
 
     ################################################################################
-    def SetConfigFile(self, config_file):
+    def SetConfigFile(self, config_file) -> None:
         self.configFile = config_file
 
     ################################################################################
-    def SetRunMode(self, run_mode):
+    def SetRunMode(self, run_mode) -> None:
         self.runMode = run_mode
 
     ################################################################################
-    def PrintFailures(self):
+    def PrintFailures(self) -> None:
         for failure in self.failed_list:
             print(failure.GetFullError())
 
     ################################################################################
-    def PrintLastRunStatus(self):
+    def PrintLastRunStatus(self) -> None:
         print("Ran '%s' and got return code %d" % (self.lastCmd, self.diagRet))
         print("stdout: \n\n%s" % self.lastStdout)
         if self.lastStderr:
@@ -440,7 +440,7 @@ class DcgmiDiag:
         self.PrintFailures()
 
 
-def main():
+def main() -> None:
     dd = DcgmiDiag()
     failed = dd.Run()
     dd.PrintLastRunStatus()

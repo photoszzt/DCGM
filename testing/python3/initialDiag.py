@@ -27,11 +27,11 @@ import test_utils
 
 
 class DcgmInitialDiagError(Exception):
-    def __init__(self, msg):
+    def __init__(self, msg) -> None:
         super().__init__(msg)
 
 
-def handleMigFailure(err):
+def handleMigFailure(err: DcgmInitialDiagError) -> bool:
     # Returns `true`, and logs the failure if the exception is a MIG related
     # failure, `false` otherwise.
 
@@ -55,7 +55,7 @@ def handleMigFailure(err):
     return False
 
 
-def runDiagForGpuGroup(handle, gpuIds):
+def runDiagForGpuGroup(handle, gpuIds) -> None:
     # Run diag for the specified set of gpuIds. Check for errors.
     try:
         # 'context_create' currently implies 'software'
@@ -106,7 +106,7 @@ def runDiagForGpuGroup(handle, gpuIds):
             raise DcgmInitialDiagError(msg)
 
 
-def runInitialDiag(handle):
+def runInitialDiag(handle) -> None:
     # Run the initial diagnostic. On failure, raise DcgmInitialDiagError.
     # Assumes persistence mode was enabled by run_tests()
     if option_parser.options.filter_tests:

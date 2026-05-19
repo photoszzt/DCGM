@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from dcgm_structs import c_dcgmConnectV3Params_v1
 import test_utils
 import utils
 import pydcgm
@@ -26,7 +27,7 @@ import os
 import signal
 
 
-def test_connection_disconnect_error_after_shutdown():
+def test_connection_disconnect_error_after_shutdown() -> None:
     '''
     Test that DCGM_ST_BADPARAM is returned when the dcgm API is used after
     a call to dcgmShutdown has been made.
@@ -43,7 +44,7 @@ def test_connection_disconnect_error_after_shutdown():
 
 
 @test_utils.run_with_standalone_host_engine(passAppAsArg=True)
-def test_dcgm_standalone_connection_disconnect_error_after_hostengine_terminate(handle, hostengineApp):
+def test_dcgm_standalone_connection_disconnect_error_after_hostengine_terminate(handle, hostengineApp) -> None:
     '''
     Test that DCGM_ST_CONNECTION_NOT_VALID is returned when the dcgm API is used after 
     the hostengine process is terminated via `nv-hostengine --term`.
@@ -68,7 +69,7 @@ def test_dcgm_standalone_connection_disconnect_error_after_hostengine_terminate(
 
 
 @test_utils.run_with_standalone_host_engine(passAppAsArg=True)
-def test_dcgm_standalone_connection_disconnect_error_after_hostengine_murder(handle, hostengineApp):
+def test_dcgm_standalone_connection_disconnect_error_after_hostengine_murder(handle, hostengineApp) -> None:
     '''
     Test that DCGM_ST_CONNECTION_NOT_VALID is returned when the dcgm API is used after 
     the hostengine process is killed via a `SIGKILL` signal.
@@ -88,7 +89,7 @@ def test_dcgm_standalone_connection_disconnect_error_after_hostengine_murder(han
 
 
 @test_utils.run_only_as_root()
-def test_dcgm_connection_error_when_no_ip4_hostengine_exists():
+def test_dcgm_connection_error_when_no_ip4_hostengine_exists() -> None:
     if not utils.is_bare_metal_system():
         test_utils.skip_test("Virtualization Environment not supported")
 
@@ -100,7 +101,7 @@ def test_dcgm_connection_error_when_no_ip4_hostengine_exists():
 
 @test_utils.run_only_as_root()
 @test_utils.run_with_ipv6_enabled()
-def test_dcgm_connection_error_when_no_ipv6_hostengine_exists():
+def test_dcgm_connection_error_when_no_ipv6_hostengine_exists() -> None:
     if not utils.is_bare_metal_system():
         test_utils.skip_test("Virtualization Environment not supported")
 
@@ -112,7 +113,7 @@ def test_dcgm_connection_error_when_no_ipv6_hostengine_exists():
 
 @test_utils.run_only_as_root()
 @test_utils.run_with_ipv6_enabled()
-def test_dcgm_ipv6_loopback():
+def test_dcgm_ipv6_loopback() -> None:
     nvHe = apps.NvHostEngineApp(['-b', '[::1]'])
     nvHe.start(timeout=90)
 
@@ -131,7 +132,7 @@ def test_dcgm_ipv6_loopback():
 
 @test_utils.run_with_standalone_host_engine(20)
 @test_utils.run_only_with_live_gpus()
-def test_dcgm_connection_client_cleanup(handle, gpuIds):
+def test_dcgm_connection_client_cleanup(handle, gpuIds) -> None:
     '''
     Make sure that resources that were allocated by a client are cleaned up
     '''
@@ -168,7 +169,7 @@ def test_dcgm_connection_client_cleanup(handle, gpuIds):
 
 @test_utils.run_with_standalone_host_engine(20)
 @test_utils.run_only_with_nvml()
-def test_dcgm_connection_versions(handle):
+def test_dcgm_connection_versions(handle) -> None:
     '''
     Test that different versions of dcgmConnect_v2 work
     '''
@@ -195,7 +196,7 @@ def test_dcgm_connection_versions(handle):
     dcgm_agent.dcgmDisconnect(v2Handle)
 
 
-def _test_connection_helper(domainSocketName):
+def _test_connection_helper(domainSocketName: str) -> None:
     # Make sure the library is initialized
     dcgm_agent.dcgmInit()
     # First, try the raw method of using the dcgm_agent API directly
@@ -226,7 +227,7 @@ def _test_connection_helper(domainSocketName):
 @test_utils.get_domainSocketFilename_and_heArgs()
 @test_utils.run_with_standalone_host_engine(20, heArgs=[], initializedClient=False)
 @test_utils.run_only_with_nvml()
-def test_dcgm_connection_domain_socket(domainSocketFilename):
+def test_dcgm_connection_domain_socket(domainSocketFilename) -> None:
     '''
     Test that DCGM can listen on a unix domain socket, you can connect to it,
     and you can do basic queries against it
@@ -240,7 +241,7 @@ defaultSocketFilename = '/tmp/nv-hostengine'
 @test_utils.run_only_as_root()
 @test_utils.run_with_standalone_host_engine(20, heArgs=['-d'], initializedClient=False)
 @test_utils.run_only_with_nvml()
-def test_dcgm_connection_domain_socket_default():
+def test_dcgm_connection_domain_socket_default() -> None:
     '''
     Test that DCGM can listen on the default unix domain socket, you can connect to it,
     and you can do basic queries against it
@@ -251,7 +252,7 @@ def test_dcgm_connection_domain_socket_default():
 @test_utils.run_with_standalone_host_engine(20)
 @test_utils.run_with_injection_gpus(1)
 @test_utils.run_only_with_nvml()
-def test_multiple_hostengine_connections(handle, gpuIds):
+def test_multiple_hostengine_connections(handle, gpuIds) -> None:
 
     he2app = apps.NvHostEngineApp(args=["-p 7777"], pid_dir="/tmp")
     he2app.start(timeout=10)
@@ -279,7 +280,7 @@ def test_multiple_hostengine_connections(handle, gpuIds):
     he2app.terminate()
 
 
-def _connect_v3_helper(connectionString, connectParams):
+def _connect_v3_helper(connectionString: str, connectParams: c_dcgmConnectV3Params_v1) -> None:
     dcgm_agent.dcgmInit()
     connectParams.version = dcgm_structs.c_dcgmConnectV3Params_version
     connectParams.persistAfterDisconnect = 0
@@ -291,19 +292,19 @@ def _connect_v3_helper(connectionString, connectParams):
 
 
 @test_utils.run_with_standalone_host_engine(20, heArgs=['--port', '5545'], initializedClient=False)
-def test_dcgm_connect_v3_ip4():
+def test_dcgm_connect_v3_ip4() -> None:
     _connect_v3_helper(
         'localhost:5545', dcgm_structs.c_dcgmConnectV3Params_v1())
 
 
 @test_utils.run_with_ipv6_enabled()
 @test_utils.run_with_standalone_host_engine(20, heArgs=['-b', '[::1]', '--port', '5545'], initializedClient=False)
-def test_dcgm_connect_v3_ip6():
+def test_dcgm_connect_v3_ip6() -> None:
     _connect_v3_helper('tcp://[::1]:5545',
                        dcgm_structs.c_dcgmConnectV3Params_v1())
 
 
 @test_utils.run_with_standalone_host_engine(20, heArgs=['-d', '/tmp/nv-hostengine_test'], initializedClient=False)
-def test_dcgm_connect_v3_domain_socket():
+def test_dcgm_connect_v3_domain_socket() -> None:
     _connect_v3_helper('unix:///tmp/nv-hostengine_test',
                        dcgm_structs.c_dcgmConnectV3Params_v1())

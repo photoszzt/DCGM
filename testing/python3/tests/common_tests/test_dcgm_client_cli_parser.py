@@ -31,7 +31,7 @@ def get_mock_call_kwargs(call):
     return call[2]
 
 
-def helper_check_argument_added(call_list, short_param=None, long_param=None, dest=None, type=None):
+def helper_check_argument_added(call_list, short_param: str | None=None, long_param: str | None=None, dest: str | None=None, type=None) -> bool:
     calls_with_short_param = list(filter(
         lambda call: get_mock_call_name(call) == 'add_argument' and
         len(get_mock_call_args(call)) == 2,
@@ -70,7 +70,7 @@ def helper_check_argument_added(call_list, short_param=None, long_param=None, de
     return len(filtered) == 1
 
 
-def helper_check_mutually_exclusive_group_added():
+def helper_check_mutually_exclusive_group_added() -> None:
     pass
 
 # autospec tells mock to return objects that have the same interface
@@ -78,7 +78,7 @@ def helper_check_mutually_exclusive_group_added():
 
 @maybemock.patch('argparse.ArgumentParser', autospec=True)
 @KeywordizeLastArgument("MockArgumentParser")
-def test_create_parser(MockArgumentParser):
+def test_create_parser(MockArgumentParser) -> None:
     result = cli.create_parser()
     mock_calls = result.mock_calls  # pylint: disable=no-member
 
@@ -97,7 +97,7 @@ def test_create_parser(MockArgumentParser):
 
 @maybemock.patch('argparse.ArgumentParser', autospec=True)
 @KeywordizeLastArgument("MockArgumentParser")
-def test_add_target_host_argument(MockArgumentParser):
+def test_add_target_host_argument(MockArgumentParser) -> None:
     parser = MockArgumentParser()
     cli.add_target_host_argument('name', parser)
     mock_calls = parser.mock_calls  # pylint: disable=no-member
@@ -107,20 +107,20 @@ def test_add_target_host_argument(MockArgumentParser):
 
 
 @skip_test_if_no_mock()
-def test_run_parser():
+def test_run_parser() -> None:
     parser = maybemock.Mock()
     cli.run_parser(parser)
     parser.parse_args.assert_called()
 
 
-def test_get_field_ids():
+def test_get_field_ids() -> None:
     assert cli.get_field_ids(Struct(field_ids="1,2,3")) == [1, 2, 3]
     assert cli.get_field_ids(Struct(field_ids=[1, 2, 3])) == [1, 2, 3]
 
 
 @maybemock.patch('sys.exit')
 @KeywordizeLastArgument("mock_exit")
-def test_get_log_level(mock_exit):
+def test_get_log_level(mock_exit) -> None:
     mock_help = maybemock.Mock()
     assert cli.get_log_level(Struct(loglevel='0')) == logging.CRITICAL
     assert cli.get_log_level(Struct(loglevel='1')) == logging.ERROR
@@ -143,6 +143,6 @@ def test_get_log_level(mock_exit):
     mock_help.assert_called()
 
 
-def test_parse_command_line():
+def test_parse_command_line() -> None:
     # TODO maybe add a test here. This function will be a pain to test
     pass

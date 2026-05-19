@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from dcgm_structs import c_dcgmRunMnDiag_v1
 from ctypes import *
 from dcgm_structs import *
 import dcgm_agent
@@ -26,7 +27,7 @@ class DcgmMnDiag:
     """
 
     def __init__(self, hostList=None, hostEngineAddress=None, testName=None, parameters=[],
-                 handle=None, version=dcgm_structs.dcgmRunMnDiag_version1):
+                 handle=None, version: int=dcgm_structs.dcgmRunMnDiag_version1) -> None:
         """
         Constructor for DcgmMnDiag
 
@@ -73,7 +74,7 @@ class DcgmMnDiag:
                 raise ValueError(
                     f"Cannot add more than {dcgm_structs.DCGM_MAX_TEST_PARMS} parameters, got {self.numParams}")
 
-    def AddHost(self, hostname):
+    def AddHost(self, hostname) -> None:
         """Add a host to the diagnostic run"""
         if len(hostname) >= dcgm_structs.DCGM_MAX_STR_LENGTH:
             raise ValueError(
@@ -92,14 +93,14 @@ class DcgmMnDiag:
             raise ValueError(
                 f"Cannot add more than {dcgm_structs.DCGM_MAX_NUM_HOSTS} hosts, got {self.numHosts}")
 
-    def SetTestName(self, testName):
+    def SetTestName(self, testName) -> None:
         """Set the test name"""
         if len(testName) >= dcgm_structs.DCGM_MAX_STR_LENGTH:
             raise ValueError(
                 f"Test name exceeds maximum length of {dcgm_structs.DCGM_MAX_STR_LENGTH}")
         self.runMnDiagInfo.testName = testName
 
-    def AddParameter(self, parameterStr):
+    def AddParameter(self, parameterStr) -> None:
         """Add a parameter to the diagnostic run"""
         if len(parameterStr) >= dcgm_structs.DCGM_MAX_TEST_PARMS_LEN:
             raise ValueError(
@@ -118,7 +119,7 @@ class DcgmMnDiag:
             raise ValueError(
                 f"Cannot add more than {dcgm_structs.DCGM_MAX_TEST_PARMS} parameters, got {self.numParams}")
 
-    def GetStruct(self):
+    def GetStruct(self) -> c_dcgmRunMnDiag_v1:
         return self.runMnDiagInfo
 
     def Execute(self, handle):

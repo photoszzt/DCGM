@@ -5,11 +5,11 @@ See: http://en.wikipedia.org/wiki/ANSI_escape_code
 
 CSI = '\033['
 
-def code_to_chars(code):
+def code_to_chars(code) -> str:
     return CSI + str(code) + 'm'
 
 class AnsiCodes(object):
-    def __init__(self, codes):
+    def __init__(self, codes) -> None:
         for name in dir(codes):
             if not name.startswith('_'):
                 value = getattr(codes, name)

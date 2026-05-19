@@ -37,11 +37,11 @@ files_to_not_parse = json_data["modules_to_run_independent"]
 test_funcs_to_not_parse = json_data["tests_to_run_independent"]
 
 
-def get_file_name():
+def get_file_name() -> str:
     return compiled_file_name
 
 
-def find_files(path, mask="*", skipdirs=None, recurse=True):
+def find_files(path: str, mask="*", skipdirs=None, recurse=True):
     skipdirs = skipdirs or []
     if recurse:
         for root, dirnames, filenames in os.walk(path):
@@ -93,7 +93,7 @@ def unwrap(func):
 #
 
 
-def get_all_functions(test_file_names):
+def get_all_functions(test_file_names: list[str]):
     decorators_map = {}  # indexed by decorator sequence
     amortized_decorators_map = {}  # indexed by amortized decorator function name
     decorator_index = 0
@@ -220,7 +220,7 @@ def get_all_functions(test_file_names):
 #
 
 
-def generate_function_calls(amortized_decorators_map):
+def generate_function_calls(amortized_decorators_map) -> str:
     file_content = ""
 
     # Prepare for custom functions.
@@ -264,7 +264,7 @@ def generate_function_calls(amortized_decorators_map):
     return file_content
 
 
-def run_compilation():
+def run_compilation() -> str:
     # Get all test file names
     logger.debug("getting all test names")
     test_files = find_files(

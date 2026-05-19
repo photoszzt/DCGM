@@ -11,13 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from argparse import Namespace
 import argparse
 import util
 import sys
 # Copy the dcgm data in csv file
 
 
-def main(cmdArgs):
+def main(cmdArgs: Namespace) -> None:
     metrics = cmdArgs.metrics
     time = cmdArgs.time
     gpuid_list = cmdArgs.gpuid_list
@@ -43,7 +44,7 @@ def main(cmdArgs):
     print("\n All Done")
 
 
-def parseCommandLine():
+def parseCommandLine() -> Namespace:
     parser = argparse.ArgumentParser(description="Validation of dcgm metrics")
     parser.add_argument("-m", "--metrics", required=True, help="Metrics to be validated \
             E.g. \"1009\", etc")

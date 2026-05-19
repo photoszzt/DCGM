@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # test the metadata API calls for DCGM
+from DcgmSystem import DcgmSystem
+from DcgmHandle import DcgmHandle
 import time
 from sys import float_info
 
@@ -23,7 +25,7 @@ import test_utils
 
 @test_utils.run_with_standalone_host_engine()
 @test_utils.run_only_on_architecture('amd64')
-def test_dcgm_standalone_metadata_memory_get_hostengine_sane(handle):
+def test_dcgm_standalone_metadata_memory_get_hostengine_sane(handle) -> None:
     """
     Sanity test for API that gets memory usage of the hostengine process
     """
@@ -39,7 +41,7 @@ def test_dcgm_standalone_metadata_memory_get_hostengine_sane(handle):
             1024), bytesUsed        # 1MB to 100MB
 
 
-def helper_watch_fields(handle, system):
+def helper_watch_fields(handle: DcgmHandle, system: DcgmSystem) -> None:
     fieldIds = [
         dcgm_fields.DCGM_FI_DEV_NAME,
         dcgm_fields.DCGM_FI_DEV_BRAND,
@@ -64,7 +66,7 @@ def helper_watch_fields(handle, system):
 
 
 @test_utils.run_with_embedded_host_engine()
-def test_dcgm_embedded_metadata_cpuutil_get_hostengine_sane(handle):
+def test_dcgm_embedded_metadata_cpuutil_get_hostengine_sane(handle) -> None:
     """
     Sanity test for API that gets CPU Utilization of the hostengine process.
     """
@@ -72,7 +74,7 @@ def test_dcgm_embedded_metadata_cpuutil_get_hostengine_sane(handle):
     handle = pydcgm.DcgmHandle(handle)
     system = pydcgm.DcgmSystem(handle)
 
-    def get_current_process_cpu_util():
+    def get_current_process_cpu_util() -> tuple[float, float, float]:
         """
         Return a tuple representing CPU user-time and system-time and total for the current process
         """

@@ -54,7 +54,7 @@ PASSED = False
 
 
 class FieldReader(DcgmReader):
-    def CustomFieldHandler(self, gpuId, fieldId, fieldTag, val):
+    def CustomFieldHandler(self, gpuId, fieldId, fieldTag, val) -> None:
         '''
         This method is called once for each field for each GPU each 
         time that its Process() method is invoked, and it will be skipped
@@ -76,7 +76,7 @@ class FieldReader(DcgmReader):
                 return
 
 
-def main():
+def main() -> int:
     interval_in_usec = int(args.checkInterval * 1000000)
     fr = FieldReader(
         fieldIds=[args.fieldId], updateFrequency=interval_in_usec, gpuIds=[args.gpuId])

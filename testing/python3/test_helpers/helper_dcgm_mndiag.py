@@ -23,6 +23,6 @@ _HE_ENV = {
 }
 
 
-def HE_Env():
+def HE_Env() -> dict[str, str | None]:
     # Lazily evaluate to capture any runtime changes, if desired
     return {k: (v() if callable(v) else v) for k, v in _HE_ENV.items()}

@@ -20,7 +20,7 @@ import test_utils
 
 @test_utils.run_with_standalone_host_engine(initializedClient=True)
 @test_utils.run_only_with_live_gpus()
-def test_nvlink_p2p_all_status(handle, gpuIds):
+def test_nvlink_p2p_all_status(handle, gpuIds) -> None:
     """
     Get nvlink p2p status for each GPU and assert if it's unexpected
     """
@@ -59,7 +59,7 @@ def test_nvlink_p2p_all_status(handle, gpuIds):
 #
 
 
-def helper_nvlink_p2p_specific_status(handle, gpuIds):
+def helper_nvlink_p2p_specific_status(handle, gpuIds) -> None:
     """
     Get nvlink p2p status for specific GPUs and assert if it's unexpected
     """
@@ -100,7 +100,7 @@ def helper_nvlink_p2p_specific_status(handle, gpuIds):
 
 @test_utils.run_with_standalone_host_engine(initializedClient=True)
 @test_utils.run_only_with_live_gpus()
-def test_nvlink_p2p_specific_status(handle, gpuIds):
+def test_nvlink_p2p_specific_status(handle, gpuIds) -> None:
     helper_nvlink_p2p_specific_status(handle, gpuIds)
 
 # Test for single GPU.
@@ -108,6 +108,6 @@ def test_nvlink_p2p_specific_status(handle, gpuIds):
 
 @test_utils.run_with_standalone_host_engine(initializedClient=True)
 @test_utils.run_only_with_live_gpus()
-def test_nvlink_p2p_single_status(handle, gpuIds):
+def test_nvlink_p2p_single_status(handle, gpuIds) -> None:
     gpuIds = [gpuIds[0]]
     helper_nvlink_p2p_specific_status(handle, gpuIds)

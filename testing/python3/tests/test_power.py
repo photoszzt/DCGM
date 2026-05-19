@@ -18,7 +18,7 @@ import test_utils
 import dcgm_structs
 
 
-def test_dcgm_pwr_profile_ids():
+def test_dcgm_pwr_profile_ids() -> None:
     """
     Verify that every valid power-profile ID maps to a unique string.
     """
@@ -33,7 +33,7 @@ def test_dcgm_pwr_profile_ids():
         profile_names.add(name)
 
 
-def test_dcgm_pwr_profile_ids_out_of_range():
+def test_dcgm_pwr_profile_ids_out_of_range() -> None:
     """
     Verify that mapping an out of range power profile raises
     dcgm_structs.DCGM_ST_BADPARAM.

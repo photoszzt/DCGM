@@ -30,17 +30,17 @@ __all__ = ['PerformanceStats']
 # TODO programmable switching
 
 
-def verbose_debug(text):
+def verbose_debug(text: str) -> None:
     # print text
     # logger.debug(text)
     pass
 
 
-def average(num_list):
+def average(num_list) -> float:
     return sum(num_list) / float(len(num_list))
 
 
-def stdev(num_list):
+def stdev(num_list) -> float:
     avg = average(num_list)
     return math.sqrt(sum((x - avg) ** 2 for x in num_list) / len(num_list))
 
@@ -58,13 +58,13 @@ class DebugLine:
         r"^DEBUG:\s*\[tid \d*\]\s*\[(\d+\.\d+)s - (\w?:?[^:]+):?(\w+)?:([0-9]+)\]\s*(.*)")
 
     @staticmethod
-    def construct(text):
+    def construct(text: str) -> DebugLine | None:
         try:
             return DebugLine(text)
         except ValueError:
             return None
 
-    def __init__(self, text):
+    def __init__(self, text) -> None:
         text = text.strip()
         self.match = DebugLine.regexpDebugLine.match(text)
         if not self.match:
@@ -75,10 +75,10 @@ class DebugLine:
         self.srcline = int(self.match.group(4))
         self.message = self.match.group(5)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "(%s, %s, %s)" % (self.timestamp, self.srcStr(), self.message)
 
-    def srcStr(self):
+    def srcStr(self) -> str:
         if self.srcfunctionname:
             return "%s:%s:%d" % (self.srcfilename, self.srcfunctionname, self.srcline)
         else:
@@ -105,13 +105,13 @@ class RmCall:
         r".*dcgmRmCall.*(NV\d{4}_CTRL_CMD_[A-Z0-9_]*).*")
 
     @staticmethod
-    def construct(debugLines, i, dcgmParent):
+    def construct(debugLines: list[DebugLine], i: int, dcgmParent: NvmlCall | None) -> RmCall | None:
         try:
             return RmCall(debugLines, i, dcgmParent)
         except ValueError:
             return None
 
-    def __init__(self, debugLines, i, dcgmParent):
+    def __init__(self, debugLines, i, dcgmParent) -> None:
         if i + 1 >= len(debugLines):
             raise ValueError
 
@@ -161,7 +161,7 @@ class RmCall:
     def is_simillar(self, b):
         return isinstance(b, RmCall) and self.src.isInTheSamePlace(b.src) and self.function == b.function and self.returnCode == b.returnCode
 
-    def __str__(self):
+    def __str__(self) -> str:
         dcgmParentStr = "(%.2f%% of %s)" % (self.time / self.dcgmParent.time *
                                             100, self.dcgmParent.shortString()) if self.dcgmParent else ""
         name = self.function if self.rmCallName else "RM CALL " + self.src.srcStr()
@@ -182,7 +182,7 @@ class NvmlCall:
         r"^ *NVML_INT_ENTRY_POINT\((dcgm[A-Z][a-zA-Z0-9_]*) *,.*")
 
     @staticmethod
-    def construct(debugLines, i):
+    def construct(debugLines: list[DebugLine], i: int) -> NvmlCall | None:
         try:
             return NvmlCall(debugLines, i)
         except ValueError:
@@ -259,12 +259,12 @@ class NvmlCall:
     def is_simillar(self, b):
         return isinstance(b, NvmlCall) and self.src.isInTheSamePlace(b.src) and self.function == b.function and self.errcode == b.errcode
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "%s\t%s\t%s" % (_time_str(self.times), self.function, self.args)
 
 
 class PerformanceStats(object):
-    def __init__(self, input_fname):
+    def __init__(self, input_fname) -> None:
         verbose_debug("Decoding " + input_fname + " file")
 
         # read from file
@@ -308,7 +308,7 @@ class PerformanceStats(object):
         self.times_total = [self.time_total]
         self._combined_stats_count = 1
 
-    def write_to_file(self, fname, dcgm_stats=True, rm_stats=True):
+    def write_to_file(self, fname: str, dcgm_stats=True, rm_stats=True) -> None:
         with open(fname, "w") as fout:
             fout.write("Called functions (in order):\n")
 
@@ -355,9 +355,9 @@ class PerformanceStats(object):
                 fout.write("%.3fms\t%.3fms\t%.3fms\t%.3fms\t%s\n" % function)
             fout.write("\n")
 
-    def write_to_file_dvs(self, fname, dcgm_stats=True, rm_stats=True):
+    def write_to_file_dvs(self, fname, dcgm_stats: bool=True, rm_stats: bool=True) -> None:
         with open(fname, "w") as fout:
-            def format_stats(name, num_list):
+            def format_stats(name: str, num_list) -> str:
                 if len(num_list) > 1:
                     return "%s_avg, %.3f\n%s_stdev, %.3f\n%s_max,%.3f\n" % (name, average(num_list) * 1000, name, stdev(num_list) * 1000, name, max(num_list) * 1000)
                 return "%s, %.3f" % (name, num_list[0] * 1000)
@@ -376,7 +376,7 @@ class PerformanceStats(object):
             for (name, times) in list(calls.items()):
                 fout.write(format_stats(name, times))
 
-    def combine_stat(self, perf_stat):
+    def combine_stat(self, perf_stat) -> None:
         """
         Merges into self additional stats so that average and stdev for each entry could be calculated.
         perf_stat must contain the same NVML/RM calls in the same order.

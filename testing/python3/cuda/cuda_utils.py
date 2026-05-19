@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from _ctypes import _Pointer
+from _ctypes import _CData
 import ctypes
 import dcgm_structs
 import test_utils
@@ -33,7 +35,7 @@ CU_DEVICE_ATTRIBUTE_PCI_DOMAIN_ID = 50
 _cudaLib = None
 
 
-def _loadCuda():
+def _loadCuda() -> None:
     global _cudaLib
     if _cudaLib is None:
         _cudaLib = ctypes.CDLL("libcuda.so.1")
@@ -41,12 +43,12 @@ def _loadCuda():
         assert CUDA_SUCCESS == cuInitFn(ctypes.c_uint(0))
 
 
-def _unloadCuda():
+def _unloadCuda() -> None:
     global _cudaLib
     _cudaLib = None
 
 
-def cuDeviceGetCount():
+def cuDeviceGetCount() -> int:
     global _cudaLib
     _loadCuda()
     cuDeviceGetCountFn = getattr(_cudaLib, "cuDeviceGetCount")
@@ -56,7 +58,7 @@ def cuDeviceGetCount():
     return c_count.value
 
 
-def cuDeviceGet(idx):
+def cuDeviceGet(idx) -> _Pointer[struct_c_CUdevice]:
     global _cudaLib
     _loadCuda()
     cuDeviceGetFn = getattr(_cudaLib, "cuDeviceGet")
@@ -67,7 +69,7 @@ def cuDeviceGet(idx):
     return c_dev
 
 
-def cuDeviceGetBusId(c_dev):
+def cuDeviceGetBusId(c_dev) -> str:
     global _cudaLib
     _loadCuda()
     cuDeviceGetAttributeFn = getattr(_cudaLib, "cuDeviceGetAttribute")

@@ -18,7 +18,7 @@ import test_utils
 import json
 
 
-def helper_test_dcgm_json(handle):
+def helper_test_dcgm_json(handle) -> None:
     valid_json = False
     obj = DcgmJson()
     obj.SetHandle(handle)
@@ -48,13 +48,13 @@ def helper_test_dcgm_json(handle):
 
 @test_utils.run_with_standalone_host_engine(20)
 @test_utils.run_only_with_live_gpus()
-def test_dcgm_json_standalone(handle, gpuIds):
+def test_dcgm_json_standalone(handle, gpuIds) -> None:
     helper_test_dcgm_json(handle)
 
 
 @test_utils.run_with_standalone_host_engine(20)
 @test_utils.run_only_with_live_gpus()
-def test_dcgm_chip_architecture(handle, gpuIds):
+def test_dcgm_chip_architecture(handle, gpuIds) -> None:
     for gpuId in gpuIds:
         chip_architecture = dcgm_agent.dcgmGetGpuChipArchitecture(
             handle, gpuId)

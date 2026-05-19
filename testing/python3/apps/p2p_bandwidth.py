@@ -27,12 +27,12 @@ class RunP2Pbandwidth(app_runner.AppRunner):
         "Linux_aarch64": "./apps/p2p_bandwidth/p2p_bandwidth",
     }
 
-    def __init__(self, args):
+    def __init__(self, args) -> None:
         path = os.path.join(
             utils.script_dir, RunP2Pbandwidth.paths[utils.platform_identifier])
         super(RunP2Pbandwidth, self).__init__(path, args)
 
-    def start(self):
+    def start(self) -> None:
         """
         Runs the p2p_bandwidth test on available Gpus
         Raises Exception if it does not work
@@ -41,5 +41,5 @@ class RunP2Pbandwidth(app_runner.AppRunner):
         super(RunP2Pbandwidth, self).start(timeout=P2P_BANDWIDTH_TIMEOUT_SECS)
         self.stdout_readtillmatch(lambda x: x.find("test PASSED") != -1)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "RunP2Pbandwidth on all supported devices " + super(RunP2Pbandwidth, self).__str__()

@@ -34,7 +34,7 @@ import dcgm_field_injection_helpers
 from test_globals import DCGM_SKIP_SYSMON_HARDWARE_CHECK
 
 
-def helper_dcgm_sysmon_cpu_hierarchy(hierarchy):
+def helper_dcgm_sysmon_cpu_hierarchy(hierarchy) -> None:
     numa_hierarchy = test_utils.helper_read_numa_hierarchy()
 
     assert len(numa_hierarchy) == hierarchy.numCpus
@@ -64,7 +64,7 @@ def helper_dcgm_sysmon_cpu_hierarchy(hierarchy):
 
 @test_utils.run_only_on_numa_systems()
 @test_utils.run_with_standalone_host_engine(5, heEnv={DCGM_SKIP_SYSMON_HARDWARE_CHECK: "Nomad"})
-def test_dcgm_sysmon_cpu_hierarchy(handle):
+def test_dcgm_sysmon_cpu_hierarchy(handle) -> None:
     """
     Verifies that we can read the CPU hierarchy
     """
@@ -74,7 +74,7 @@ def test_dcgm_sysmon_cpu_hierarchy(handle):
 
 @test_utils.run_only_on_numa_systems()
 @test_utils.run_with_standalone_host_engine(5, heEnv={DCGM_SKIP_SYSMON_HARDWARE_CHECK: "Nomad"})
-def test_dcgm_sysmon_cpu_hierarchy_v2(handle):
+def test_dcgm_sysmon_cpu_hierarchy_v2(handle) -> None:
     """
     Verifies that we can read the CPU hierarchy with the v2 API
     """
@@ -84,7 +84,7 @@ def test_dcgm_sysmon_cpu_hierarchy_v2(handle):
 
 @test_utils.run_with_standalone_host_engine(5)
 @test_utils.run_only_with_live_cpus()
-def test_dcgm_sysmon_cpu_hierarchy_serial_number(handle, cpuIds):
+def test_dcgm_sysmon_cpu_hierarchy_serial_number(handle, cpuIds) -> None:
     """
     Verifies that we can read the serial number of NVIDIA CPUs with the CPU hierarchy 
     """
@@ -97,7 +97,7 @@ def test_dcgm_sysmon_cpu_hierarchy_serial_number(handle, cpuIds):
 @test_utils.run_with_embedded_host_engine(heEnv={DCGM_SKIP_SYSMON_HARDWARE_CHECK: "Sigzil"})
 @test_utils.run_with_injection_cpus(1)
 @test_utils.run_with_injection_cpu_cores(1)
-def test_sysmon_reading_injected_values(handle, cpuIds, coreIds):
+def test_sysmon_reading_injected_values(handle, cpuIds, coreIds) -> None:
     entityPair = dcgm_structs.c_dcgmGroupEntityPair_t()
     entityPair.entityGroupId = dcgm_fields.DCGM_FE_CPU_CORE
     entityPair.entityId = coreIds[0]
@@ -147,7 +147,7 @@ def test_sysmon_reading_injected_values(handle, cpuIds, coreIds):
 
 @test_utils.run_only_on_numa_systems()
 @test_utils.run_with_standalone_host_engine(5, heEnv={DCGM_SKIP_SYSMON_HARDWARE_CHECK: "The Sunlit Man"})
-def test_dcgm_sysmon_fields_with_dcgmreader(handle):
+def test_dcgm_sysmon_fields_with_dcgmreader(handle) -> None:
     """
     Read Sysmon data through dcgmreader
     """

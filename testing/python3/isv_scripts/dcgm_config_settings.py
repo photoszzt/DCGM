@@ -25,7 +25,7 @@ from time import sleep
 
 class RunDCGM():
 
-    def __init__(self, ip, opMode):
+    def __init__(self, ip, opMode) -> None:
         self.ip = ip
         self.opMode = opMode
 
@@ -34,13 +34,13 @@ class RunDCGM():
         self.handle = dcgm_agent.dcgmInit()
         return self.handle
 
-    def __exit__(self, eType, value, traceback):
+    def __exit__(self, eType, value, traceback) -> None:
         dcgm_agent.dcgmShutdown()
 
 # Helper method to convert DCGM value to string
 
 
-def convert_value_to_string(value):
+def convert_value_to_string(value) -> str:
     v = dcgmvalue.DcgmValue(value)
 
     try:
@@ -63,7 +63,7 @@ def convert_value_to_string(value):
 # Helper method to investigate the status handler
 
 
-def helper_investigate_status(statusHandle):
+def helper_investigate_status(statusHandle) -> None:
     """
     Helper method to investigate status handle
     """
@@ -80,7 +80,7 @@ def helper_investigate_status(statusHandle):
 
 
 # Worker Function to get Configuration for a dcgm group
-def agent_worker_function(handle, groupId, groupInfo, status_handle):
+def agent_worker_function(handle, groupId, groupInfo, status_handle) -> None:
     NUM_ITERATIONS = 5
     count = 0
 

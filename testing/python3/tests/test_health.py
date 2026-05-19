@@ -13,6 +13,7 @@
 # limitations under the License.
 # test the health module for DCGM
 
+from DcgmGroup import DcgmGroup
 import pydcgm
 import dcgm_structs
 import dcgm_structs_internal
@@ -39,7 +40,7 @@ import random
 import math
 
 
-def skip_test_if_unhealthy(groupObj):
+def skip_test_if_unhealthy(groupObj: DcgmGroup) -> None:
     # Skip the test if the GPU is already failing health checks
     responseV5 = groupObj.health.Check(
         dcgm_structs.dcgmHealthResponse_version5)
@@ -54,7 +55,7 @@ def skip_test_if_unhealthy(groupObj):
         test_utils.skip_test(msg)
 
 
-def helper_dcgm_health_set_pcie(handle):
+def helper_dcgm_health_set_pcie(handle) -> None:
     """
     Verifies that the set/get path for the health monitor is working
     Checks for call errors are done in the bindings
@@ -82,12 +83,12 @@ def helper_dcgm_health_set_pcie(handle):
 
 
 @test_utils.run_with_standalone_host_engine(20)
-def test_dcgm_health_set_pcie_standalone(handle):
+def test_dcgm_health_set_pcie_standalone(handle) -> None:
     helper_dcgm_health_set_pcie(handle)
 
 
 @test_utils.run_with_embedded_host_engine()
-def test_dcgm_health_invalid_group_embedded(handle):
+def test_dcgm_health_invalid_group_embedded(handle) -> None:
     '''
     Validate that group operations fail if a bogus group ID is provided
     '''
@@ -107,7 +108,7 @@ def test_dcgm_health_invalid_group_embedded(handle):
         groupObj.health.Check(dcgm_structs.dcgmHealthResponse_version5)
 
 
-def helper_dcgm_health_check_pcie(handle, gpuIds, pcieGen, pcieLanes, pcieReplayCounter, expectingPcieIncident, errmsg):
+def helper_dcgm_health_check_pcie(handle, gpuIds, pcieGen: int, pcieLanes: int, pcieReplayCounter: int, expectingPcieIncident: bool, errmsg: str) -> None:
     """
     Verifies that a check error occurs when an error is injected
     Checks for call errors are done in the bindings except dcgmClientHealthCheck
@@ -157,7 +158,7 @@ def helper_dcgm_health_check_pcie(handle, gpuIds, pcieGen, pcieLanes, pcieReplay
         assert (responseV5.incidentCount == 0), errmsg
 
 
-def helper_reset_pcie_replay_counter(handle, gpuIds):
+def helper_reset_pcie_replay_counter(handle, gpuIds) -> None:
     ret = dcgm_field_injection_helpers.inject_field_value_i64(handle, gpuIds[0], dcgm_fields.DCGM_FI_DEV_PCIE_REPLAY_COUNTER,
                                                               0, 100)
     assert (ret == dcgm_structs.DCGM_ST_OK)
@@ -165,7 +166,7 @@ def helper_reset_pcie_replay_counter(handle, gpuIds):
 
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_injection_gpus()
-def test_dcgm_health_check_pcie_standalone(handle, gpuIds):
+def test_dcgm_health_check_pcie_standalone(handle, gpuIds) -> None:
     # PCIe replay rate thresholds for each generation per lane.
     pcieGenReplayRatesPerLane = [
         # Gen1 speed = 2.5 Gbps, (1x10^-12) * (2.5x10^9) * 60 = 0.15 errors/min per lane.
@@ -210,7 +211,7 @@ def test_dcgm_health_check_pcie_standalone(handle, gpuIds):
 @test_utils.run_with_injection_nvml_using_specific_sku('H200.yaml')
 @test_utils.run_with_embedded_host_engine()
 @test_utils.run_with_nvml_injected_gpus()
-def test_dcgm_health_check_pcie_embedded_using_nvml_injection(handle, gpuIds):
+def test_dcgm_health_check_pcie_embedded_using_nvml_injection(handle, gpuIds) -> None:
     handleObj = pydcgm.DcgmHandle(handle=handle)
     systemObj = handleObj.GetSystem()
     groupObj = systemObj.GetEmptyGroup("test1")
@@ -266,7 +267,7 @@ def test_dcgm_health_check_pcie_embedded_using_nvml_injection(handle, gpuIds):
             dcgm_errors.DCGM_FR_PCI_REPLAY_RATE)
 
 
-def helper_test_dcgm_health_check_mem_dbe(handle, gpuIds):
+def helper_test_dcgm_health_check_mem_dbe(handle, gpuIds) -> None:
     """
     Verifies that the health check will fail if there's 1 DBE and it continues to be
     reported
@@ -332,11 +333,11 @@ def helper_test_dcgm_health_check_mem_dbe(handle, gpuIds):
 
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_injection_gpus()
-def test_dcgm_health_check_mem_dbe(handle, gpuIds):
+def test_dcgm_health_check_mem_dbe(handle, gpuIds) -> None:
     helper_test_dcgm_health_check_mem_dbe(handle, gpuIds)
 
 
-def helper_verify_dcgm_health_watch_mem_result(groupObj, errorCode, verifyFail=False, gpuId=0):
+def helper_verify_dcgm_health_watch_mem_result(groupObj: DcgmGroup, errorCode: int, verifyFail=False, gpuId=0) -> None:
     """
     Verify that memory health check result is what was expected. If verifyFail is False, verify a pass result,
     otherwise verify a failure occurred.
@@ -360,7 +361,7 @@ def helper_verify_dcgm_health_watch_mem_result(groupObj, errorCode, verifyFail=F
             dcgm_structs.DCGM_HEALTH_RESULT_FAIL)
 
 
-def helper_reset_page_retirements(handle, gpuId=0, reset_sbe=False):
+def helper_reset_page_retirements(handle, gpuId=0, reset_sbe=False) -> None:
     """
     Helper function to reset non volatile page retirements.
     """
@@ -373,7 +374,7 @@ def helper_reset_page_retirements(handle, gpuId=0, reset_sbe=False):
         assert (ret == dcgm_structs.DCGM_ST_OK)
 
 
-def helper_test_dcgm_health_check_mem_retirements(handle, gpuIds):
+def helper_test_dcgm_health_check_mem_retirements(handle, gpuIds) -> None:
     """
     Verifies that the health check will fail when the number of non-volatile page retirements
     match the failure criteria.
@@ -481,11 +482,11 @@ def helper_test_dcgm_health_check_mem_retirements(handle, gpuIds):
 
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_injection_gpus()
-def test_dcgm_health_check_mem_retirements_standalone(handle, gpuIds):
+def test_dcgm_health_check_mem_retirements_standalone(handle, gpuIds) -> None:
     helper_test_dcgm_health_check_mem_retirements(handle, gpuIds)
 
 
-def helper_test_dcgm_health_check_mem(handle, gpuIds):
+def helper_test_dcgm_health_check_mem(handle, gpuIds) -> None:
     """
     Verifies that a check error occurs when an error is injected
     Checks for call errors are done in the bindings except dcgmClientHealthCheck
@@ -540,12 +541,12 @@ def helper_test_dcgm_health_check_mem(handle, gpuIds):
 
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_injection_gpus()
-def test_dcgm_health_check_mem_standalone(handle, gpuIds):
+def test_dcgm_health_check_mem_standalone(handle, gpuIds) -> None:
     helper_test_dcgm_health_check_mem(handle, gpuIds)
 
 
 @test_utils.run_with_standalone_host_engine(20)
-def test_dcgm_standalone_health_set_thermal(handle):
+def test_dcgm_standalone_health_set_thermal(handle) -> None:
     """
     Verifies that the set/get path for the health monitor is working
     Checks for call errors are done in the bindings
@@ -569,7 +570,7 @@ def test_dcgm_standalone_health_set_thermal(handle):
 
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_injection_gpus()
-def test_dcgm_standalone_health_check_thermal(handle, gpuIds):
+def test_dcgm_standalone_health_check_thermal(handle, gpuIds) -> None:
     """
     Verifies that a check error occurs when an error is injected
     Checks for call errors are done in the bindings except dcgmClientHealthCheck
@@ -615,7 +616,7 @@ def test_dcgm_standalone_health_check_thermal(handle, gpuIds):
 
 
 @test_utils.run_with_standalone_host_engine(20)
-def test_dcgm_standalone_health_set_power(handle):
+def test_dcgm_standalone_health_set_power(handle) -> None:
     """
     Verifies that the set/get path for the health monitor is working
     Checks for call errors are done in the bindings
@@ -638,7 +639,7 @@ def test_dcgm_standalone_health_set_power(handle):
     assert (currentSystems == newSystems)
 
 
-def helper_check_health_response_v4(gpuIds, response):
+def helper_check_health_response_v4(gpuIds, response) -> None:
     numErrors = 0
     if response.version == 0:
         numErrors += 1
@@ -657,7 +658,7 @@ def helper_check_health_response_v4(gpuIds, response):
     assert numErrors == 0, "Errors were encountered. See above."
 
 
-def helper_run_dcgm_health_check_sanity(handle, gpuIds, system_to_check):
+def helper_run_dcgm_health_check_sanity(handle, gpuIds, system_to_check: int) -> None:
     """
     Verifies that the DCGM health checks return healthy for all GPUs on live systems.
     """
@@ -685,42 +686,42 @@ def helper_run_dcgm_health_check_sanity(handle, gpuIds, system_to_check):
 
 @test_utils.run_with_standalone_host_engine()
 @test_utils.run_only_with_live_gpus()
-def test_dcgm_health_check_sanity_pcie_standalone(handle, gpuIds):
+def test_dcgm_health_check_sanity_pcie_standalone(handle, gpuIds) -> None:
     helper_run_dcgm_health_check_sanity(
         handle, gpuIds, dcgm_structs.DCGM_HEALTH_WATCH_PCIE)
 
 
 @test_utils.run_with_standalone_host_engine()
 @test_utils.run_only_with_live_gpus()
-def test_dcgm_health_check_sanity_mem_standalone(handle, gpuIds):
+def test_dcgm_health_check_sanity_mem_standalone(handle, gpuIds) -> None:
     helper_run_dcgm_health_check_sanity(
         handle, gpuIds, dcgm_structs.DCGM_HEALTH_WATCH_MEM)
 
 
 @test_utils.run_with_standalone_host_engine()
 @test_utils.run_only_with_live_gpus()
-def test_dcgm_health_check_sanity_inforom_standalone(handle, gpuIds):
+def test_dcgm_health_check_sanity_inforom_standalone(handle, gpuIds) -> None:
     helper_run_dcgm_health_check_sanity(
         handle, gpuIds, dcgm_structs.DCGM_HEALTH_WATCH_INFOROM)
 
 
 @test_utils.run_with_standalone_host_engine()
 @test_utils.run_only_with_live_gpus()
-def test_dcgm_health_check_sanity_thermal_standalone(handle, gpuIds):
+def test_dcgm_health_check_sanity_thermal_standalone(handle, gpuIds) -> None:
     helper_run_dcgm_health_check_sanity(
         handle, gpuIds, dcgm_structs.DCGM_HEALTH_WATCH_THERMAL)
 
 
 @test_utils.run_with_standalone_host_engine()
 @test_utils.run_only_with_live_gpus()
-def test_dcgm_health_check_sanity_power_standalone(handle, gpuIds):
+def test_dcgm_health_check_sanity_power_standalone(handle, gpuIds) -> None:
     helper_run_dcgm_health_check_sanity(
         handle, gpuIds, dcgm_structs.DCGM_HEALTH_WATCH_POWER)
 
 
 @test_utils.run_with_standalone_host_engine()
 @test_utils.run_only_with_live_gpus()
-def test_dcgm_health_check_sanity_nvlink_standalone(handle, gpuIds):
+def test_dcgm_health_check_sanity_nvlink_standalone(handle, gpuIds) -> None:
     # We will get false failures if any nvlinks are down on the GPUs
     test_utils.skip_test_if_any_nvlinks_down(handle)
     helper_run_dcgm_health_check_sanity(
@@ -729,14 +730,14 @@ def test_dcgm_health_check_sanity_nvlink_standalone(handle, gpuIds):
 
 @test_utils.run_with_standalone_host_engine()
 @test_utils.run_only_with_live_gpus()
-def test_dcgm_health_check_sanity_nvswitch_nonfatal_standalone(handle, gpuIds):
+def test_dcgm_health_check_sanity_nvswitch_nonfatal_standalone(handle, gpuIds) -> None:
     helper_run_dcgm_health_check_sanity(
         handle, gpuIds, dcgm_structs.DCGM_HEALTH_WATCH_NVSWITCH_NONFATAL)
 
 
 @test_utils.run_with_standalone_host_engine()
 @test_utils.run_only_with_live_gpus()
-def test_dcgm_health_check_sanity_nvswitch_fatal_standalone(handle, gpuIds):
+def test_dcgm_health_check_sanity_nvswitch_fatal_standalone(handle, gpuIds) -> None:
     helper_run_dcgm_health_check_sanity(
         handle, gpuIds, dcgm_structs.DCGM_HEALTH_WATCH_NVSWITCH_FATAL)
 
@@ -745,7 +746,7 @@ def test_dcgm_health_check_sanity_nvswitch_fatal_standalone(handle, gpuIds):
 
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_injection_gpus()
-def test_dcgm_standalone_health_check_power(handle, gpuIds):
+def test_dcgm_standalone_health_check_power(handle, gpuIds) -> None:
     """
     Verifies that a check error occurs when an error is injected
     Checks for call errors are done in the bindings except dcgmClientHealthCheck
@@ -792,18 +793,18 @@ def test_dcgm_standalone_health_check_power(handle, gpuIds):
 
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_injection_gpus()
-def test_dcgm_standalone_health_check_nvlink(handle, gpuIds):
+def test_dcgm_standalone_health_check_nvlink(handle, gpuIds) -> None:
     helper_health_check_nvlink_error_counters(handle, gpuIds)
 
 
 @test_utils.run_with_embedded_host_engine()
 @test_utils.run_with_injection_gpus()
-def test_dcgm_embedded_health_check_nvlink(handle, gpuIds):
+def test_dcgm_embedded_health_check_nvlink(handle, gpuIds) -> None:
     helper_health_check_nvlink_error_counters(handle, gpuIds)
 
 
 @test_utils.run_with_standalone_host_engine(20)
-def test_dcgm_standalone_health_set_nvlink(handle):
+def test_dcgm_standalone_health_set_nvlink(handle) -> None:
     """
     Verifies that the set/get path for the health monitor is working
     Checks for call errors are done in the bindings
@@ -825,7 +826,7 @@ def test_dcgm_standalone_health_set_nvlink(handle):
     assert (currentSystems == newSystems)
 
 
-def helper_health_check_nvlink_error_counters(handle, gpuIds):
+def helper_health_check_nvlink_error_counters(handle, gpuIds) -> None:
     """
     Verifies that a check error occurs when an error is injected
     Checks for call errors are done in the bindings except dcgmClientHealthCheck
@@ -880,7 +881,7 @@ def helper_health_check_nvlink_error_counters(handle, gpuIds):
     assert incident.health == dcgm_structs.DCGM_HEALTH_RESULT_WARN
 
 
-def helper_nvlink_check_fatal_errors(handle, gpuIds):
+def helper_nvlink_check_fatal_errors(handle, gpuIds) -> None:
     test_utils.skip_test_if_any_nvlinks_down(handle)
 
     handleObj = pydcgm.DcgmHandle(handle=handle)
@@ -928,17 +929,17 @@ def helper_nvlink_check_fatal_errors(handle, gpuIds):
 
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_injection_gpus()
-def test_dcgm_standalone_nvlink_fatal(handle, gpuIds):
+def test_dcgm_standalone_nvlink_fatal(handle, gpuIds) -> None:
     helper_nvlink_check_fatal_errors(handle, gpuIds)
 
 
 @test_utils.run_with_embedded_host_engine()
 @test_utils.run_with_injection_gpus()
-def test_dcgm_embedded_nvlink_fatal(handle, gpuIds):
+def test_dcgm_embedded_nvlink_fatal(handle, gpuIds) -> None:
     helper_nvlink_check_fatal_errors(handle, gpuIds)
 
 
-def helper_nvlink_crc_fatal_threshold(handle, gpuIds):
+def helper_nvlink_crc_fatal_threshold(handle, gpuIds) -> None:
     test_utils.skip_test_if_any_nvlinks_down(handle)
 
     handleObj = pydcgm.DcgmHandle(handle=handle)
@@ -987,19 +988,19 @@ def helper_nvlink_crc_fatal_threshold(handle, gpuIds):
 
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_injection_gpus()
-def test_dcgm_standalone_nvlink_crc_threshold(handle, gpuIds):
+def test_dcgm_standalone_nvlink_crc_threshold(handle, gpuIds) -> None:
     helper_nvlink_crc_fatal_threshold(handle, gpuIds)
 
 
 @test_utils.run_with_embedded_host_engine()
 @test_utils.run_with_injection_gpus()
-def test_dcgm_embedded_nvlink_crc_threshold(handle, gpuIds):
+def test_dcgm_embedded_nvlink_crc_threshold(handle, gpuIds) -> None:
     helper_nvlink_crc_fatal_threshold(handle, gpuIds)
 
 
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_injection_gpus()
-def test_dcgm_health_nvlink_symbol_threshold(handle, gpuIds):
+def test_dcgm_health_nvlink_symbol_threshold(handle, gpuIds) -> None:
     test_utils.skip_test_if_any_nvlinks_down(handle)
 
     handleObj = pydcgm.DcgmHandle(handle=handle)
@@ -1047,7 +1048,7 @@ def test_dcgm_health_nvlink_symbol_threshold(handle, gpuIds):
 
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_injection_gpus()
-def test_dcgm_health_nvlink_effective_ber_threshold(handle, gpuIds):
+def test_dcgm_health_nvlink_effective_ber_threshold(handle, gpuIds) -> None:
     test_utils.skip_test_if_any_nvlinks_down(handle)
 
     handleObj = pydcgm.DcgmHandle(handle=handle)
@@ -1093,7 +1094,7 @@ def test_dcgm_health_nvlink_effective_ber_threshold(handle, gpuIds):
     assert incident.health == dcgm_structs.DCGM_HEALTH_RESULT_FAIL
 
 
-def helper_health_check_nvlink5_error_counters(handle, gpuIds):
+def helper_health_check_nvlink5_error_counters(handle, gpuIds) -> None:
     """
     Test for NVLink 5 error counter health checks.
     """
@@ -1229,19 +1230,19 @@ def helper_health_check_nvlink5_error_counters(handle, gpuIds):
 
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_injection_gpus()
-def test_dcgm_standalone_nvlink5_error_counters(handle, gpuIds):
+def test_dcgm_standalone_nvlink5_error_counters(handle, gpuIds) -> None:
     helper_health_check_nvlink5_error_counters(handle, gpuIds)
 
 
 @test_utils.run_with_embedded_host_engine()
 @test_utils.run_with_injection_gpus()
-def test_dcgm_embedded_nvlink5_error_counters(handle, gpuIds):
+def test_dcgm_embedded_nvlink5_error_counters(handle, gpuIds) -> None:
     helper_health_check_nvlink5_error_counters(handle, gpuIds)
 
 
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_only_with_live_gpus()
-def test_dcgm_standalone_health_large_groupid(handle, gpuIds):
+def test_dcgm_standalone_health_large_groupid(handle, gpuIds) -> None:
     """
     Verifies that a health check can run on a large groupId
     This verifies the fix for bug 1868821
@@ -1269,7 +1270,7 @@ def test_dcgm_standalone_health_large_groupid(handle, gpuIds):
     groupObj.health.Check()
 
 
-def helper_health_check_nvswitch_errors(handle, switchIds, fieldId, healthSystem, healthResult, errorCode):
+def helper_health_check_nvswitch_errors(handle, switchIds, fieldId: int, healthSystem: int, healthResult: int, errorCode: int) -> None:
     """
     Verifies that a check error occurs when an error is injected
     Checks for call errors are done in the bindings except dcgmClientHealthCheck
@@ -1332,7 +1333,7 @@ def helper_health_check_nvswitch_errors(handle, switchIds, fieldId, healthSystem
 
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_injection_nvswitches()
-def test_health_check_nvswitch_fatal_errors_standalone(handle, switchIds):
+def test_health_check_nvswitch_fatal_errors_standalone(handle, switchIds) -> None:
     helper_health_check_nvswitch_errors(handle, switchIds,
                                         dcgm_fields.DCGM_FI_DEV_NVSWITCH_FATAL_ERRORS,
                                         dcgm_structs.DCGM_HEALTH_WATCH_NVSWITCH_FATAL,
@@ -1342,7 +1343,7 @@ def test_health_check_nvswitch_fatal_errors_standalone(handle, switchIds):
 
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_injection_nvswitches()
-def test_health_check_nvswitch_nonfatal_errors_standalone(handle, switchIds):
+def test_health_check_nvswitch_nonfatal_errors_standalone(handle, switchIds) -> None:
     helper_health_check_nvswitch_errors(handle, switchIds,
                                         dcgm_fields.DCGM_FI_DEV_NVSWITCH_NON_FATAL_ERRORS,
                                         dcgm_structs.DCGM_HEALTH_WATCH_NVSWITCH_NONFATAL,
@@ -1350,7 +1351,7 @@ def test_health_check_nvswitch_nonfatal_errors_standalone(handle, switchIds):
                                         dcgm_errors.DCGM_FR_NVSWITCH_NON_FATAL_ERROR)
 
 
-def helper_health_check_nvlink_link_down_gpu(handle, gpuIds):
+def helper_health_check_nvlink_link_down_gpu(handle, gpuIds) -> None:
     """
     Verifies that a check error occurs when a NvLink link is set to broken
     """
@@ -1400,11 +1401,11 @@ def helper_health_check_nvlink_link_down_gpu(handle, gpuIds):
 
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_injection_gpus()
-def test_health_check_nvlink_link_down_gpu_standalone(handle, gpuIds):
+def test_health_check_nvlink_link_down_gpu_standalone(handle, gpuIds) -> None:
     helper_health_check_nvlink_link_down_gpu(handle, gpuIds)
 
 
-def helper_health_check_nvlink_link_down_nvswitch(handle, switchIds):
+def helper_health_check_nvlink_link_down_nvswitch(handle, switchIds) -> None:
     """
     Verifies that a check error occurs when a NvLink link is set to broken
     """
@@ -1481,7 +1482,7 @@ def setupNvLinkHealthTest(handle, gpuIds):
     return groupObj, gpuId, baselineIncidentCount
 
 
-def helper_health_check_nvlink_all_links_up(handle, gpuIds):
+def helper_health_check_nvlink_all_links_up(handle, gpuIds) -> None:
     """Test NVLink health: All links Up -> PASS"""
     # Setup
     groupObj, gpuId, baselineIncidentCount = setupNvLinkHealthTest(
@@ -1502,19 +1503,19 @@ def helper_health_check_nvlink_all_links_up(handle, gpuIds):
 
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_injection_gpus()
-def test_health_check_nvlink_all_links_up_standalone(handle, gpuIds):
+def test_health_check_nvlink_all_links_up_standalone(handle, gpuIds) -> None:
     """Test NVLink health: All links Up -> PASS (standalone)"""
     helper_health_check_nvlink_all_links_up(handle, gpuIds)
 
 
 @test_utils.run_with_embedded_host_engine()
 @test_utils.run_with_injection_gpus()
-def test_health_check_nvlink_all_links_up_embedded(handle, gpuIds):
+def test_health_check_nvlink_all_links_up_embedded(handle, gpuIds) -> None:
     """Test NVLink health: All links Up -> PASS (embedded)"""
     helper_health_check_nvlink_all_links_up(handle, gpuIds)
 
 
-def helper_health_check_nvlink_one_link_down(handle, gpuIds):
+def helper_health_check_nvlink_one_link_down(handle, gpuIds) -> None:
     """Test NVLink health: One link Down -> FAIL"""
     # Setup
     groupObj, gpuId, baselineIncidentCount = setupNvLinkHealthTest(
@@ -1546,19 +1547,19 @@ def helper_health_check_nvlink_one_link_down(handle, gpuIds):
 
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_injection_gpus()
-def test_health_check_nvlink_one_link_down_standalone(handle, gpuIds):
+def test_health_check_nvlink_one_link_down_standalone(handle, gpuIds) -> None:
     """Test NVLink health: One link Down -> FAIL (standalone)"""
     helper_health_check_nvlink_one_link_down(handle, gpuIds)
 
 
 @test_utils.run_with_embedded_host_engine()
 @test_utils.run_with_injection_gpus()
-def test_health_check_nvlink_one_link_down_embedded(handle, gpuIds):
+def test_health_check_nvlink_one_link_down_embedded(handle, gpuIds) -> None:
     """Test NVLink health: One link Down -> FAIL (embedded)"""
     helper_health_check_nvlink_one_link_down(handle, gpuIds)
 
 
-def helper_health_check_nvlink_not_supported_and_disabled(handle, gpuIds):
+def helper_health_check_nvlink_not_supported_and_disabled(handle, gpuIds) -> None:
     """Test NVLink health: NotSupported and Disabled links -> PASS"""
     # Setup
     groupObj, gpuId, baselineIncidentCount = setupNvLinkHealthTest(
@@ -1587,19 +1588,19 @@ def helper_health_check_nvlink_not_supported_and_disabled(handle, gpuIds):
 
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_injection_gpus()
-def test_health_check_nvlink_not_supported_and_disabled_standalone(handle, gpuIds):
+def test_health_check_nvlink_not_supported_and_disabled_standalone(handle, gpuIds) -> None:
     """Test NVLink health: NotSupported and Disabled links -> PASS (standalone)"""
     helper_health_check_nvlink_not_supported_and_disabled(handle, gpuIds)
 
 
 @test_utils.run_with_embedded_host_engine()
 @test_utils.run_with_injection_gpus()
-def test_health_check_nvlink_not_supported_and_disabled_embedded(handle, gpuIds):
+def test_health_check_nvlink_not_supported_and_disabled_embedded(handle, gpuIds) -> None:
     """Test NVLink health: NotSupported and Disabled links -> PASS (embedded)"""
     helper_health_check_nvlink_not_supported_and_disabled(handle, gpuIds)
 
 
-def helper_health_check_nvlink_mig_down_without_mig(handle, gpuIds):
+def helper_health_check_nvlink_mig_down_without_mig(handle, gpuIds) -> None:
     """Test MIG-aware NVLink health: Down without MIG -> FAIL"""
     # Setup
     groupObj, gpuId, baselineIncidentCount = setupNvLinkHealthTest(
@@ -1636,19 +1637,19 @@ def helper_health_check_nvlink_mig_down_without_mig(handle, gpuIds):
 
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_injection_gpus()
-def test_health_check_nvlink_mig_down_without_mig_standalone(handle, gpuIds):
+def test_health_check_nvlink_mig_down_without_mig_standalone(handle, gpuIds) -> None:
     """Test MIG-aware NVLink health: Down without MIG -> FAIL (standalone)"""
     helper_health_check_nvlink_mig_down_without_mig(handle, gpuIds)
 
 
 @test_utils.run_with_embedded_host_engine()
 @test_utils.run_with_injection_gpus()
-def test_health_check_nvlink_mig_down_without_mig_embedded(handle, gpuIds):
+def test_health_check_nvlink_mig_down_without_mig_embedded(handle, gpuIds) -> None:
     """Test MIG-aware NVLink health: Down without MIG -> FAIL (embedded)"""
     helper_health_check_nvlink_mig_down_without_mig(handle, gpuIds)
 
 
-def helper_health_check_nvlink_mig_down_with_mig_enabled(handle, gpuIds):
+def helper_health_check_nvlink_mig_down_with_mig_enabled(handle, gpuIds) -> None:
     """Test MIG-aware NVLink health: Down with MIG enabled -> PASS"""
     # Setup group and health monitoring
     groupObj, gpuId, baselineIncidentCount = setupNvLinkHealthTest(
@@ -1686,19 +1687,19 @@ def helper_health_check_nvlink_mig_down_with_mig_enabled(handle, gpuIds):
 
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_injection_gpus()
-def test_health_check_nvlink_mig_down_with_mig_enabled_standalone(handle, gpuIds):
+def test_health_check_nvlink_mig_down_with_mig_enabled_standalone(handle, gpuIds) -> None:
     """Test MIG-aware NVLink health: Down with MIG enabled -> PASS (standalone)"""
     helper_health_check_nvlink_mig_down_with_mig_enabled(handle, gpuIds)
 
 
 @test_utils.run_with_embedded_host_engine()
 @test_utils.run_with_injection_gpus()
-def test_health_check_nvlink_mig_down_with_mig_enabled_embedded(handle, gpuIds):
+def test_health_check_nvlink_mig_down_with_mig_enabled_embedded(handle, gpuIds) -> None:
     """Test MIG-aware NVLink health: Down with MIG enabled -> PASS (embedded)"""
     helper_health_check_nvlink_mig_down_with_mig_enabled(handle, gpuIds)
 
 
-def helper_health_check_multiple_failures(handle, gpuIds):
+def helper_health_check_multiple_failures(handle, gpuIds) -> None:
     handleObj = pydcgm.DcgmHandle(handle=handle)
     systemObj = handleObj.GetSystem()
     groupObj = systemObj.GetEmptyGroup("test1")
@@ -1767,11 +1768,11 @@ def helper_health_check_multiple_failures(handle, gpuIds):
 
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_injection_gpus()
-def test_health_check_standalone_multiple_failures(handle, gpuIds):
+def test_health_check_standalone_multiple_failures(handle, gpuIds) -> None:
     helper_health_check_multiple_failures(handle, gpuIds)
 
 
-def helper_health_check_unreadable_power_usage(handle, gpuIds):
+def helper_health_check_unreadable_power_usage(handle, gpuIds) -> None:
     handleObj = pydcgm.DcgmHandle(handle=handle)
     systemObj = handleObj.GetSystem()
     groupObj = systemObj.GetEmptyGroup("test1")
@@ -1803,11 +1804,11 @@ def helper_health_check_unreadable_power_usage(handle, gpuIds):
 
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_injection_gpus()
-def test_health_check_standalone_unreadable_power_usage(handle, gpuIds):
+def test_health_check_standalone_unreadable_power_usage(handle, gpuIds) -> None:
     helper_health_check_unreadable_power_usage(handle, gpuIds)
 
 
-def helper_health_set_version2(handle, gpuIds):
+def helper_health_set_version2(handle, gpuIds) -> None:
     handleObj = pydcgm.DcgmHandle(handle=handle)
     systemObj = handleObj.GetSystem()
     groupObj = systemObj.GetGroupWithGpuIds("test1", gpuIds)
@@ -1831,11 +1832,11 @@ def helper_health_set_version2(handle, gpuIds):
 
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_injection_gpus(2)
-def test_health_set_version2_standalone(handle, gpuIds):
+def test_health_set_version2_standalone(handle, gpuIds) -> None:
     helper_health_set_version2(handle, gpuIds)
 
 
-def helper_test_dcgm_health_check_uncontained_errors(handle, gpuIds):
+def helper_test_dcgm_health_check_uncontained_errors(handle, gpuIds) -> None:
     """
     Verifies that the health check will fail if we inject an uncontained error
     """
@@ -1872,11 +1873,11 @@ def helper_test_dcgm_health_check_uncontained_errors(handle, gpuIds):
 
 @test_utils.run_with_embedded_host_engine()
 @test_utils.run_with_injection_gpus(2)
-def test_dcgm_health_check_uncontained_errors(handle, gpuIds):
+def test_dcgm_health_check_uncontained_errors(handle, gpuIds) -> None:
     helper_test_dcgm_health_check_uncontained_errors(handle, gpuIds)
 
 
-def helper_test_dcgm_health_check_row_remap_failure(handle, gpuIds):
+def helper_test_dcgm_health_check_row_remap_failure(handle, gpuIds) -> None:
     """
     Verifies that the health check will fail if we inject an uncontained error
     """
@@ -1913,14 +1914,14 @@ def helper_test_dcgm_health_check_row_remap_failure(handle, gpuIds):
 
 @test_utils.run_with_embedded_host_engine()
 @test_utils.run_with_injection_gpus(2)
-def test_dcgm_health_check_row_remap_failure(handle, gpuIds):
+def test_dcgm_health_check_row_remap_failure(handle, gpuIds) -> None:
     helper_test_dcgm_health_check_row_remap_failure(handle, gpuIds)
 
 
 @test_utils.run_with_embedded_host_engine()
 @test_utils.run_with_injection_cpus(1)
 @test_utils.run_with_injection_cpu_cores(1)
-def test_dcgm_health_cpu_thermal(handle, cpuIds, coreIds):
+def test_dcgm_health_cpu_thermal(handle, cpuIds, coreIds) -> None:
     dcgmHandle = pydcgm.DcgmHandle(handle=handle)
     entityPair = dcgm_structs.c_dcgmGroupEntityPair_t()
     entityPair.entityGroupId = dcgm_fields.DCGM_FE_CPU
@@ -1970,7 +1971,7 @@ def test_dcgm_health_cpu_thermal(handle, cpuIds, coreIds):
 @test_utils.run_with_embedded_host_engine()
 @test_utils.run_with_injection_cpus(1)
 @test_utils.run_with_injection_cpu_cores(1)
-def test_dcgm_health_cpu_power(handle, cpuIds, coreIds):
+def test_dcgm_health_cpu_power(handle, cpuIds, coreIds) -> None:
     dcgmHandle = pydcgm.DcgmHandle(handle=handle)
     entityPair = dcgm_structs.c_dcgmGroupEntityPair_t()
     entityPair.entityGroupId = dcgm_fields.DCGM_FE_CPU
@@ -2005,7 +2006,7 @@ def test_dcgm_health_cpu_power(handle, cpuIds, coreIds):
 
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_injection_gpus()
-def test_dcgm_health_check_pcie_correctable_errors_field_injection_valid(handle, gpuIds):
+def test_dcgm_health_check_pcie_correctable_errors_field_injection_valid(handle, gpuIds) -> None:
     """Test PCIe correctable errors field value injection and retrieval"""
     gpuId = gpuIds[0]
     injection_value = 42
@@ -2040,7 +2041,7 @@ def test_dcgm_health_check_pcie_correctable_errors_field_injection_valid(handle,
 
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_injection_gpus()
-def test_dcgm_health_check_mem_unrepairable_flag(handle, gpuIds):
+def test_dcgm_health_check_mem_unrepairable_flag(handle, gpuIds) -> None:
     handleObj = pydcgm.DcgmHandle(handle=handle)
     systemObj = handleObj.GetSystem()
     groupObj = systemObj.GetEmptyGroup("test_unrepairable")
@@ -2095,7 +2096,7 @@ def test_dcgm_health_check_mem_unrepairable_flag(handle, gpuIds):
 @test_utils.run_with_injection_gpus()
 @skip_test_if_no_dcgm_nvml()
 @test_utils.run_only_with_nvml()
-def test_dcgm_health_check_fabric_health_mask(handle, gpuIds):
+def test_dcgm_health_check_fabric_health_mask(handle, gpuIds) -> None:
     """Test passive health checks for fabric health mask"""
     handleObj = pydcgm.DcgmHandle(handle=handle)
     systemObj = handleObj.GetSystem()
@@ -2198,7 +2199,7 @@ def test_dcgm_health_check_fabric_health_mask(handle, gpuIds):
 @test_utils.run_with_injection_gpus()
 @skip_test_if_no_dcgm_nvml()
 @test_utils.run_only_with_nvml()
-def test_dcgm_health_check_imex_status(handle, gpuIds):
+def test_dcgm_health_check_imex_status(handle, gpuIds) -> None:
     """Test IMEX domain and daemon status health checks"""
     handleObj = pydcgm.DcgmHandle(handle=handle)
     systemObj = handleObj.GetSystem()
@@ -2209,7 +2210,7 @@ def test_dcgm_health_check_imex_status(handle, gpuIds):
 
     # Helper function to inject IMEX domain status (string field)
     # IMEX fields are global scope (DCGM_FE_NONE), inject with entity 0
-    def injectImexDomainStatus(status_str, offset_seconds):
+    def injectImexDomainStatus(status_str: str, offset_seconds: int):
         field = dcgm_structs_internal.c_dcgmInjectFieldValue_v1()
         field.version = dcgm_structs_internal.dcgmInjectFieldValue_version1
         field.fieldId = dcgm_fields.DCGM_FI_IMEX_DOMAIN_STATUS
@@ -2222,7 +2223,7 @@ def test_dcgm_health_check_imex_status(handle, gpuIds):
 
     # Helper function to inject IMEX daemon status (int64 field)
     # IMEX fields are global scope (DCGM_FE_NONE), inject with entity 0
-    def injectImexDaemonStatus(status_int, offset_seconds):
+    def injectImexDaemonStatus(status_int: int, offset_seconds: int):
         field = dcgm_structs_internal.c_dcgmInjectFieldValue_v1()
         field.version = dcgm_structs_internal.dcgmInjectFieldValue_version1
         field.fieldId = dcgm_fields.DCGM_FI_IMEX_DAEMON_STATUS
@@ -2395,7 +2396,7 @@ def test_dcgm_health_check_imex_status(handle, gpuIds):
     groupObj.health.Set(0)
 
 
-def clearNvlinkFields(handle, gpuId, timestamp):
+def clearNvlinkFields(handle, gpuId, timestamp: int) -> None:
     nvlink_fields = [
         (dcgm_fields.DCGM_FI_DEV_NVLINK_CRC_FLIT_ERROR_COUNT_TOTAL, 0),
         (dcgm_fields.DCGM_FI_DEV_NVLINK_CRC_DATA_ERROR_COUNT_TOTAL, 0),
@@ -2416,7 +2417,7 @@ def clearNvlinkFields(handle, gpuId, timestamp):
 
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_injection_gpus()
-def test_dcgm_health_fabric_manager_status(handle, gpuIds):
+def test_dcgm_health_fabric_manager_status(handle, gpuIds) -> None:
     """Test passive health checks for fabric manager status"""
     handleObj = pydcgm.DcgmHandle(handle=handle)
     systemObj = handleObj.GetSystem()
@@ -2465,10 +2466,10 @@ def test_dcgm_health_fabric_manager_status(handle, gpuIds):
     groupObj.health.Set(0)
 
 
-def helper_health_check_gpu_recovery_action(handle, gpuIds, inject_value, expected_health,
+def helper_health_check_gpu_recovery_action(handle, gpuIds, inject_value: int, expected_health: int,
                                             expected_error_code=None,
                                             health_watch=dcgm_structs.DCGM_HEALTH_WATCH_DRIVER,
-                                            verify_incident=True, cleanup=True):
+                                            verify_incident=True, cleanup=True) -> None:
     """
     Parameterized helper for testing GPU recovery action health checks
 
@@ -2574,7 +2575,7 @@ def helper_health_check_gpu_recovery_action(handle, gpuIds, inject_value, expect
 
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_injection_gpus()
-def test_health_check_gpu_recovery_action_none_standalone(handle, gpuIds):
+def test_health_check_gpu_recovery_action_none_standalone(handle, gpuIds) -> None:
     """Test GPU recovery action health check - NONE value (0) should PASS"""
     helper_health_check_gpu_recovery_action(handle, gpuIds, 0, dcgm_structs.DCGM_HEALTH_RESULT_PASS,
                                             verify_incident=False, cleanup=False)
@@ -2582,7 +2583,7 @@ def test_health_check_gpu_recovery_action_none_standalone(handle, gpuIds):
 
 @test_utils.run_with_embedded_host_engine()
 @test_utils.run_with_injection_gpus()
-def test_health_check_gpu_recovery_action_none_embedded(handle, gpuIds):
+def test_health_check_gpu_recovery_action_none_embedded(handle, gpuIds) -> None:
     """Test GPU recovery action health check - NONE value (0) should PASS"""
     helper_health_check_gpu_recovery_action(handle, gpuIds, 0, dcgm_structs.DCGM_HEALTH_RESULT_PASS,
                                             verify_incident=False, cleanup=False)
@@ -2590,7 +2591,7 @@ def test_health_check_gpu_recovery_action_none_embedded(handle, gpuIds):
 
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_injection_gpus()
-def test_health_check_gpu_recovery_action_reset_standalone(handle, gpuIds):
+def test_health_check_gpu_recovery_action_reset_standalone(handle, gpuIds) -> None:
     """Test GPU recovery action health check - GPU_RESET value (1) should FAIL"""
     helper_health_check_gpu_recovery_action(
         handle, gpuIds, 1, dcgm_structs.DCGM_HEALTH_RESULT_FAIL)
@@ -2598,7 +2599,7 @@ def test_health_check_gpu_recovery_action_reset_standalone(handle, gpuIds):
 
 @test_utils.run_with_embedded_host_engine()
 @test_utils.run_with_injection_gpus()
-def test_health_check_gpu_recovery_action_reset_embedded(handle, gpuIds):
+def test_health_check_gpu_recovery_action_reset_embedded(handle, gpuIds) -> None:
     """Test GPU recovery action health check - GPU_RESET value (1) should FAIL"""
     helper_health_check_gpu_recovery_action(
         handle, gpuIds, 1, dcgm_structs.DCGM_HEALTH_RESULT_FAIL)
@@ -2606,7 +2607,7 @@ def test_health_check_gpu_recovery_action_reset_embedded(handle, gpuIds):
 
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_injection_gpus()
-def test_health_check_gpu_recovery_action_reboot_standalone(handle, gpuIds):
+def test_health_check_gpu_recovery_action_reboot_standalone(handle, gpuIds) -> None:
     """Test GPU recovery action health check - NODE_REBOOT value (2) should FAIL"""
     helper_health_check_gpu_recovery_action(
         handle, gpuIds, 2, dcgm_structs.DCGM_HEALTH_RESULT_FAIL)
@@ -2614,7 +2615,7 @@ def test_health_check_gpu_recovery_action_reboot_standalone(handle, gpuIds):
 
 @test_utils.run_with_embedded_host_engine()
 @test_utils.run_with_injection_gpus()
-def test_health_check_gpu_recovery_action_reboot_embedded(handle, gpuIds):
+def test_health_check_gpu_recovery_action_reboot_embedded(handle, gpuIds) -> None:
     """Test GPU recovery action health check - NODE_REBOOT value (2) should FAIL"""
     helper_health_check_gpu_recovery_action(
         handle, gpuIds, 2, dcgm_structs.DCGM_HEALTH_RESULT_FAIL)
@@ -2622,7 +2623,7 @@ def test_health_check_gpu_recovery_action_reboot_embedded(handle, gpuIds):
 
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_injection_gpus()
-def test_health_check_gpu_recovery_action_drain_p2p_standalone(handle, gpuIds):
+def test_health_check_gpu_recovery_action_drain_p2p_standalone(handle, gpuIds) -> None:
     """Test GPU recovery action health check - DRAIN_P2P value (3) should WARN"""
     helper_health_check_gpu_recovery_action(
         handle, gpuIds, 3, dcgm_structs.DCGM_HEALTH_RESULT_WARN)
@@ -2630,7 +2631,7 @@ def test_health_check_gpu_recovery_action_drain_p2p_standalone(handle, gpuIds):
 
 @test_utils.run_with_embedded_host_engine()
 @test_utils.run_with_injection_gpus()
-def test_health_check_gpu_recovery_action_drain_p2p_embedded(handle, gpuIds):
+def test_health_check_gpu_recovery_action_drain_p2p_embedded(handle, gpuIds) -> None:
     """Test GPU recovery action health check - DRAIN_P2P value (3) should WARN"""
     helper_health_check_gpu_recovery_action(
         handle, gpuIds, 3, dcgm_structs.DCGM_HEALTH_RESULT_WARN)
@@ -2638,7 +2639,7 @@ def test_health_check_gpu_recovery_action_drain_p2p_embedded(handle, gpuIds):
 
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_injection_gpus()
-def test_health_check_gpu_recovery_action_drain_and_reset_standalone(handle, gpuIds):
+def test_health_check_gpu_recovery_action_drain_and_reset_standalone(handle, gpuIds) -> None:
     """Test GPU recovery action health check - DRAIN_AND_RESET value (4) should WARN"""
     helper_health_check_gpu_recovery_action(
         handle, gpuIds, 4, dcgm_structs.DCGM_HEALTH_RESULT_WARN)
@@ -2646,7 +2647,7 @@ def test_health_check_gpu_recovery_action_drain_and_reset_standalone(handle, gpu
 
 @test_utils.run_with_embedded_host_engine()
 @test_utils.run_with_injection_gpus()
-def test_health_check_gpu_recovery_action_drain_and_reset_embedded(handle, gpuIds):
+def test_health_check_gpu_recovery_action_drain_and_reset_embedded(handle, gpuIds) -> None:
     """Test GPU recovery action health check - DRAIN_AND_RESET value (4) should WARN"""
     helper_health_check_gpu_recovery_action(
         handle, gpuIds, 4, dcgm_structs.DCGM_HEALTH_RESULT_WARN)
@@ -2654,7 +2655,7 @@ def test_health_check_gpu_recovery_action_drain_and_reset_embedded(handle, gpuId
 
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_injection_gpus()
-def test_health_check_gpu_recovery_action_blank_standalone(handle, gpuIds):
+def test_health_check_gpu_recovery_action_blank_standalone(handle, gpuIds) -> None:
     """Test GPU recovery action health check - BLANK value should PASS"""
     helper_health_check_gpu_recovery_action(handle, gpuIds, dcgmvalue.DCGM_INT64_BLANK,
                                             dcgm_structs.DCGM_HEALTH_RESULT_PASS,
@@ -2663,7 +2664,7 @@ def test_health_check_gpu_recovery_action_blank_standalone(handle, gpuIds):
 
 @test_utils.run_with_embedded_host_engine()
 @test_utils.run_with_injection_gpus()
-def test_health_check_gpu_recovery_action_blank_embedded(handle, gpuIds):
+def test_health_check_gpu_recovery_action_blank_embedded(handle, gpuIds) -> None:
     """Test GPU recovery action health check - BLANK value should PASS"""
     helper_health_check_gpu_recovery_action(handle, gpuIds, dcgmvalue.DCGM_INT64_BLANK,
                                             dcgm_structs.DCGM_HEALTH_RESULT_PASS,
@@ -2672,7 +2673,7 @@ def test_health_check_gpu_recovery_action_blank_embedded(handle, gpuIds):
 
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_injection_gpus()
-def test_health_check_gpu_recovery_action_all_watches_healthy_standalone(handle, gpuIds):
+def test_health_check_gpu_recovery_action_all_watches_healthy_standalone(handle, gpuIds) -> None:
     """Test GPU recovery action with ALL watches enabled - healthy state"""
     helper_health_check_gpu_recovery_action(handle, gpuIds, 0, dcgm_structs.DCGM_HEALTH_RESULT_PASS,
                                             health_watch=dcgm_structs.DCGM_HEALTH_WATCH_ALL,
@@ -2681,7 +2682,7 @@ def test_health_check_gpu_recovery_action_all_watches_healthy_standalone(handle,
 
 @test_utils.run_with_embedded_host_engine()
 @test_utils.run_with_injection_gpus()
-def test_health_check_gpu_recovery_action_all_watches_healthy_embedded(handle, gpuIds):
+def test_health_check_gpu_recovery_action_all_watches_healthy_embedded(handle, gpuIds) -> None:
     """Test GPU recovery action with ALL watches enabled - healthy state"""
     helper_health_check_gpu_recovery_action(handle, gpuIds, 0, dcgm_structs.DCGM_HEALTH_RESULT_PASS,
                                             health_watch=dcgm_structs.DCGM_HEALTH_WATCH_ALL,
@@ -2690,7 +2691,7 @@ def test_health_check_gpu_recovery_action_all_watches_healthy_embedded(handle, g
 
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_injection_gpus()
-def test_health_check_gpu_recovery_action_all_watches_unhealthy_standalone(handle, gpuIds):
+def test_health_check_gpu_recovery_action_all_watches_unhealthy_standalone(handle, gpuIds) -> None:
     """Test GPU recovery action with ALL watches enabled - unhealthy state should be detected"""
     helper_health_check_gpu_recovery_action(handle, gpuIds, 1, dcgm_structs.DCGM_HEALTH_RESULT_FAIL,
                                             health_watch=dcgm_structs.DCGM_HEALTH_WATCH_ALL)
@@ -2698,13 +2699,13 @@ def test_health_check_gpu_recovery_action_all_watches_unhealthy_standalone(handl
 
 @test_utils.run_with_embedded_host_engine()
 @test_utils.run_with_injection_gpus()
-def test_health_check_gpu_recovery_action_all_watches_unhealthy_embedded(handle, gpuIds):
+def test_health_check_gpu_recovery_action_all_watches_unhealthy_embedded(handle, gpuIds) -> None:
     """Test GPU recovery action with ALL watches enabled - unhealthy state should be detected"""
     helper_health_check_gpu_recovery_action(handle, gpuIds, 1, dcgm_structs.DCGM_HEALTH_RESULT_FAIL,
                                             health_watch=dcgm_structs.DCGM_HEALTH_WATCH_ALL)
 
 
-def helper_health_check_gpu_recovery_action_multiple_gpus(handle, gpuIds):
+def helper_health_check_gpu_recovery_action_multiple_gpus(handle, gpuIds) -> None:
     """
     Test GPU recovery action with multiple GPUs having different recovery actions.
     Verifies that each GPU's incident is properly tracked with correct error codes and messages.
@@ -2804,13 +2805,13 @@ def helper_health_check_gpu_recovery_action_multiple_gpus(handle, gpuIds):
 
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_injection_gpus(2)
-def test_health_check_gpu_recovery_action_multiple_gpus_standalone(handle, gpuIds):
+def test_health_check_gpu_recovery_action_multiple_gpus_standalone(handle, gpuIds) -> None:
     """Test GPU recovery action with multiple GPUs having different recovery states"""
     helper_health_check_gpu_recovery_action_multiple_gpus(handle, gpuIds)
 
 
 @test_utils.run_with_embedded_host_engine()
 @test_utils.run_with_injection_gpus(2)
-def test_health_check_gpu_recovery_action_multiple_gpus_embedded(handle, gpuIds):
+def test_health_check_gpu_recovery_action_multiple_gpus_embedded(handle, gpuIds) -> None:
     """Test GPU recovery action with multiple GPUs having different recovery states"""
     helper_health_check_gpu_recovery_action_multiple_gpus(handle, gpuIds)

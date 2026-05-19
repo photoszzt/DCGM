@@ -25,7 +25,7 @@ from time import sleep
 
 class RunDCGM():
 
-    def __init__(self, ip, opMode):
+    def __init__(self, ip, opMode) -> None:
         self.ip = ip
         self.opMode = opMode
 
@@ -34,7 +34,7 @@ class RunDCGM():
         self.handle = dcgm_agent.dcgmInit()
         return self.handle
 
-    def __exit__(self, eType, value, traceback):
+    def __exit__(self, eType, value, traceback) -> None:
         dcgm_agent.dcgmShutdown()
 
 
@@ -85,7 +85,7 @@ def convert_overall_health_to_string(health):
 # Worker function
 
 
-def agent_worker_function(dcgmHandle, groupId):
+def agent_worker_function(dcgmHandle, groupId) -> None:
     NUM_ITERATIONS = 5
     count = 0
 
@@ -130,7 +130,7 @@ def agent_worker_function(dcgmHandle, groupId):
 
 
 # Main
-def main():
+def main() -> None:
 
     # Initilaize the DCGM Engine as manual operation mode. This implies that it's execution is
     # controlled by the monitoring agent. The user has to periodically call APIs such as

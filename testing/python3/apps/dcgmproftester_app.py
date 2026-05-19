@@ -40,7 +40,7 @@ class DcgmProfTesterApp(app_runner.AppRunner):
         "(null)",  # e.g. from printing %s from null ptr
     ]
 
-    def __init__(self, args=None, gpuIds=None, cudaDriverMajorVersion=None):
+    def __init__(self, args=None, gpuIds=None, cudaDriverMajorVersion=None) -> None:
         args = args or []
         assert (cudaDriverMajorVersion is not None)
 
@@ -68,7 +68,7 @@ class DcgmProfTesterApp(app_runner.AppRunner):
             self.env["__DCGM_DBG_FILE"] = self.trace_fname
             self.env["__DCGM_DBG_LVL"] = test_utils.loggingLevel
 
-    def _process_finish(self, stdout_buf, stderr_buf):
+    def _process_finish(self, stdout_buf, stderr_buf) -> None:
         super(DcgmProfTesterApp, self)._process_finish(stdout_buf, stderr_buf)
 
         # Skip this part if --no-logging option is used
@@ -81,5 +81,5 @@ class DcgmProfTesterApp(app_runner.AppRunner):
             assert stdout.find(
                 forbidden_text) == -1, "dcgmi printed \"%s\", this should never happen!" % forbidden_text
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "dcgmproftester" + super(DcgmProfTesterApp, self).__str__()

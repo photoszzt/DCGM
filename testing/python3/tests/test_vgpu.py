@@ -28,7 +28,7 @@ import apps
 from subprocess import check_output
 
 
-def helper_inject_vgpu_configuration(handle, gpuId, eccModeVal, powerLimitVal, computeModeVal):
+def helper_inject_vgpu_configuration(handle, gpuId, eccModeVal, powerLimitVal, computeModeVal) -> None:
     """
     Helper method to inject configuration to Cachemanager
     """
@@ -110,7 +110,7 @@ def helper_investigate_status(statusHandle):
 
 @test_utils.run_with_standalone_host_engine(20)
 @test_utils.run_only_with_nvml()
-def test_dcgm_vgpu_config_standalone_get_devices(handle):
+def test_dcgm_vgpu_config_standalone_get_devices(handle) -> None:
     """
     Verifies that DCGM Engine returns list of devices
     """
@@ -120,7 +120,7 @@ def test_dcgm_vgpu_config_standalone_get_devices(handle):
     assert len(gpuIdList) >= 0, "Not able to find devices for standalone case"
 
 
-def helper_dcgm_vgpu_config_get_attributes(handle):
+def helper_dcgm_vgpu_config_get_attributes(handle) -> None:
     handleObj = pydcgm.DcgmHandle(handle=handle)
     systemObj = handleObj.GetSystem()
     groupObj = systemObj.GetDefaultGroup()
@@ -136,7 +136,7 @@ def helper_dcgm_vgpu_config_get_attributes(handle):
 
 
 @test_utils.run_with_standalone_host_engine(20)
-def test_dcgm_vgpu_config_standalone_get_attributes(handle):
+def test_dcgm_vgpu_config_standalone_get_attributes(handle) -> None:
     """
         Get Device attributes for each GPU ID
         """
@@ -427,7 +427,7 @@ def test_dcgm_vgpu_default_status_handler(handle, gpuIds):
 @test_utils.run_with_standalone_host_engine(60)
 @test_utils.run_only_with_live_gpus()
 @test_utils.run_only_as_root()
-def test_dcgm_vgpu_configure_ecc_mode(handle, gpuIds):
+def test_dcgm_vgpu_configure_ecc_mode(handle, gpuIds) -> None:
     test_utils.skip_test("Skipping this test until bug 200377294 is fixed")
 
     groupId = dcgm_agent.dcgmGroupCreate(
@@ -517,7 +517,7 @@ def test_dcgm_vgpu_configure_ecc_mode(handle, gpuIds):
 
 @test_utils.run_with_standalone_host_engine(60)
 @test_utils.run_only_with_live_gpus()
-def test_dcgm_vgpu_attributes(handle, gpuIds):
+def test_dcgm_vgpu_attributes(handle, gpuIds) -> None:
     """
     Verifies that vGPU attributes are properly queried
     """

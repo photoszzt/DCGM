@@ -39,8 +39,8 @@ def helper_get_status_list(statusHandle):
 
 
 def helper_verify_config_values_standalone(handle, groupId, expected_power, expected_ecc,
-                                           expected_proc_clock, expected_mem_clock, expected_compute_mode,
-                                           expected_sync_boost, expected_auto_boost):
+                                           expected_proc_clock, expected_mem_clock, expected_compute_mode: int,
+                                           expected_sync_boost: int, expected_auto_boost: int) -> None:
     """
     Helper Method to verify all the values for the current configuration are as expected
     """

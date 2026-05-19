@@ -20,15 +20,15 @@ _erisTestNumber = 0
 
 
 class ProgressPrinter(object):
-    def subtest_start(self, subtest):
+    def subtest_start(self, subtest) -> None:
         pass
 
-    def subtest_finish(self, subtest):
+    def subtest_finish(self, subtest) -> None:
         pass
 
 
 class DefaultProgressPrinter(ProgressPrinter):
-    def subtest_start(self, subtest):
+    def subtest_start(self, subtest) -> None:
         global _erisTestNumber
         # defer the quiet tests. If they don't fail there's no need to print their name
         # but print right away all non quiet tests
@@ -52,7 +52,7 @@ class DefaultProgressPrinter(ProgressPrinter):
             logger.info("Test %s start time: %s" %
                         (subtest.name, datetime.datetime.now()))
 
-    def subtest_finish(self, subtest):
+    def subtest_finish(self, subtest) -> None:
         global _erisTestNumber
 
         if subtest.name.startswith("test_") and not subtest.name.endswith("restore state"):

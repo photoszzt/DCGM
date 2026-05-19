@@ -28,13 +28,13 @@ from common.Struct import Struct
 from DcgmJsonReader import DcgmJsonReader
 
 
-def create_fv(key, values):
+def create_fv(key: str, values: list[str]) -> dict[str, Struct]:
     fv_values = [Struct(fieldId=key, value=val)
                  for val in values]  # Struct(values=values)
     return {key: Struct(values=fv_values)}
 
 
-def test_convert_field_id_to_tag():
+def test_convert_field_id_to_tag() -> None:
     fieldTagMap = {
         1: Struct(tag='field1'),
         2: Struct(tag='field2'),
@@ -48,7 +48,7 @@ def test_convert_field_id_to_tag():
                 fieldTagMap[key].tag)  # pylint: disable=no-member
 
 
-def test_prepare_json():
+def test_prepare_json() -> None:
     obj = {
         'star wars': 'overrated'
     }
@@ -68,7 +68,7 @@ def test_prepare_json():
         assert (outObj['gpu_uuid'] == gpuUuidMap[gpuId])
 
 
-def test_custom_data_handler():
+def test_custom_data_handler() -> None:
     namespace = Struct(called=False, result=None)
 
     expected = {
@@ -78,7 +78,7 @@ def test_custom_data_handler():
 
     # This function tells us that the json callback is called by CustomDataHandler
     # with the correct data
-    def setCalled(json):
+    def setCalled(json) -> None:
         namespace.called = True
         namespace.result = loads(json)
 
@@ -96,7 +96,7 @@ def test_custom_data_handler():
 
 
 @maybemock.patch.multiple('logging', info=maybemock.DEFAULT, warning=maybemock.DEFAULT)
-def test_json_reader_custom_json_handler(info, warning):
+def test_json_reader_custom_json_handler(info, warning) -> None:
     dr = DcgmJsonReader()
     dr.CustomJsonHandler(1)
     info.assert_called_with(1)

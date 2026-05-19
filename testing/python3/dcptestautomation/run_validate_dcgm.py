@@ -30,6 +30,7 @@
 #
 ##################################################################################################
 
+from argparse import Namespace
 import csv
 import argparse
 import time as tm
@@ -57,7 +58,7 @@ DCGM_FI_PROF_PCIE_RX_BYTES = 1010
 
 
 class RunValidateDcgm:
-    def __init__(self):
+    def __init__(self) -> None:
         self.tar_dir = os.path.realpath(sys.path[0])
         self.prot_thread_gpu = []
         self.init_range = 0
@@ -108,7 +109,7 @@ class RunValidateDcgm:
     # Returns success in the end.
     #
     #############################################################################################
-    def removeBinaries(self, prnt):
+    def removeBinaries(self, prnt: bool) -> int:
         # Remove existing installation files and binaries
         ret = util.executeBashCmd("sudo rm -rf testing_dcgm*", prnt)
         ret = util.executeBashCmd(
@@ -146,7 +147,7 @@ class RunValidateDcgm:
     # specified "-d" option. Returns 0 for SUCCESS, -1 for any failure.
     #
     #############################################################################################
-    def downloadInstallers(self, dcgm_url, deb_url):
+    def downloadInstallers(self, dcgm_url, deb_url) -> int:
         print(("&&&& INFO: Downloading latest testing_dcgm.tar.gz from", dcgm_url))
         # fileName = wget.download(self.tar_file, out=None)#, bar=None)  # no progress bar is shown
         # , bar=None)  # no progress bar is shown
@@ -169,7 +170,7 @@ class RunValidateDcgm:
         print("\nSUCCESS: Download completed successfully")
         return 0
 
-    def killNvHostEngine(self):
+    def killNvHostEngine(self) -> None:
         print("\n&&&& INFO: Killing any existing nvhostengine instance")
         ret = util.executeBashCmd("sudo /usr/bin/nv-hostengine -t", True)
 
@@ -212,7 +213,7 @@ class RunValidateDcgm:
                     command returned: \n", ret))
         return ret[0]
 
-    def _runDcgmLoadProfilingModule(self):
+    def _runDcgmLoadProfilingModule(self) -> None:
         print("\n&&&& INFO: Running dcgm to just to load profiling module once.")
         ret = util.executeBashCmd(
             "timeout 3s /usr/bin/dcgmi dmon -e 1001 -i 0", False)
@@ -226,7 +227,7 @@ class RunValidateDcgm:
     # immediately returns to the calling function.
     #
     #############################################################################################
-    def _runDcgm(self, metrics, gpuid_list, time):
+    def _runDcgm(self, metrics, gpuid_list, time) -> None:
         print(
             "\n&&&& INFO: Running dcgm to collect metrics on {0}".format(metrics))
         ret = util.executeBashCmd(
@@ -242,7 +243,7 @@ class RunValidateDcgm:
     # This thread is executing in parallel, control immediately returns to the calling function.
     #
     #############################################################################################
-    def _runProftester(self, gpuIndex, metric, time):
+    def _runProftester(self, gpuIndex, metric, time) -> None:
         metrics = str(metric)
         print("\n&&&& INFO: Running dcgmproftester to collect metrics on gpu {0}".format(
             gpuIndex))
@@ -256,7 +257,7 @@ class RunValidateDcgm:
     # information passed.
     #
     #############################################################################################
-    def getColNames(self, metrics):
+    def getColNames(self, metrics: int) -> tuple[list[str], str]:
         colnames = []
         name = self.metrics_label[metrics]
         for i in range(0, self.gpuCount):
@@ -271,7 +272,7 @@ class RunValidateDcgm:
     # what dcgmproftester is expecting, test will fail.
     #
     #############################################################################################
-    def getMarginRange(self, metrics):
+    def getMarginRange(self, metrics: int) -> tuple[float, float, float] | None:
         if metrics == DCGM_FI_PROF_PCIE_RX_BYTES or metrics == DCGM_FI_PROF_PCIE_TX_BYTES:
             return 17.0, -10.0, 17.0
         elif metrics == DCGM_FI_PROF_GR_ENGINE_ACTIVE or metrics == DCGM_FI_PROF_SM_ACTIVE \
@@ -286,7 +287,7 @@ class RunValidateDcgm:
     # value and increment both dcgm and dcgmproftester values by 1.
     #
     #############################################################################################
-    def findClosestIndexForBand(self, dcgm_list, prof_list, metrics):
+    def findClosestIndexForBand(self, dcgm_list, prof_list: list[list[str]], metrics: int) -> int:
         self.upper_range, self.lower_range, self.init_range = self.getMarginRange(
             metrics)
         print("\nPROFTESTER[9][1]: " + str(prof_list[9][1]))
@@ -320,7 +321,7 @@ class RunValidateDcgm:
     # dcgm and dcgmproftester values by 1.
     #
     #############################################################################################
-    def getClosestIndexForUtil(self, dcgm_list, dcgm_init_val):
+    def getClosestIndexForUtil(self, dcgm_list, dcgm_init_val: float) -> int:
         i = 0
         # print dcgm_list
         for i in range(6, len(dcgm_list)):
@@ -331,7 +332,7 @@ class RunValidateDcgm:
                     break
         return i
 
-    def getClosestIndex(self, dcgm_list, prof_list, metrics, dcgm_init_val):
+    def getClosestIndex(self, dcgm_list, prof_list: list[list[str]], metrics: int, dcgm_init_val: float) -> int:
         i = 0
         if metrics == DCGM_FI_PROF_PCIE_TX_BYTES or metrics == DCGM_FI_PROF_PCIE_RX_BYTES:
             i = self.findClosestIndexForBand(dcgm_list, prof_list, metrics)
@@ -347,7 +348,7 @@ class RunValidateDcgm:
     #
     #############################################################################################
 
-    def validateAccuracyForRanges(self, dcgmCsvFile, gpu_index, metrics):
+    def validateAccuracyForRanges(self, dcgmCsvFile: str, gpu_index: int, metrics: int) -> int:
         ret = 0
         colnames, metric_label = self.getColNames(metrics)
         dcgm_col = metric_label + '_' + str(gpu_index)
@@ -368,7 +369,7 @@ class RunValidateDcgm:
     # of error margin, the test will fail.
     #
     #############################################################################################
-    def validateAccuracyForUtilForUtil(self, dcgmCsvFile, dcgmProfTesterCsvFile, gpu_index, metrics):
+    def validateAccuracyForUtilForUtil(self, dcgmCsvFile: str, dcgmProfTesterCsvFile: str, gpu_index: int, metrics: int) -> int:
         i = 0
         mismatches = 0
         spikes = 0
@@ -429,7 +430,7 @@ class RunValidateDcgm:
 
             return 0
 
-    def validateAccuracy(self, dcgmCsvFile, dcgmProfTesterCsvFile, gpu_index, metrics):
+    def validateAccuracy(self, dcgmCsvFile: str, dcgmProfTesterCsvFile: str, gpu_index: int, metrics: int) -> int:
         ret = 0
         if metrics in self.metrics_util_list:
             ret = self.validateAccuracyForUtilForUtil(dcgmCsvFile, dcgmProfTesterCsvFile,
@@ -447,7 +448,7 @@ class RunValidateDcgm:
     # information
     #
     ##############################################################################################
-    def getSmiOp(self):
+    def getSmiOp(self) -> bytes:
         out = subprocess.Popen(['nvidia-smi'],
                                stdout=subprocess.PIPE,
                                stderr=subprocess.STDOUT)
@@ -461,7 +462,7 @@ class RunValidateDcgm:
     # This function gets memory information out of nvidia-smi output
     #
     ##############################################################################################
-    def getMemUsage(self, smi, gpu_list):
+    def getMemUsage(self, smi: bytes, gpu_list) -> list[bytes]:
         mem_list = []
         smi_list = smi.split()
         indices = [i for i, s in enumerate(smi_list) if 'MiB' in s]
@@ -470,7 +471,7 @@ class RunValidateDcgm:
         return mem_list
 
 
-def main(cmdArgs):
+def main(cmdArgs: Namespace) -> None:
     metrics = int(cmdArgs.metrics)
     gpuid_list = cmdArgs.gpuid_list
     time = int(cmdArgs.time)
@@ -620,7 +621,7 @@ def main(cmdArgs):
     # Send out an email with the chart
 
 
-def parseCommandLine():
+def parseCommandLine() -> Namespace:
 
     parser = argparse.ArgumentParser(description="Validation of dcgm metrics")
     parser.add_argument("-m", "--metrics", required=True, help="Metrics to be validated E.g. \

@@ -20,14 +20,14 @@ from common import dcgm_client_main as m
 
 @maybemock.patch('builtins.exit')
 @KeywordizeLastArgument("mock_exit")
-def test_exit_handler(**kwargs):
+def test_exit_handler(**kwargs) -> None:
     m.exit_handler(None, None)
     kwargs["mock_exit"].assert_called()
 
 
 @maybemock.patch('signal.signal')
 @KeywordizeLastArgument("mock_signal")
-def test_initialize_signal_handlers(**kwargs):
+def test_initialize_signal_handlers(**kwargs) -> None:
     m.initialize_signal_handlers()
 
     assert kwargs["mock_signal"].mock_calls[0][1] == (

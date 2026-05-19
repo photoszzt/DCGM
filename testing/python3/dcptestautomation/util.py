@@ -22,7 +22,7 @@ from subprocess import PIPE, Popen
 ###############################################################################################
 
 
-def executeBashCmd(cmd, prnt):
+def executeBashCmd(cmd: str, prnt):
     """
     Executes a shell command as a separated process, return stdout, stderr and returncode
     """

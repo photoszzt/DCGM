@@ -28,7 +28,7 @@ import dcgm_structs
 
 
 class NvSwitchErrorMonitor:
-    def __init__(self, hostname):
+    def __init__(self, hostname) -> None:
         # Add this to any names so we can run multiple instances
         self._pidPostfix = "_" + str(os.getpid())
         self._updateIntervalSecs = 5.0  # How often to print out new rows
@@ -36,7 +36,7 @@ class NvSwitchErrorMonitor:
         self._InitFieldLists()
         self._InitHandles()
 
-    def _InitFieldLists(self):
+    def _InitFieldLists(self) -> None:
         # NVSwitch error field Ids
         self._nvSwitchErrorFieldIds = []
         self._nvSwitchErrorFieldIds.append(
@@ -59,7 +59,7 @@ class NvSwitchErrorMonitor:
             dcgm_fields.DCGM_FI_DEV_GPU_NVLINK_ERRORS)
         # self._gpuErrorFieldIds.append(dcgm_fields.DCGM_FI_DEV_GPU_TEMP) #Will always generate output
 
-    def _InitHandles(self):
+    def _InitHandles(self) -> None:
         self._dcgmHandle = pydcgm.DcgmHandle(ipAddress=self._hostname)
 
         groupName = "error_mon_gpus" + self._pidPostfix
@@ -94,7 +94,7 @@ class NvSwitchErrorMonitor:
             self._gpuErrorFieldGroup, dcgm_structs.DCGM_OPERATION_MODE_AUTO,
             updateFreq, maxKeepAge, maxKeepSamples, 0)
 
-    def _GetLatestGpuErrorSamples(self):
+    def _GetLatestGpuErrorSamples(self) -> None:
         numErrors = 0
         nowStr = time.strftime("%m/%d/%Y %H:%M:%S")
 
@@ -113,7 +113,7 @@ class NvSwitchErrorMonitor:
         if numErrors == 0:
             print("%s: No GPU errors." % nowStr)
 
-    def _GetLatestSwitchErrorSamples(self):
+    def _GetLatestSwitchErrorSamples(self) -> None:
         numErrors = 0
         nowStr = time.strftime("%m/%d/%Y %H:%M:%S")
 
@@ -132,11 +132,11 @@ class NvSwitchErrorMonitor:
         if numErrors == 0:
             print("%s: No Switch errors." % nowStr)
 
-    def _MonitorOneCycle(self):
+    def _MonitorOneCycle(self) -> None:
         self._GetLatestGpuErrorSamples()
         self._GetLatestSwitchErrorSamples()
 
-    def Monitor(self):
+    def Monitor(self) -> None:
         self._gpuWatcher.EmptyValues()
         self._nvSwitchWatcher.EmptyValues()
 
@@ -149,7 +149,7 @@ class NvSwitchErrorMonitor:
             return
 
 
-def main():
+def main() -> None:
     hostname = "localhost"
 
     if len(sys.argv) > 1:

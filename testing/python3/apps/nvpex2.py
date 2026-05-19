@@ -26,16 +26,16 @@ class RunNVpex2(app_runner.AppRunner):
         "Linux_aarch64": "./apps/nvpex2/nvpex2",
     }
 
-    def __init__(self, args=None):
+    def __init__(self, args=None) -> None:
         path = os.path.join(
             utils.script_dir, RunNVpex2.paths[utils.platform_identifier])
         super(RunNVpex2, self).__init__(path, args)
 
-    def start(self):
+    def start(self) -> None:
         """
         Runs the nvpex2 command
         """
         super(RunNVpex2, self).start(timeout=10)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "RunNVpex2 on all supported devices " + super(RunNVpex2, self).__str__()

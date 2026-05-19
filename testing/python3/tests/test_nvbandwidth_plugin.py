@@ -23,7 +23,7 @@ import dcgm_errors
 from _test_helpers import skip_test_if_no_dcgm_nvml
 
 
-def mock_mem_copy_util(handle, gpuId, nvmlReturn, value):
+def mock_mem_copy_util(handle, gpuId, nvmlReturn: int, value: int) -> None:
     injectedRet = nvml_injection.c_injectNvmlRet_t()
     injectedRet.nvmlRet = nvmlReturn
     injectedRet.values[0].type = nvml_injection_structs.c_injectionArgType_t.INJECTION_UTILIZATION
@@ -41,7 +41,7 @@ def mock_mem_copy_util(handle, gpuId, nvmlReturn, value):
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_nvml_injected_gpus()
 @test_utils.run_only_if_mig_is_disabled()
-def test_nvbandwidth_plugin_fail_if_mem_copy_util_is_larger_than_threshold(handle, gpuIds):
+def test_nvbandwidth_plugin_fail_if_mem_copy_util_is_larger_than_threshold(handle, gpuIds) -> None:
     '''
     Test to verify that the nvbandwidth plugin fails if the memory copy util is larger than the threshold.
     '''
@@ -69,7 +69,7 @@ def test_nvbandwidth_plugin_fail_if_mem_copy_util_is_larger_than_threshold(handl
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_nvml_injected_gpus()
 @test_utils.run_only_if_mig_is_disabled()
-def test_nvbandwidth_plugin_will_not_fail_if_mem_copy_util_no_data(handle, gpuIds):
+def test_nvbandwidth_plugin_will_not_fail_if_mem_copy_util_no_data(handle, gpuIds) -> None:
     '''
     Test to verify that the nvbandwidth plugin will not fail if the memory copy util is no data.
     '''

@@ -21,7 +21,7 @@ class WinStyle(object):
 
 class WinTerm(object):
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._default = win32.GetConsoleScreenBufferInfo(win32.STDOUT).wAttributes
         self.set_attrs(self._default)
         self._default_fore = self._fore
@@ -31,34 +31,34 @@ class WinTerm(object):
     def get_attrs(self):
         return self._fore + self._back * 16 + self._style
 
-    def set_attrs(self, value):
+    def set_attrs(self, value) -> None:
         self._fore = value & 7
         self._back = (value >> 4) & 7
         self._style = value & WinStyle.BRIGHT
 
-    def reset_all(self, on_stderr=None):
+    def reset_all(self, on_stderr=None) -> None:
         self.set_attrs(self._default)
         self.set_console(attrs=self._default)
 
-    def fore(self, fore=None, on_stderr=False):
+    def fore(self, fore: int | None=None, on_stderr: bool=False) -> None:
         if fore is None:
             fore = self._default_fore
         self._fore = fore
         self.set_console(on_stderr=on_stderr)
 
-    def back(self, back=None, on_stderr=False):
+    def back(self, back=None, on_stderr: bool=False) -> None:
         if back is None:
             back = self._default_back
         self._back = back
         self.set_console(on_stderr=on_stderr)
 
-    def style(self, style=None, on_stderr=False):
+    def style(self, style=None, on_stderr: bool=False) -> None:
         if style is None:
             style = self._default_style
         self._style = style
         self.set_console(on_stderr=on_stderr)
 
-    def set_console(self, attrs=None, on_stderr=False):
+    def set_console(self, attrs=None, on_stderr: bool=False) -> None:
         if attrs is None:
             attrs = self.get_attrs()
         handle = win32.STDOUT
@@ -66,7 +66,7 @@ class WinTerm(object):
             handle = win32.STDERR
         win32.SetConsoleTextAttribute(handle, attrs)
 
-    def set_cursor_position(self, position=None, on_stderr=False):
+    def set_cursor_position(self, position=None, on_stderr: bool=False) -> None:
         if position is None:
             #I'm not currently tracking the position, so there is no default.
             #position = self.get_position()
@@ -76,7 +76,7 @@ class WinTerm(object):
             handle = win32.STDERR
         win32.SetConsoleCursorPosition(handle, position)
 
-    def erase_data(self, mode=0, on_stderr=False):
+    def erase_data(self, mode: int=0, on_stderr: bool=False) -> None:
         # 0 (or None) should clear from the cursor to the end of the screen.
         # 1 should clear from the cursor to the beginning of the screen.
         # 2 should clear the entire screen. (And maybe move cursor to (1,1)?)

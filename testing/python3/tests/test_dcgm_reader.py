@@ -26,7 +26,7 @@ import time
 
 @test_utils.run_with_standalone_host_engine(20)
 @test_utils.run_only_with_live_gpus()
-def test_dcgm_reader_default(handle, gpuIds):
+def test_dcgm_reader_default(handle, gpuIds) -> None:
     # pylint: disable=undefined-variable
     dr = DcgmReader(ignoreBlank=False)
     dr.SetHandle(handle)
@@ -56,7 +56,7 @@ def test_dcgm_reader_default(handle, gpuIds):
 
 @test_utils.run_with_standalone_host_engine(20)
 @test_utils.run_only_with_live_gpus()
-def test_dcgm_reader_specific_fields(handle, gpuIds):
+def test_dcgm_reader_specific_fields(handle, gpuIds) -> None:
     specificFields = [dcgm_fields.DCGM_FI_DEV_POWER_USAGE,
                       dcgm_fields.DCGM_FI_DEV_XID_ERRORS]
     # pylint: disable=undefined-variable
@@ -70,7 +70,7 @@ def test_dcgm_reader_specific_fields(handle, gpuIds):
 
 @test_utils.run_with_standalone_host_engine(20)
 @test_utils.run_only_with_live_gpus()
-def test_reading_specific_data(handle, gpuIds):
+def test_reading_specific_data(handle, gpuIds) -> None:
     """ 
     Verifies that we can inject specific data and get that same data back
     """
@@ -117,7 +117,7 @@ def test_reading_specific_data(handle, gpuIds):
 @test_utils.run_with_non_mig_cuda_visible_devices()
 @test_utils.exclude_confidential_compute_gpus()
 @test_utils.run_with_cuda_app()
-def test_reading_pid_fields(handle, gpuIds, cudaApp):
+def test_reading_pid_fields(handle, gpuIds, cudaApp) -> None:
     """
     Verifies that we can decode PID structs
     """
@@ -155,7 +155,7 @@ def test_reading_pid_fields(handle, gpuIds, cudaApp):
     assert cudaApp.getpid() in pids, "Could not find cudaApp PID. %s" % (message)
 
 
-def util_dcgm_reader_all_since_last_call(handle, flag, repeat):
+def util_dcgm_reader_all_since_last_call(handle, flag: bool, repeat: bool) -> None:
     """
     Test to ensure GetAllValuesAsDictSinceLastCall behaves. It was first used
     for collectd integration to ensure it does not crash and also checks that
@@ -196,29 +196,29 @@ def util_dcgm_reader_all_since_last_call(handle, flag, repeat):
 
 @test_utils.run_with_standalone_host_engine(20)
 @test_utils.run_only_with_live_gpus()
-def test_dcgm_reader_all_since_last_call_false(handle, gpuIds):
+def test_dcgm_reader_all_since_last_call_false(handle, gpuIds) -> None:
     util_dcgm_reader_all_since_last_call(handle, False, False)
 
 
 @test_utils.run_with_standalone_host_engine(20)
 @test_utils.run_only_with_live_gpus()
-def test_dcgm_reader_all_since_last_call_true(handle, gpuIds):
+def test_dcgm_reader_all_since_last_call_true(handle, gpuIds) -> None:
     util_dcgm_reader_all_since_last_call(handle, True, False)
 
 
 @test_utils.run_with_standalone_host_engine(20)
 @test_utils.run_only_with_live_gpus()
-def test_dcgm_reader_all_since_last_call_false_repeat(handle, gpuIds):
+def test_dcgm_reader_all_since_last_call_false_repeat(handle, gpuIds) -> None:
     util_dcgm_reader_all_since_last_call(handle, False, True)
 
 
 @test_utils.run_with_standalone_host_engine(20)
 @test_utils.run_only_with_live_gpus()
-def test_dcgm_reader_all_since_last_call_true_repeat(handle, gpuIds):
+def test_dcgm_reader_all_since_last_call_true_repeat(handle, gpuIds) -> None:
     util_dcgm_reader_all_since_last_call(handle, True, True)
 
 
-def helper_mig_init_field_values(handle, ciIds, fieldIds, fieldValues):
+def helper_mig_init_field_values(handle, ciIds, fieldIds, fieldValues) -> None:
     """
     Helper to inititialize MIG CI field value tests.
     """
@@ -262,7 +262,7 @@ def helper_mig_init_field_values(handle, ciIds, fieldIds, fieldValues):
     time.sleep(0.050)
 
 
-def helper_dcgm_reader_latest_mig_ci_fields(handle, gpuIds, instanceIds, ciIds, mapById=True):
+def helper_dcgm_reader_latest_mig_ci_fields(handle, gpuIds, instanceIds, ciIds, mapById: bool=True) -> None:
     """
     Test DcgmiReader for MIG CI fields.
     """
@@ -317,7 +317,7 @@ def helper_dcgm_reader_latest_mig_ci_fields(handle, gpuIds, instanceIds, ciIds, 
             assert (foundValues == len(fieldValues))
 
 
-def helper_dcgm_reader_all_mig_ci_fields(handle, gpuIds, instanceIds, ciIds, mapById=True):
+def helper_dcgm_reader_all_mig_ci_fields(handle, gpuIds, instanceIds, ciIds, mapById: bool=True) -> None:
     """
     Test DcgmiReader for MIG CI fields.
     """
@@ -387,7 +387,7 @@ def helper_dcgm_reader_all_mig_ci_fields(handle, gpuIds, instanceIds, ciIds, map
 @test_utils.run_with_injection_gpu_instances(1)
 @test_utils.run_with_injection_gpu_instances(1, 1)
 @test_utils.run_with_injection_gpu_compute_instances(1, 1)
-def test_dcgm_reader_wildcard_gi(handle, gpuIds, instanceIds, ciIds):
+def test_dcgm_reader_wildcard_gi(handle, gpuIds, instanceIds, ciIds) -> None:
     """
     Test DcgmCacheManager for removal of wildcard GI Fake Ci insertion.
     """
@@ -414,7 +414,7 @@ def test_dcgm_reader_wildcard_gi(handle, gpuIds, instanceIds, ciIds):
 @test_utils.run_with_injection_gpus(1)
 @test_utils.run_with_injection_gpu_instances(1)
 @test_utils.run_with_injection_gpu_compute_instances(4)
-def test_dcgm_reader_latest_mig_ci_fields_by_id(handle, gpuIds, instanceIds, ciIds):
+def test_dcgm_reader_latest_mig_ci_fields_by_id(handle, gpuIds, instanceIds, ciIds) -> None:
     """
     Test DcgmiReader for MIG CI fields.
     """
@@ -428,7 +428,7 @@ def test_dcgm_reader_latest_mig_ci_fields_by_id(handle, gpuIds, instanceIds, ciI
 @test_utils.run_with_injection_gpus(1)
 @test_utils.run_with_injection_gpu_instances(1)
 @test_utils.run_with_injection_gpu_compute_instances(4)
-def test_dcgm_reader_all_mig_ci_fields_by_id(handle, gpuIds, instanceIds, ciIds):
+def test_dcgm_reader_all_mig_ci_fields_by_id(handle, gpuIds, instanceIds, ciIds) -> None:
     """
     Test DcgmiReader for MIG CI fields.
     """
@@ -442,7 +442,7 @@ def test_dcgm_reader_all_mig_ci_fields_by_id(handle, gpuIds, instanceIds, ciIds)
 @test_utils.run_with_injection_gpus(1)
 @test_utils.run_with_injection_gpu_instances(1)
 @test_utils.run_with_injection_gpu_compute_instances(4)
-def test_dcgm_reader_latest_mig_ci_fields_by_tag(handle, gpuIds, instanceIds, ciIds):
+def test_dcgm_reader_latest_mig_ci_fields_by_tag(handle, gpuIds, instanceIds, ciIds) -> None:
     """
     Test DcgmiReader for MIG CI fields.
     """
@@ -456,7 +456,7 @@ def test_dcgm_reader_latest_mig_ci_fields_by_tag(handle, gpuIds, instanceIds, ci
 @test_utils.run_with_injection_gpus(1)
 @test_utils.run_with_injection_gpu_instances(1)
 @test_utils.run_with_injection_gpu_compute_instances(4)
-def test_dcgm_reader_all_mig_ci_fields_by_tag(handle, gpuIds, instanceIds, ciIds):
+def test_dcgm_reader_all_mig_ci_fields_by_tag(handle, gpuIds, instanceIds, ciIds) -> None:
     """
     Test DcgmiReader for MIG CI fields.
     """

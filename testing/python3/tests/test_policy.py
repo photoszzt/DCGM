@@ -13,6 +13,8 @@
 # limitations under the License.
 # test the policy manager for DCGM
 
+from dcgm_structs import c_dcgmPolicy_v1
+from ctypes import _CFunctionType
 import dcgm_structs
 import dcgm_structs_internal
 import dcgm_agent_internal
@@ -38,9 +40,9 @@ INJECT_TS_OFFSET_SEC = 60
 # retrieving the args from the queue as well as checks of the args via asserts.
 
 
-def create_c_callback(queue=None):
+def create_c_callback(queue=None) -> _CFunctionType:
     @CFUNCTYPE(None, POINTER(dcgm_structs.c_dcgmPolicyCallbackResponse_v2), c_uint64)
-    def c_callback(response, userData):
+    def c_callback(response, userData) -> None:
         if queue:
             # copy data into a python struct so that it is the right format and is not lost when "response" var is lost
             callbackResp = dcgm_structs.c_dcgmPolicyCallbackResponse_v2()
@@ -55,7 +57,7 @@ def create_c_callback(queue=None):
 
 @test_utils.run_with_standalone_host_engine(20)
 @test_utils.run_with_injection_gpus()
-def test_dcgm_policy_reg_unreg_for_policy_update_standalone(handle, gpuIds):
+def test_dcgm_policy_reg_unreg_for_policy_update_standalone(handle, gpuIds) -> None:
     """
     Verifies that the reg/unreg path for the policy manager is working
     """
@@ -73,7 +75,7 @@ def test_dcgm_policy_reg_unreg_for_policy_update_standalone(handle, gpuIds):
 
 
 @test_utils.run_with_standalone_host_engine(20)
-def test_dcgm_policy_negative_register_standalone(handle):
+def test_dcgm_policy_negative_register_standalone(handle) -> None:
     """
     Verifies that the register function does not allow a bad groupId value
     """
@@ -85,7 +87,7 @@ def test_dcgm_policy_negative_register_standalone(handle):
 
 
 @test_utils.run_with_standalone_host_engine(20)
-def test_dcgm_policy_negative_unregister_standalone(handle):
+def test_dcgm_policy_negative_unregister_standalone(handle) -> None:
     """
     Verifies that the unregister function does not allow a bad groupId value
     """
@@ -97,7 +99,7 @@ def test_dcgm_policy_negative_unregister_standalone(handle):
 @test_utils.run_with_standalone_host_engine(20)
 @test_utils.run_with_injection_gpus()
 @test_utils.run_only_with_nvml()
-def test_dcgm_policy_set_get_violation_policy_standalone(handle, gpuIds):
+def test_dcgm_policy_set_get_violation_policy_standalone(handle, gpuIds) -> None:
     """
     Verifies that set and get violation policy work
     """
@@ -117,7 +119,7 @@ def test_dcgm_policy_set_get_violation_policy_standalone(handle, gpuIds):
     _assert_policies_equal(policies[0], newPolicy)
 
 
-def _assert_policies_equal(policy1, policy2):
+def _assert_policies_equal(policy1, policy2: c_dcgmPolicy_v1) -> None:
     assert (policy1)  # check if None
     assert (policy2)
     assert (policy1.version == policy2.version)
@@ -128,7 +130,7 @@ def _assert_policies_equal(policy1, policy2):
             policy2.parms[dcgm_structs.DCGM_POLICY_COND_IDX_DBE].val.boolean)
 
 
-def helper_dcgm_policy_inject_eccerror(handle, gpuIds):
+def helper_dcgm_policy_inject_eccerror(handle, gpuIds) -> None:
     """
     Verifies that we can inject an error into the ECC counters and receive a callback
     """
@@ -193,13 +195,13 @@ def helper_dcgm_policy_inject_eccerror(handle, gpuIds):
 
 @test_utils.run_with_standalone_host_engine(40)
 @test_utils.run_with_injection_gpus()
-def test_dcgm_policy_inject_eccerror_standalone(handle, gpuIds):
+def test_dcgm_policy_inject_eccerror_standalone(handle, gpuIds) -> None:
     helper_dcgm_policy_inject_eccerror(handle, gpuIds)
 
 
 @test_utils.run_with_standalone_host_engine(40)
 @test_utils.run_with_injection_gpus()
-def test_dcgm_policy_inject_nvlinkerror_standalone(handle, gpuIds):
+def test_dcgm_policy_inject_nvlinkerror_standalone(handle, gpuIds) -> None:
     """
     Verifies that we can inject an error into the NVLINK error and receive a callback
     """
@@ -248,7 +250,7 @@ def test_dcgm_policy_inject_nvlinkerror_standalone(handle, gpuIds):
     assert (1 == callbackResp.val.nvlink.counter), 'Expected 1 PCI error but got %s' % callbackResp.val.nvlink.counter
 
 
-def helper_test_dcgm_policy_inject_xiderror(handle, gpuIds):
+def helper_test_dcgm_policy_inject_xiderror(handle, gpuIds) -> None:
     """
     Verifies that we can inject an XID error and receive a callback
     """
@@ -310,11 +312,11 @@ def helper_test_dcgm_policy_inject_xiderror(handle, gpuIds):
 
 @test_utils.run_with_standalone_host_engine(40)
 @test_utils.run_with_injection_gpus()
-def test_dcgm_policy_inject_xiderror_standalone(handle, gpuIds):
+def test_dcgm_policy_inject_xiderror_standalone(handle, gpuIds) -> None:
     helper_test_dcgm_policy_inject_xiderror(handle, gpuIds)
 
 
-def helper_dcgm_policy_inject_pcierror(handle, gpuIds):
+def helper_dcgm_policy_inject_pcierror(handle, gpuIds) -> None:
     """
     Verifies that we can inject an error into the PCI counters and receive a callback
     """
@@ -363,13 +365,13 @@ def helper_dcgm_policy_inject_pcierror(handle, gpuIds):
 
 @test_utils.run_with_standalone_host_engine(40)
 @test_utils.run_with_injection_gpus()
-def test_dcgm_policy_inject_pcierror_standalone(handle, gpuIds):
+def test_dcgm_policy_inject_pcierror_standalone(handle, gpuIds) -> None:
     helper_dcgm_policy_inject_pcierror(handle, gpuIds)
 
 
 @test_utils.run_with_standalone_host_engine(40)
 @test_utils.run_with_injection_gpus()
-def test_dcgm_policy_inject_retiredpages_standalone(handle, gpuIds):
+def test_dcgm_policy_inject_retiredpages_standalone(handle, gpuIds) -> None:
     """
     Verifies that we can inject an error into the retired pages counters and receive a callback
     """
@@ -428,7 +430,7 @@ def test_dcgm_policy_inject_retiredpages_standalone(handle, gpuIds):
 
 
 @test_utils.run_with_standalone_host_engine(40)
-def test_dcgm_policy_get_with_no_gpus_standalone(handle):
+def test_dcgm_policy_get_with_no_gpus_standalone(handle) -> None:
     '''
     Test that getting the policies when no GPUs are in the group raises an exception
     '''
@@ -441,7 +443,7 @@ def test_dcgm_policy_get_with_no_gpus_standalone(handle):
 
 @test_utils.run_with_standalone_host_engine(40)
 @test_utils.run_only_with_live_gpus()
-def test_dcgm_policy_get_with_some_gpus_standalone(handle, gpuIds):
+def test_dcgm_policy_get_with_some_gpus_standalone(handle, gpuIds) -> None:
     '''
     Test that getting the policies returns the correct number of policies as GPUs in the system
     when "count" is not specified for policy.Get
@@ -454,7 +456,7 @@ def test_dcgm_policy_get_with_some_gpus_standalone(handle, gpuIds):
     assert len(policies) == 1, len(policies)
 
 
-def helper_dcgm_policy_inject_powererror(handle, gpuIds):
+def helper_dcgm_policy_inject_powererror(handle, gpuIds) -> None:
     """
     Verifies that we can inject an error into the Power level and receive a callback
     """
@@ -507,11 +509,11 @@ def helper_dcgm_policy_inject_powererror(handle, gpuIds):
 
 @test_utils.run_with_standalone_host_engine(40)
 @test_utils.run_with_injection_gpus()
-def test_dcgm_policy_inject_powererror_standalone(handle, gpuIds):
+def test_dcgm_policy_inject_powererror_standalone(handle, gpuIds) -> None:
     helper_dcgm_policy_inject_powererror(handle, gpuIds)
 
 
-def helper_dcgm_policy_inject_thermalerror(handle, gpuIds):
+def helper_dcgm_policy_inject_thermalerror(handle, gpuIds) -> None:
     """
     Verifies that we can inject an error into the Thermal level and receive a callback
     """
@@ -564,5 +566,5 @@ def helper_dcgm_policy_inject_thermalerror(handle, gpuIds):
 
 @test_utils.run_with_standalone_host_engine(40)
 @test_utils.run_with_injection_gpus()
-def test_dcgm_policy_inject_thermalerror_standalone(handle, gpuIds):
+def test_dcgm_policy_inject_thermalerror_standalone(handle, gpuIds) -> None:
     helper_dcgm_policy_inject_thermalerror(handle, gpuIds)

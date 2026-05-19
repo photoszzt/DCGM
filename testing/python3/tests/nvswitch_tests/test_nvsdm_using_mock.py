@@ -24,7 +24,7 @@ from . import nvsdm_helpers
 
 @test_utils.run_with_nvsdm_mock_config("one_switch.yaml")
 @test_utils.run_with_standalone_host_engine()
-def test_nvsdm_list_switches(handle):
+def test_nvsdm_list_switches(handle) -> None:
     flags = 0
     switchIds = dcgm_agent.dcgmGetEntityGroupEntities(
         handle, dcgm_fields.DCGM_FE_SWITCH, flags)
@@ -33,7 +33,7 @@ def test_nvsdm_list_switches(handle):
 
 @test_utils.run_with_nvsdm_mock_config("one_cx.yaml")
 @test_utils.run_with_standalone_host_engine()
-def test_nvsdm_list_ib_cx(handle):
+def test_nvsdm_list_ib_cx(handle) -> None:
     flags = 0
     ibCxIds = dcgm_agent.dcgmGetEntityGroupEntities(
         handle, dcgm_fields.DCGM_FE_CONNECTX, flags)
@@ -43,7 +43,7 @@ def test_nvsdm_list_ib_cx(handle):
 @test_utils.run_with_nvsdm_mock_config("one_switch.yaml")
 @test_utils.run_with_standalone_host_engine()
 @test_utils.run_only_with_nvml()
-def test_nvsdm_port_telemetry(handle):
+def test_nvsdm_port_telemetry(handle) -> None:
     """
     Read port telemetry from NVSDM
     """
@@ -124,7 +124,7 @@ def test_nvsdm_port_telemetry(handle):
 
 @test_utils.run_with_nvsdm_mock_config("one_switch.yaml")
 @test_utils.run_with_standalone_host_engine()
-def test_nvsdm_platform_telemetry(handle):
+def test_nvsdm_platform_telemetry(handle) -> None:
     """
     Read platform telemetry from NVSDM
     """
@@ -205,7 +205,7 @@ def test_nvsdm_platform_telemetry(handle):
 
 @test_utils.run_with_nvsdm_mock_config("one_switch.yaml")
 @test_utils.run_with_standalone_host_engine()
-def test_nvsdm_nvlink_status(handle):
+def test_nvsdm_nvlink_status(handle) -> None:
     """
     Get nvlink status for each nvswitch using NVSDM stub and assert if it's down
     """
@@ -222,7 +222,7 @@ def test_nvsdm_nvlink_status(handle):
 
 @test_utils.run_with_nvsdm_mock_config("one_switch.yaml")
 @test_utils.run_with_standalone_host_engine()
-def test_nvsdm_nvswitch_health_check(handle):
+def test_nvsdm_nvswitch_health_check(handle) -> None:
     """
     Test NvSwitch health check and assert if overall health result doesn't pass.
     """
@@ -246,7 +246,7 @@ def test_nvsdm_nvswitch_health_check(handle):
 
 @test_utils.run_with_nvsdm_mock_config("one_switch.yaml")
 @test_utils.run_with_standalone_host_engine()
-def test_nvsdm_composite_field_telemetry(handle):
+def test_nvsdm_composite_field_telemetry(handle) -> None:
     """
     Read composite field telemetry from NVSDM
     """
@@ -315,5 +315,5 @@ def test_nvsdm_composite_field_telemetry(handle):
 
 @test_utils.run_with_nvsdm_mock_config("one_switch_and_one_cx.yaml")
 @test_utils.run_with_standalone_host_engine()
-def test_nvsdm_mock_pause_resume(handle):
+def test_nvsdm_mock_pause_resume(handle) -> None:
     nvsdm_helpers.helper_nvsdm_pause_resume(handle)

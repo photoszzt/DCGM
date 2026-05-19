@@ -59,7 +59,7 @@ class AppRunner(object):
     #     and were not marked as validated
     _process_nb = 0
 
-    def __init__(self, executable, args=None, cwd=None, env=None):
+    def __init__(self, executable, args=None, cwd=None, env=None) -> None:
         self.executable = executable
         if args is None:
             args = []
@@ -84,7 +84,7 @@ class AppRunner(object):
         self.process_nb = AppRunner._process_nb
         AppRunner._process_nb += 1
 
-    def run(self, timeout=default_timeout):
+    def run(self, timeout: float=default_timeout):
         """
         Run the application and wait for it to finish. 
         Returns the app's error code/string
@@ -92,7 +92,7 @@ class AppRunner(object):
         self.start(timeout)
         return self.wait()
 
-    def start(self, timeout=default_timeout):
+    def start(self, timeout: float=default_timeout) -> None:
         """
         Begin executing the application.
         The application may block if stdout/stderr buffers become full.
@@ -127,7 +127,7 @@ class AppRunner(object):
             self._timer.start()
 
         if not test_utils.noLogging:
-            def args_to_fname(args):
+            def args_to_fname(args) -> str:
                 # crop each argument to 16 characters and make sure the output string is no longer than 50 chars
                 # Long file names are hard to read (hard to find the extension of the file)
                 # Also python sometimes complains about file names being too long.
@@ -147,7 +147,7 @@ class AppRunner(object):
             self._logfile_stderr = open(stderr_fname, "w", encoding='utf-8')
 
     # Non-reentrant, call with lock
-    def _process_finish(self, stdout_buf, stderr_buf):
+    def _process_finish(self, stdout_buf, stderr_buf) -> None:
         """
         Logs return code/string and reads the remaining stdout/stderr.
 
@@ -226,14 +226,14 @@ class AppRunner(object):
 
             return self._retvalue
 
-    def _create_subprocess_env(self):
+    def _create_subprocess_env(self) -> dict[str, str]:
         ''' Merge additional env with current env '''
         env = os.environ.copy()
         for key in self.env:
             env[key] = self.env[key]
         return env
 
-    def validate(self):
+    def validate(self) -> None:
         """
         Marks the process that finished with error code as validated - the error was either expected or handled by the caller
         If process finished with error but wasn't validated one of the subtest will fail.
@@ -268,13 +268,13 @@ class AppRunner(object):
             return self._retvalue
 
     # Non-reentrant, call with lock.
-    def remove(self):
+    def remove(self) -> None:
         plist = AppRunner._processes
 
         if self in plist:
             plist.remove(self)
 
-    def signal(self, signal):
+    def signal(self, signal) -> None:
         """
         Send a signal to the process
         """
@@ -297,7 +297,7 @@ class AppRunner(object):
 
         return out_buf
 
-    def _split_and_log_lines(self, input_string, buff, log_file):
+    def _split_and_log_lines(self, input_string, buff, log_file) -> None:
         """
         Splits string into lines, removes '\\n's, and appends to buffer & log file
 
@@ -311,7 +311,7 @@ class AppRunner(object):
                 log_file.write("\n")
             buff.append(lines[i])
 
-    def stdout_readtillmatch(self, match_fn):
+    def stdout_readtillmatch(self, match_fn) -> None:
         """
         Blocking function that reads input until function match_fn(line : str) returns True.
         If match_fn didn't match anything function raises EOFError exception
@@ -351,22 +351,22 @@ class AppRunner(object):
 
         return self._subprocess.pid
 
-    def __str__(self):
+    def __str__(self) -> str:
         return ("AppRunner #%d: %s %s (cwd: %s; env: %s)" %
                 (self.process_nb, self.executable, " ".join(self.args), self.cwd, self.env))
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return str(self)
 
     @classmethod
-    def clean_all(cls):
+    def clean_all(cls) -> None:
         """
         Terminate all processes that were created using this class and makes sure that all processes that were spawned were validated.
 
         """
         import test_utils
 
-        def log_output(message, process):
+        def log_output(message: str, process) -> None:
             """
             Prints last 10 lines of stdout and stderr for faster lookup
             """

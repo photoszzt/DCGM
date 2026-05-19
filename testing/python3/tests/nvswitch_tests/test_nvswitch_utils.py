@@ -23,7 +23,7 @@ MEMCPY_DTOD_WRITE_CE_BANDWIDTH = ["-t", "Memcpy_DtoD_Write_CE_Bandwidth"]
 MEMCPY_DTOD_READ_CE_BANDWIDTH = ["-t", "Memcpy_DtoD_Read_CE_Bandwidth"]
 
 
-def is_nvidia_docker_running():
+def is_nvidia_docker_running() -> bool:
     """
     Return True if nvidia-docker service is running on the system
     """
@@ -79,7 +79,7 @@ def get_gpu_pci_bdf():
     return bdf
 
 
-def is_dgx_2_full_topology():
+def is_dgx_2_full_topology() -> bool:
     """
     Return true if detect all nvswitches and GPUs on two base boards or one base board
     """

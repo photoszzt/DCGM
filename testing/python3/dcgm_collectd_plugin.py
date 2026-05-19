@@ -137,7 +137,7 @@ g_parseRegEx = re.compile(
 
 class DcgmCollectdPlugin(DcgmReader):
     ###########################################################################
-    def __init__(self):
+    def __init__(self) -> None:
         global c_ONE_SEC_IN_USEC
 
         collectd.debug(
@@ -148,7 +148,7 @@ class DcgmCollectdPlugin(DcgmReader):
 
 ###########################################################################
 
-    def CustomDataHandler(self, fvs):
+    def CustomDataHandler(self, fvs) -> None:
         global c_ONE_SEC_IN_USEC
 
         value = collectd.Values(type='gauge')  # pylint: disable=no-member
@@ -207,11 +207,11 @@ class DcgmCollectdPlugin(DcgmReader):
                     i += 1
 
     ###########################################################################
-    def LogInfo(self, msg):
+    def LogInfo(self, msg) -> None:
         collectd.info(msg)  # pylint: disable=no-member
 
     ###########################################################################
-    def LogError(self, msg):
+    def LogError(self, msg) -> None:
         collectd.error(msg)  # pylint: disable=no-member
 
 ###############################################################################
@@ -219,7 +219,7 @@ class DcgmCollectdPlugin(DcgmReader):
 ###############################################################################
 
 
-def parse_config(config):
+def parse_config(config) -> None:
     global c_ONE_SEC_IN_USEC
     global g_intervalSec
     global g_fieldIntervalMap
@@ -286,7 +286,7 @@ def parse_config(config):
 ###############################################################################
 # Wrapper the Class methods for collectd callbacks
 ###############################################################################
-def config_dcgm(config=None):
+def config_dcgm(config=None) -> None:
     """
     collectd config for dcgm is in the form of a dcgm.conf file, usually
     installed in /etc/collectd/collectd.conf.d/dcgm.conf.
@@ -339,7 +339,7 @@ def config_dcgm(config=None):
 ###############################################################################
 
 
-def init_dcgm():
+def init_dcgm() -> None:
     global g_dcgmCollectd
 
     # restore default SIGCHLD behavior to avoid exceptions with new processes
@@ -351,13 +351,13 @@ def init_dcgm():
 ###############################################################################
 
 
-def shutdown_dcgm():
+def shutdown_dcgm() -> None:
     g_dcgmCollectd.Shutdown()
 
 ###############################################################################
 
 
-def read_dcgm(data=None):
+def read_dcgm(data=None) -> None:
     if g_dcgmCollectd.m_fieldGroup is None:
         collectd.error(
             'No DCGM fields collected: Did you forget FieldIds collectd DCGM config entries or not start nv-hostengine?')
@@ -365,7 +365,7 @@ def read_dcgm(data=None):
         g_dcgmCollectd.Process()
 
 
-def register_collectd_callbacks():
+def register_collectd_callbacks() -> None:
     collectd.register_config(
         config_dcgm, name="dcgm_collectd_plugin")  # pylint: disable=no-member
     # config_dcgm registers read since it needs to parse the sampling interval.

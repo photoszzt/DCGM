@@ -37,7 +37,7 @@ import dcgm_field_helpers
 '''
 
 
-def create_fake_gpu_instances(handle, gpuId, instanceCount):
+def create_fake_gpu_instances(handle, gpuId, instanceCount: int):
     cfe = dcgm_structs_internal.c_dcgmCreateFakeEntities_v2()
     cfe.numToCreate = 0
     fakeInstanceMap = {}
@@ -69,7 +69,7 @@ def create_fake_gpu_instances(handle, gpuId, instanceCount):
 '''
 
 
-def create_fake_compute_instances(handle, parentIds, ciCount):
+def create_fake_compute_instances(handle, parentIds, ciCount: int):
     fakeCIMap = {}
     if ciCount > 0:
         cfe = dcgm_structs_internal.c_dcgmCreateFakeEntities_v2()
@@ -106,7 +106,7 @@ def create_fake_compute_instances(handle, parentIds, ciCount):
 '''
 
 
-def ensure_instance_ids(handle, gpuId, minInstances, minCIs):
+def ensure_instance_ids(handle, gpuId, minInstances: int, minCIs: int):
     instanceMap = {}
     ciMap = {}
     legalInstances = []
@@ -146,7 +146,7 @@ def ensure_instance_ids(handle, gpuId, minInstances, minCIs):
 
 @test_utils.run_with_embedded_host_engine()
 @test_utils.run_with_injection_gpus(gpuCount=8)
-def test_instances_large_mig_topology_getlatestvalues_v2(handle, gpuIds):
+def test_instances_large_mig_topology_getlatestvalues_v2(handle, gpuIds) -> None:
     dcgmHandle = pydcgm.DcgmHandle(handle)
     dcgmSystem = dcgmHandle.GetSystem()
 
@@ -232,7 +232,7 @@ def test_instances_large_mig_topology_getlatestvalues_v2(handle, gpuIds):
 
 @test_utils.run_with_embedded_host_engine()
 @test_utils.run_with_injection_gpus(gpuCount=1)
-def test_instances_fetch_global_fields(handle, gpuIds):
+def test_instances_fetch_global_fields(handle, gpuIds) -> None:
     dcgmHandle = pydcgm.DcgmHandle(handle)
     dcgmSystem = dcgmHandle.GetSystem()
 
@@ -322,7 +322,7 @@ def test_instances_fetch_global_fields(handle, gpuIds):
             injectedValue, readValue)
 
 
-def helper_test_inject_instance_fields(handle, gpuIds):
+def helper_test_inject_instance_fields(handle, gpuIds) -> None:
     instances, cis = ensure_instance_ids(handle, gpuIds[0], 1, 1)
     firstInstanceId = list(instances.keys())[0]
     lastCIId = list(cis.keys())[0]
@@ -372,11 +372,11 @@ def helper_test_inject_instance_fields(handle, gpuIds):
 
 @test_utils.run_with_standalone_host_engine(240)
 @test_utils.run_with_injection_gpus()
-def test_inject_instance_fields_standalone(handle, gpuIds):
+def test_inject_instance_fields_standalone(handle, gpuIds) -> None:
     helper_test_inject_instance_fields(handle, gpuIds)
 
 
-def verify_fake_profile_names(handle, fakeEntities, isGpuInstance):
+def verify_fake_profile_names(handle, fakeEntities, isGpuInstance: bool) -> None:
     fieldIds = [dcgm_fields.DCGM_FI_DEV_NAME]
     entities = []
     for entityId in fakeEntities:
@@ -401,7 +401,7 @@ def verify_fake_profile_names(handle, fakeEntities, isGpuInstance):
             expectedFakeName, v.value.str)
 
 
-def verify_profile_names_exist(handle, migEntityList, isGpuInstance):
+def verify_profile_names_exist(handle, migEntityList, isGpuInstance: bool) -> None:
     fieldIds = [dcgm_fields.DCGM_FI_DEV_NAME]
     entities = []
     for entityId in migEntityList:
@@ -421,7 +421,7 @@ def verify_profile_names_exist(handle, migEntityList, isGpuInstance):
             "Expected a non-empty profile name, but found '%s'" % (v.value.str)
 
 
-def helper_test_fake_mig_device_profile_names(handle, gpuIds):
+def helper_test_fake_mig_device_profile_names(handle, gpuIds) -> None:
     fakeInstanceMap = {}
     for gpuId in gpuIds:
         tmpMap = create_fake_gpu_instances(handle, gpuId, 1)
@@ -436,11 +436,11 @@ def helper_test_fake_mig_device_profile_names(handle, gpuIds):
 
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_injection_gpus()
-def test_fake_mig_device_profile_names_standalone(handle, gpuIds):
+def test_fake_mig_device_profile_names_standalone(handle, gpuIds) -> None:
     helper_test_fake_mig_device_profile_names(handle, gpuIds)
 
 
-def helper_test_health_check_instances(handle, gpuIds):
+def helper_test_health_check_instances(handle, gpuIds) -> None:
     instances, cis = ensure_instance_ids(handle, gpuIds[0], 1, 1)
     instanceId = list(instances.keys())[0]
     ciId = list(cis.keys())[0]
@@ -483,7 +483,7 @@ def helper_test_health_check_instances(handle, gpuIds):
 
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_injection_gpus()
-def test_health_check_instances_standalone(handle, gpuIds):
+def test_health_check_instances_standalone(handle, gpuIds) -> None:
     helper_test_health_check_instances(handle, gpuIds)
 
 
@@ -514,13 +514,13 @@ def populate_counts_per_gpu(hierarchy):
 
 
 class ExpectedValues(object):
-    def __init__(self, instanceCount=0, ciCount=0):
+    def __init__(self, instanceCount: int=0, ciCount: int=0) -> None:
         self.instanceCount = instanceCount
         self.ciCount = ciCount
         self.verified = False
 
 
-def create_small_mig_objects(handle, gpuIds, numToCreate):
+def create_small_mig_objects(handle, gpuIds, numToCreate: int) -> int:
     numInstancesCreated = 0
     for gpuId in gpuIds:
         try:
@@ -536,7 +536,7 @@ def create_small_mig_objects(handle, gpuIds, numToCreate):
     return numInstancesCreated
 
 
-def verifyMigUpdates(handle, oGpuInstances, oGpuCIIds, numInstancesCreated, numCIsCreated, retries=19):
+def verifyMigUpdates(handle, oGpuInstances, oGpuCIIds, numInstancesCreated: int, numCIsCreated: int, retries=19):
     newGpuInstances = []
     newComputeInstances = []
 
@@ -604,7 +604,7 @@ def verify_entries_are_deleted(deletedMap, detectedMap):
     return stillHere
 
 
-def delete_gpu_instances(handle, newGpuInstances, flags):
+def delete_gpu_instances(handle, newGpuInstances, flags: int) -> None:
     for instanceId in newGpuInstances[:-1]:
         dcgm_agent.dcgmDeleteMigEntity(
             handle, dcgm_fields.DCGM_FE_GPU_I, instanceId, flags)
@@ -613,14 +613,14 @@ def delete_gpu_instances(handle, newGpuInstances, flags):
         handle, dcgm_fields.DCGM_FE_GPU_I, newGpuInstances[-1], 0)
 
 
-def delete_gpu_instances_no_fail(handle, newGpuInstances, flags):
+def delete_gpu_instances_no_fail(handle, newGpuInstances, flags: int) -> None:
     try:
         delete_gpu_instances(handle, newGpuInstances, flags)
     except:
         pass
 
 
-def create_mig_entities_and_verify(handle, gpuIds, instanceCreateCount, minInstanceCreateCount):
+def create_mig_entities_and_verify(handle, gpuIds, instanceCreateCount: int, minInstanceCreateCount: int):
     # get mig hierarchy
     hierarchy = dcgm_agent.dcgmGetGpuInstanceHierarchy(handle)
     oGpus, oGpuInstances, oGpuCIIds = populate_counts_per_gpu(hierarchy)
@@ -662,7 +662,7 @@ def create_mig_entities_and_verify(handle, gpuIds, instanceCreateCount, minInsta
     return oGpus, newGpuInstances, newComputeInstances
 
 
-def delete_compute_instances_and_verify(handle, newComputeInstances):
+def delete_compute_instances_and_verify(handle, newComputeInstances) -> str:
     errMsg = ''
     flags = dcgm_structs.DCGM_MIG_RECONFIG_DELAY_PROCESSING
     # Delete the new instances
@@ -697,7 +697,7 @@ def delete_compute_instances_and_verify(handle, newComputeInstances):
     return errMsg
 
 
-def delete_gpu_instances_and_verify(handle, newGpuInstances):
+def delete_gpu_instances_and_verify(handle, newGpuInstances) -> str:
     errMsg = ''
     flags = dcgm_structs.DCGM_MIG_RECONFIG_DELAY_PROCESSING
     delete_gpu_instances(handle, newGpuInstances, flags)
@@ -725,7 +725,7 @@ def delete_gpu_instances_and_verify(handle, newGpuInstances):
     return errMsg
 
 
-def helper_test_mig_reconfigure(handle, gpuIds):
+def helper_test_mig_reconfigure(handle, gpuIds) -> None:
     _, newGpuInstances, newComputeInstances = create_mig_entities_and_verify(
         handle, gpuIds, 3, 1)
 
@@ -749,11 +749,11 @@ def helper_test_mig_reconfigure(handle, gpuIds):
 @test_utils.run_only_with_live_gpus()
 @test_utils.run_only_if_mig_is_enabled()
 @test_utils.run_only_as_root()
-def test_mig_reconfigure_standalone(handle, gpuIds):
+def test_mig_reconfigure_standalone(handle, gpuIds) -> None:
     helper_test_mig_reconfigure(handle, gpuIds)
 
 
-def helper_test_mig_cuda_visible_devices_string(handle, gpuIds):
+def helper_test_mig_cuda_visible_devices_string(handle, gpuIds) -> None:
     hierarchy = dcgm_agent.dcgmGetGpuInstanceHierarchy(handle)
     gpuPartOfTest = False
 
@@ -785,11 +785,11 @@ def helper_test_mig_cuda_visible_devices_string(handle, gpuIds):
 @test_utils.run_only_with_live_gpus()
 @test_utils.run_only_if_mig_is_enabled()
 @test_utils.run_only_as_root()
-def test_mig_cuda_visible_devices_string_standalone(handle, gpuIds):
+def test_mig_cuda_visible_devices_string_standalone(handle, gpuIds) -> None:
     helper_test_mig_cuda_visible_devices_string(handle, gpuIds)
 
 
-def helper_test_mig_value_reporting(handle, gpuIds):
+def helper_test_mig_value_reporting(handle, gpuIds) -> None:
     # These fields should report the same value for GPUs, instances, and compute instances
     sameValueFieldIds = [
         dcgm_fields.DCGM_FI_DEV_COMPUTE_MODE,
@@ -875,5 +875,5 @@ def helper_test_mig_value_reporting(handle, gpuIds):
 @test_utils.run_only_with_live_gpus()
 @test_utils.run_only_if_mig_is_enabled()
 @test_utils.run_only_as_root()
-def test_mig_value_reporting_standalone(handle, gpuIds):
+def test_mig_value_reporting_standalone(handle, gpuIds) -> None:
     helper_test_mig_value_reporting(handle, gpuIds)

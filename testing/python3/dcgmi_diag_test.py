@@ -15,7 +15,7 @@ from DcgmiDiag import DcgmiDiag
 import utils
 
 
-def main():
+def main() -> None:
     dd = DcgmiDiag(dcgmiPrefix=utils.verify_binary_locations())
     passedCount = 0
     for i in range(0, 160):

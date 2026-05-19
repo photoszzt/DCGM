@@ -38,7 +38,7 @@ from _test_helpers import skip_test_if_no_dcgm_nvml
 @test_utils.run_with_current_system_injection_nvml(skuFileName="current_test_kmsg_fatal_xid_parsing.yaml")
 @test_utils.run_with_embedded_host_engine()
 @test_utils.run_only_with_live_gpus()
-def test_kmsg_fatal_xid_parsing(handle, gpuIds, xid):
+def test_kmsg_fatal_xid_parsing(handle, gpuIds, xid) -> None:
     """
     This test verifies that DcgmCacheManager skips NVML driver calls on
     detecting a fatal XID in /dev/kmsg.

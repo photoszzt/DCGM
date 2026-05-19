@@ -19,7 +19,7 @@ import dcgm_agent_internal
 
 
 @test_utils.run_with_standalone_host_engine()
-def test_utils_run_with_standalone_host_engine(handle):
+def test_utils_run_with_standalone_host_engine(handle) -> None:
     '''
     Sanity test for running with a standalone host engine
     '''

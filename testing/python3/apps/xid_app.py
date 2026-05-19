@@ -23,14 +23,14 @@ class XidApp(app_runner.AppRunner):
         "Windows_64bit": "./apps/xid/xid_64bit.exe"
     }
 
-    def __init__(self, device):
+    def __init__(self, device) -> None:
         self.device = device
         path = os.path.join(
             utils.script_dir, XidApp.paths[utils.platform_identifier])
         super(XidApp, self).__init__(
             path, ["-i", device.busId], cwd=os.path.dirname(path))
 
-    def start(self, timeout=app_runner.default_timeout):
+    def start(self, timeout: float=app_runner.default_timeout) -> None:
         """
         Blocks till XID has been delivered
 
@@ -41,5 +41,5 @@ class XidApp(app_runner.AppRunner):
         # if matching line is not found then EOFError exception is risen
         self.stdout_readtillmatch(lambda x: x == "All done. Finishing.")
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "XidApp on device " + str(self.device) + " with " + super(XidApp, self).__str__()

@@ -68,7 +68,7 @@ def helper_setup_and_run_mndiag(handle, config):
 # ------------------------------------------------------
 
 
-def helper_validate_response(response, config, testName="MNUBERGEMM", success=None, error_entities={}, driver_versions=[]):
+def helper_validate_response(response, config, testName: str="MNUBERGEMM", success=None, error_entities={}, driver_versions=[]) -> None:
     """
     Helper to validate mndiag response structure
     """
@@ -152,7 +152,7 @@ def helper_validate_response(response, config, testName="MNUBERGEMM", success=No
 # ------------------------------------------------------
 
 
-def helper_validate_error_output(response, validation_config):
+def helper_validate_error_output(response, validation_config) -> None:
     """
     Flexible helper to validate mndiag output for both success and failure cases.
 
@@ -173,7 +173,7 @@ def helper_validate_error_output(response, validation_config):
 # ------------------------------------------------------
 
 
-def helper_check_generated_log_file(config, mnubergemm_log_file):
+def helper_check_generated_log_file(config, mnubergemm_log_file: str) -> None:
     """
     Helper to check the generated log file for required info and error substrings
     Also validates test nodes' info and error messages if test nodes are present
@@ -225,7 +225,7 @@ def helper_check_generated_log_file(config, mnubergemm_log_file):
 
 
 # -----------------------------------------------------
-def helper_print_stderr_output():
+def helper_print_stderr_output() -> None:
     """
     Helper to print stderr output
     """
@@ -236,7 +236,7 @@ def helper_print_stderr_output():
 # ------------------------------------------------------
 
 
-def helper_run_and_validate_mndiag(handle, config, success=True):
+def helper_run_and_validate_mndiag(handle, config, success=True) -> None:
     """
     Helper to run and validate mndiag
     """
@@ -254,7 +254,7 @@ def helper_run_and_validate_mndiag(handle, config, success=True):
 # ------------------------------------------------------
 
 
-def helper_setup_headnode_message(config, messages, entities):
+def helper_setup_headnode_message(config, messages, entities) -> None:
     """
     Helper to setup headnode message
     """
@@ -278,7 +278,7 @@ def helper_setup_headnode_message(config, messages, entities):
 # ------------------------------------------------------
 
 
-def helper_setup_testnode_message(config, messages, entities):
+def helper_setup_testnode_message(config, messages, entities) -> None:
     """
     Helper to setup testnode message
     """
@@ -293,7 +293,7 @@ def helper_setup_testnode_message(config, messages, entities):
         node["expected_num_errors"] = len(node["gpu_required_error"].keys())
 
 
-def helper_setup_multinode_config(config):
+def helper_setup_multinode_config(config) -> None:
     """
     Helper to setup multinode config
     """
@@ -316,7 +316,7 @@ def helper_setup_multinode_config(config):
 # ------------------------------------------------------
 
 
-def helper_extract_mnubergemm_path_from_logs(log_path, hostname=None, ip=None, is_remote=False):
+def helper_extract_mnubergemm_path_from_logs(log_path: str, hostname=None, ip=None, is_remote=False) -> str | None:
     """
     Helper method to extract mnubergemm path from log files.
     """
@@ -324,7 +324,7 @@ def helper_extract_mnubergemm_path_from_logs(log_path, hostname=None, ip=None, i
     default_path_log_pattern = "Inferred default mnubergemm path:"
     grep_pattern_remote = "Setting mnubergemm path to:"
 
-    def extract_path_from_line(line):
+    def extract_path_from_line(line: str) -> str | None:
         """Extract path from a log line that contains mnubergemm path"""
         if custom_path_log_pattern in line:
             start_idx = line.find(custom_path_log_pattern) + \
@@ -391,7 +391,7 @@ def helper_extract_mnubergemm_path_from_logs(log_path, hostname=None, ip=None, i
         return None
 
 
-def helper_validate_mnubergemm_path(config, head_node_log_path, remote_log_path):
+def helper_validate_mnubergemm_path(config, head_node_log_path: str, remote_log_path: str) -> None:
     """
     Helper to validate mnubergemm path
     """
@@ -448,7 +448,7 @@ def helper_validate_mnubergemm_path(config, head_node_log_path, remote_log_path)
 @test_utils.run_only_with_live_gpus()
 @test_utils.run_only_with_all_same_sku_gpus()
 @test_utils.run_only_if_mig_is_disabled()
-def test_dcgm_mndiag_basic_success(handle, gpuIds):
+def test_dcgm_mndiag_basic_success(handle, gpuIds) -> None:
     """Test basic successful mndiag execution with mock mnubergemm"""
     logger.info("Starting basic mndiag success test")
     logger.info(f"mpirun_path: {test_utils.get_mpirun_path()}")
@@ -496,7 +496,7 @@ def test_dcgm_mndiag_basic_success(handle, gpuIds):
 @test_utils.run_only_with_live_gpus()
 @test_utils.run_only_with_all_same_sku_gpus()
 @test_utils.run_only_if_mig_is_disabled()
-def test_dcgm_mndiag_basic_failure(handle, gpuIds):
+def test_dcgm_mndiag_basic_failure(handle, gpuIds) -> None:
     """Test mndiag when mock mnubergemm simulates all error messages"""
     logger.info("Starting mndiag basic failure test")
     logger.info(f"mpirun_path: {test_utils.get_mpirun_path()}")
@@ -561,7 +561,7 @@ def test_dcgm_mndiag_basic_failure(handle, gpuIds):
 @test_utils.run_only_with_live_gpus()
 @test_utils.run_only_with_all_same_sku_gpus()
 @test_utils.run_only_if_mig_is_disabled()
-def test_dcgm_mndiag_mixed_pass_fail_1(handle, gpuIds):
+def test_dcgm_mndiag_mixed_pass_fail_1(handle, gpuIds) -> None:
     """Test mndiag mixed pass/fail scenario 1"""
 
     logger.info("Starting mixed pass/fail mndiag 1")
@@ -608,7 +608,7 @@ def test_dcgm_mndiag_mixed_pass_fail_1(handle, gpuIds):
 @test_utils.run_only_with_live_gpus()
 @test_utils.run_only_with_all_same_sku_gpus()
 @test_utils.run_only_if_mig_is_disabled()
-def test_dcgm_mndiag_mixed_pass_fail_2(handle, gpuIds):
+def test_dcgm_mndiag_mixed_pass_fail_2(handle, gpuIds) -> None:
     """Test mndiag mixed pass/fail scenario 2"""
 
     logger.info("Starting mixed pass/fail mndiag 2")
@@ -658,7 +658,7 @@ def test_dcgm_mndiag_mixed_pass_fail_2(handle, gpuIds):
 @test_utils.run_only_with_live_gpus()
 @test_utils.run_only_with_all_same_sku_gpus()
 @test_utils.run_only_if_mig_is_disabled()
-def test_dcgm_mndiag_multinode_basic_success(handle, gpuIds):
+def test_dcgm_mndiag_multinode_basic_success(handle, gpuIds) -> None:
     """Test basic successful mndiag execution with mock mnubergemm on multiple nodes - pass on head node, pass on test nodes"""
     logger.info(f"mpirun_path: {test_utils.get_mpirun_path()}")
 
@@ -715,7 +715,7 @@ def test_dcgm_mndiag_multinode_basic_success(handle, gpuIds):
 @test_utils.run_only_with_live_gpus()
 @test_utils.run_only_with_all_same_sku_gpus()
 @test_utils.run_only_if_mig_is_disabled()
-def test_dcgm_mndiag_multinode_basic_failure_1(handle, gpuIds):
+def test_dcgm_mndiag_multinode_basic_failure_1(handle, gpuIds) -> None:
     """Test basic failure mndiag execution with mock mnubergemm on multiple nodes, fail on head node 1 gpu, fail on test nodes 6 gpus"""
     logger.info(f"mpirun_path: {test_utils.get_mpirun_path()}")
 
@@ -794,7 +794,7 @@ def test_dcgm_mndiag_multinode_basic_failure_1(handle, gpuIds):
 @test_utils.run_only_with_live_gpus()
 @test_utils.run_only_with_all_same_sku_gpus()
 @test_utils.run_only_if_mig_is_disabled()
-def test_dcgm_mndiag_multinode_basic_failure_2(handle, gpuIds):
+def test_dcgm_mndiag_multinode_basic_failure_2(handle, gpuIds) -> None:
     """Test basic failure mndiag execution with mock mnubergemm on multiple node, fail on head node 1 gpu, fail on test nodes 1 gpu, same error"""
     logger.info(f"mpirun_path: {test_utils.get_mpirun_path()}")
 
@@ -842,7 +842,7 @@ def test_dcgm_mndiag_multinode_basic_failure_2(handle, gpuIds):
 @test_utils.run_only_with_live_gpus()
 @test_utils.run_only_with_all_same_sku_gpus()
 @test_utils.run_only_if_mig_is_disabled()
-def test_dcgm_mndiag_multinode_basic_failure_3(handle, gpuIds):
+def test_dcgm_mndiag_multinode_basic_failure_3(handle, gpuIds) -> None:
     """Test basic failure mndiag execution with mock mnubergemm on multiple node, fail on head node 2 gpus, fail on test nodes 2 gpus, same error"""
     logger.info(f"mpirun_path: {test_utils.get_mpirun_path()}")
 
@@ -902,7 +902,7 @@ def test_dcgm_mndiag_multinode_basic_failure_3(handle, gpuIds):
 @test_utils.run_only_with_live_gpus()
 @test_utils.run_only_with_all_same_sku_gpus()
 @test_utils.run_only_if_mig_is_disabled()
-def test_dcgm_mndiag_multinode_headnode_pass_testnodes_fail(handle, gpuIds):
+def test_dcgm_mndiag_multinode_headnode_pass_testnodes_fail(handle, gpuIds) -> None:
     """Test basic successful headnode and failure testnodes mndiag execution with mock mnubergemm on multiple nodes, pass on head node, fail on test nodes 2 gpus, different error"""
     logger.info(f"mpirun_path: {test_utils.get_mpirun_path()}")
     config = {}
@@ -952,7 +952,7 @@ def test_dcgm_mndiag_multinode_headnode_pass_testnodes_fail(handle, gpuIds):
 @test_utils.run_only_with_live_gpus()
 @test_utils.run_only_with_all_same_sku_gpus()
 @test_utils.run_only_if_mig_is_disabled()
-def test_dcgm_mndiag_multinode_headnode_fail_testnodes_pass(handle, gpuIds):
+def test_dcgm_mndiag_multinode_headnode_fail_testnodes_pass(handle, gpuIds) -> None:
     """Test basic failure headnode and successful testnodes mndiag execution with mock mnubergemm on multiple nodes, fail on head node 2 gpus, pass on test nodes"""
     logger.info(f"mpirun_path: {test_utils.get_mpirun_path()}")
 
@@ -1003,7 +1003,7 @@ def test_dcgm_mndiag_multinode_headnode_fail_testnodes_pass(handle, gpuIds):
 @test_utils.run_only_with_live_gpus()
 @test_utils.run_only_with_all_same_sku_gpus()
 @test_utils.run_only_if_mig_is_disabled()
-def test_dcgm_mndiag_multinode_mixed_pass_fail(handle, gpuIds):
+def test_dcgm_mndiag_multinode_mixed_pass_fail(handle, gpuIds) -> None:
     """Test mixed pass/fail mndiag execution with mock mnubergemm on multiple nodes, pass on head node, pass on test nodes 1 gpu and fail on 2 gpus"""
     logger.info(f"mpirun_path: {test_utils.get_mpirun_path()}")
 
@@ -1059,7 +1059,7 @@ def test_dcgm_mndiag_multinode_mixed_pass_fail(handle, gpuIds):
 @test_utils.run_only_with_live_gpus()
 @test_utils.run_only_with_all_same_sku_gpus()
 @test_utils.run_only_if_mig_is_disabled()
-def test_dcgm_mndiag_multinode_validate_mnubergemm_path(handle, gpuIds):
+def test_dcgm_mndiag_multinode_validate_mnubergemm_path(handle, gpuIds) -> None:
     """Test mndiag validate mnubergemm path"""
     logger.info(f"mpirun_path: {test_utils.get_mpirun_path()}")
 

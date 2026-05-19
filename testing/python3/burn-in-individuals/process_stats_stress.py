@@ -39,20 +39,20 @@ else:
 
 
 class ProcessStatsStressPid:
-    def __init__(self):
+    def __init__(self) -> None:
         self.pid = 0
         self.gpuId = 0
         self.appObj = None
 
 
 class ProcessStatsStressGpu:
-    def __init__(self):
+    def __init__(self) -> None:
         self.gpuId = -1  # DCGM gpu ID
         self.busId = ""  # Bus ID string
 
 
 class ProcessStatsStress:
-    def __init__(self, embeddedMode, heHandle):
+    def __init__(self, embeddedMode, heHandle) -> None:
         self.gpus = []  # Array of ProcessStatsStressGpu objects
         self.groupName = "pss_group"
         self.groupId = None
@@ -60,17 +60,17 @@ class ProcessStatsStress:
         self.embeddedMode = embeddedMode
         self.heHandle = heHandle
 
-    def __del__(self):
+    def __del__(self) -> None:
         if self.groupId is not None:
             dcgm_agent.dcgmGroupDestroy(self.heHandle, self.groupId)
             self.groupId = None
 
         self.heHandle = None
 
-    def Log(self, strVal):
+    def Log(self, strVal: str) -> None:
         print(strVal)  # Just print for now. Can do more later
 
-    def GetGpus(self):
+    def GetGpus(self) -> None:
         """
         Populate self.gpus
         """
@@ -108,7 +108,7 @@ class ProcessStatsStress:
 
             self.Log("    GPUID %d, busId %s" % (gpu.gpuId, gpu.busId))
 
-    def WatchProcessStats(self):
+    def WatchProcessStats(self) -> None:
 
         # watch the process info fields
         updateFreq = 1000000
@@ -117,7 +117,7 @@ class ProcessStatsStress:
         dcgm_agent.dcgmWatchPidFields(
             self.heHandle, self.groupId, updateFreq, maxKeepAge, maxKeepEntries)
 
-    def StartAppOnGpus(self):
+    def StartAppOnGpus(self) -> None:
 
         for gpu in self.gpus:
             pidObj = ProcessStatsStressPid()
@@ -136,7 +136,7 @@ class ProcessStatsStress:
             self.Log("Started PID %d. Runtime %d ms" %
                      (pidObj.pid, appTimeout))
 
-    def LoopOneIteration(self):
+    def LoopOneIteration(self) -> None:
         for i in range(g_processesPerSecond):
             self.StartAppOnGpus()
 
@@ -192,7 +192,7 @@ class ProcessStatsStress:
         self.RunLoop()
 
 
-def processMatchFn(stdoutStr):
+def processMatchFn(stdoutStr) -> bool:
     '''
     Callback passed to HostEngineApp.stdout_readtillmatch to see if the host engine has started
     '''
@@ -202,7 +202,7 @@ def processMatchFn(stdoutStr):
         return False
 
 
-def main():
+def main() -> None:
     # Make sure logging stuff is bootstrapped
     try:
         option_parser.parse_options()

@@ -29,7 +29,7 @@ from TestData import TestData
 from test_utils import TestSkipped
 
 
-def log_environment_info():
+def log_environment_info() -> None:
     if utils.is_linux():
         logger.info("Xorg running:        %s" % test_utils.is_xorg_running())
     logger.info("Python version:      %s" % python_version.split(None, 1)[0])
@@ -49,7 +49,7 @@ def log_environment_info():
 ##################################################################################
 
 
-def kill_process_ids(process_ids, murder):
+def kill_process_ids(process_ids, murder: bool) -> bool:
     running = False
     for pid in process_ids:
         if not pid:
@@ -71,7 +71,7 @@ def kill_process_ids(process_ids, murder):
 ##################################################################################
 
 
-def kill_hostengine_if_needed():
+def kill_hostengine_if_needed() -> None:
     running = False
     need_to_validate = False
     for i in range(0, 2):
@@ -96,7 +96,7 @@ def kill_hostengine_if_needed():
         assert not pids, msg
 
 
-def runInitialDiag(handle):
+def runInitialDiag(handle) -> None:
     with test_utils.SubTest("Initial Diagnostic"):
         initialDiag.runInitialDiag(handle)
 
@@ -106,17 +106,17 @@ class WithWrapper:
     This wraps an item in a class to be used in a with clause.
     """
 
-    def __init__(self, hostgengine=None, handle=None):
+    def __init__(self, hostgengine=None, handle=None) -> None:
         self.item = handle
 
     def __enter__(self):
         return self.item
 
-    def __exit__(self, exception_type, exception, trace):
+    def __exit__(self, exception_type, exception, trace) -> None:
         pass
 
 
-def run_tests():
+def run_tests() -> None:
     '''
     testDir: Subdirectory to look for tests in. For example: "tests" for NVML
 
@@ -299,7 +299,7 @@ _test_info_split_verbose_last_newlines = re.compile(
     r"[\n ]*$")  # Matches empty lines at the end of the string
 
 
-def print_test_info():
+def print_test_info() -> None:
     """
     testDir: Subdirectory to look for tests in
     """

@@ -42,7 +42,7 @@ class TestDcgmUnittestsApp(app_runner.AppRunner):
         "(null)",  # e.g. from printing %s from null ptr
     ]
 
-    def __init__(self, args=None):
+    def __init__(self, args=None) -> None:
         path = TestDcgmUnittestsApp.paths[utils.platform_identifier]
         self.nv_hostengine = None
         self.output_filename = None
@@ -56,7 +56,7 @@ class TestDcgmUnittestsApp(app_runner.AppRunner):
         else:
             self.trace_fname = None
 
-    def _process_finish(self, stdout_buf, stderr_buf):
+    def _process_finish(self, stdout_buf, stderr_buf) -> None:
         super(TestDcgmUnittestsApp, self)._process_finish(
             stdout_buf, stderr_buf)
 
@@ -76,5 +76,5 @@ class TestDcgmUnittestsApp(app_runner.AppRunner):
             logger.warning("stdout:\n%s\n" % stdout)
             logger.warning("stderr:\n%s\n" % stderr)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "nv_hostengine" + super(TestDcgmUnittestsApp, self).__str__()

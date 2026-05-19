@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-def _python_version_check():
+def _python_version_check() -> None:
     import sys
     python_version = sys.version.split(None, 1)[0]
     if python_version < '3':

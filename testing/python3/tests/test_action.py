@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from DcgmGroup import DcgmGroup
 import pydcgm
 import dcgm_structs
 import dcgm_agent
@@ -30,7 +31,7 @@ g_allValidations = [dcgm_structs.DCGM_POLICY_VALID_NONE, dcgm_structs.DCGM_POLIC
                     dcgm_structs.DCGM_POLICY_VALID_SV_XLONG]
 
 
-def helper_validate_action(groupObj):
+def helper_validate_action(groupObj: DcgmGroup) -> None:
 
     if not option_parser.options.developer_mode:
         validations = g_allValidations[0:0]  # Just run short for non-developer
@@ -54,7 +55,7 @@ def helper_validate_action(groupObj):
 @test_utils.for_all_same_sku_gpus()
 @test_utils.run_only_as_root()
 @test_utils.run_with_max_power_limit_set()
-def test_dcgm_action_validate_embedded(handle, gpuIds):
+def test_dcgm_action_validate_embedded(handle, gpuIds) -> None:
     handleObj = pydcgm.DcgmHandle(handle=handle)
     systemObj = handleObj.GetSystem()
     groupObj = systemObj.GetGroupWithGpuIds('actiongroup', gpuIds)
@@ -65,7 +66,7 @@ def test_dcgm_action_validate_embedded(handle, gpuIds):
 @test_utils.run_with_standalone_host_engine(20)
 @test_utils.run_only_with_live_gpus()
 @test_utils.for_all_same_sku_gpus()
-def test_dcgm_action_validate_remote(handle, gpuIds):
+def test_dcgm_action_validate_remote(handle, gpuIds) -> None:
     handleObj = pydcgm.DcgmHandle(handle=handle)
     systemObj = handleObj.GetSystem()
     groupObj = systemObj.GetGroupWithGpuIds('actiongroup', gpuIds)
@@ -79,7 +80,7 @@ g_allDiagLevels = [dcgm_structs.DCGM_DIAG_LVL_SHORT,
                    dcgm_structs.DCGM_DIAG_LVL_XLONG]
 
 
-def helper_validate_run_diag(groupObj):
+def helper_validate_run_diag(groupObj: DcgmGroup) -> None:
     if not option_parser.options.developer_mode:
         diagLevels = g_allDiagLevels[0:0]  # Just run short for non-developer
     else:
@@ -100,7 +101,7 @@ def helper_validate_run_diag(groupObj):
 @test_utils.for_all_same_sku_gpus()
 @test_utils.run_only_as_root()
 @test_utils.run_with_max_power_limit_set()
-def test_dcgm_action_run_diag_embedded(handle, gpuIds):
+def test_dcgm_action_run_diag_embedded(handle, gpuIds) -> None:
     handleObj = pydcgm.DcgmHandle(handle=handle)
     systemObj = handleObj.GetSystem()
     groupObj = systemObj.GetGroupWithGpuIds('actiongroup', gpuIds)
@@ -113,7 +114,7 @@ def test_dcgm_action_run_diag_embedded(handle, gpuIds):
 @test_utils.for_all_same_sku_gpus()
 @test_utils.run_only_as_root()
 @test_utils.run_with_max_power_limit_set()
-def test_dcgm_action_run_diag_remote(handle, gpuIds):
+def test_dcgm_action_run_diag_remote(handle, gpuIds) -> None:
     handleObj = pydcgm.DcgmHandle(handle=handle)
     systemObj = handleObj.GetSystem()
     groupObj = systemObj.GetGroupWithGpuIds('actiongroup', gpuIds)
@@ -121,7 +122,7 @@ def test_dcgm_action_run_diag_remote(handle, gpuIds):
     helper_validate_run_diag(groupObj)
 
 
-def helper_dcgm_action_run_diag_gpu_list(handle, gpuIds):
+def helper_dcgm_action_run_diag_gpu_list(handle, gpuIds) -> None:
     '''
     Test that running the DCGM diagnostic works if you provide a GPU ID list rather
     than a groupId.
@@ -146,14 +147,14 @@ def helper_dcgm_action_run_diag_gpu_list(handle, gpuIds):
 @test_utils.run_only_with_live_gpus()
 @test_utils.for_all_same_sku_gpus()
 @test_utils.run_only_if_mig_is_disabled()
-def test_dcgm_action_run_diag_gpu_list_standalone(handle, gpuIds):
+def test_dcgm_action_run_diag_gpu_list_standalone(handle, gpuIds) -> None:
     helper_dcgm_action_run_diag_gpu_list(handle, gpuIds)
 
 
 @test_utils.run_with_embedded_host_engine()
 @test_utils.run_only_with_live_gpus()
 @test_utils.for_all_same_sku_gpus()
-def test_dcgm_action_run_diag_bad_validation(handle, gpuIds):
+def test_dcgm_action_run_diag_bad_validation(handle, gpuIds) -> None:
     gpuIdStr = ""
     for i, gpuId in enumerate(gpuIds):
         if i > 0:
@@ -174,7 +175,7 @@ def test_dcgm_action_run_diag_bad_validation(handle, gpuIds):
 @test_utils.run_with_injection_nvml_using_specific_sku('A100x4-and-DGX.yaml')
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_nvml_injected_gpus()
-def test_dcgm_action_run_diag_on_heterogeneous_env(handle, gpuIds):
+def test_dcgm_action_run_diag_on_heterogeneous_env(handle, gpuIds) -> None:
     # GPUs are specified by entity-id
     drd = dcgm_structs.c_dcgmRunDiag_v10()
     drd.version = dcgm_structs.dcgmRunDiag_version10
@@ -200,7 +201,7 @@ def test_dcgm_action_run_diag_on_heterogeneous_env(handle, gpuIds):
 @test_utils.run_with_injection_nvml_using_specific_sku('A100x4-and-DGX.yaml')
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_nvml_injected_gpus()
-def test_dcgm_action_run_diag_entity_and_group_specified(handle, gpuIds):
+def test_dcgm_action_run_diag_entity_and_group_specified(handle, gpuIds) -> None:
     drd = dcgm_structs.c_dcgmRunDiag_v10()
     drd.version = dcgm_structs.dcgmRunDiag_version10
     drd.validate = dcgm_structs.DCGM_POLICY_VALID_SV_SHORT

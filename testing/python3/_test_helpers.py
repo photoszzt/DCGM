@@ -33,7 +33,7 @@ def skip_test_if_no_mock():
     '''
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwds):
+        def wrapper(*args, **kwds) -> None:
             if MOCK_INSTALLED:
                 fn(*args, **kwds)
             else:
@@ -63,7 +63,7 @@ def KeywordizeLastArgument(keywordName):
     '''
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args, **kwargs) -> None:
             kwargs[keywordName] = args[-1]
             args = args[:-1]
             fn(*args, **kwargs)
@@ -96,7 +96,7 @@ def skip_test_if_no_dcgm_nvml():
     '''
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwds):
+        def wrapper(*args, **kwds) -> None:
             if DCGM_NVML_PRESENTED:
                 fn(*args, **kwds)
             else:

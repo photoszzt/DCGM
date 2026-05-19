@@ -15,6 +15,13 @@
 # Python bindings for the internal API of DCGM library (dcgm_test_apis.h)
 ##
 
+from dcgm_structs_internal import dcgmCacheManagerFieldInfo_v4
+from dcgm_structs import c_dcgmVgpuInstanceAttributes_v1
+from dcgm_structs import c_dcgmVgpuDeviceAttributes_v7
+from dcgm_structs import c_dcgmFieldValue_v1
+from ctypes import c_uint
+from _ctypes import _CData
+from _ctypes import Array
 from ctypes import *
 
 from ctypes.util import find_library
@@ -38,7 +45,7 @@ Corresponding Calls
 
 
 @dcgm_agent.ensure_byte_strings()
-def dcgmGetLatestValuesForFields(dcgmHandle, gpuId, fieldIds):
+def dcgmGetLatestValuesForFields(dcgmHandle: str, gpuId, fieldIds) -> Array[c_dcgmFieldValue_v1]:
     fn = dcgm_structs._dcgmGetFunctionPointer("dcgmGetLatestValuesForFields")
     field_values = (dcgm_structs.c_dcgmFieldValue_v1 * len(fieldIds))()
     id_values = (c_uint * len(fieldIds))(*fieldIds)
@@ -65,7 +72,7 @@ def dcgmGetMultipleValuesForField(dcgmHandle, gpuId, fieldId, maxCount, startTs,
 
 
 @dcgm_agent.ensure_byte_strings()
-def dcgmWatchFieldValue(dcgmHandle, gpuId, fieldId, updateFreq, maxKeepAge, maxKeepEntries):
+def dcgmWatchFieldValue(dcgmHandle: str, gpuId, fieldId, updateFreq, maxKeepAge, maxKeepEntries):
     fn = dcgm_structs._dcgmGetFunctionPointer("dcgmWatchFieldValue")
     ret = fn(dcgmHandle, c_int(gpuId), c_uint(fieldId), c_longlong(
         updateFreq), c_double(maxKeepAge), c_int(maxKeepEntries))
@@ -82,7 +89,7 @@ def dcgmUnwatchFieldValue(dcgmHandle, gpuId, fieldId, clearCache):
     return ret
 
 
-def dcgmInjectFieldValue(dcgmHandle, gpuId, value):
+def dcgmInjectFieldValue(dcgmHandle: str, gpuId: c_uint, value):
     fn = dcgm_structs._dcgmGetFunctionPointer("dcgmInjectFieldValue")
     ret = fn(dcgmHandle, c_uint(gpuId), byref(value))
     _dcgmIntCheckReturn(ret)
@@ -115,7 +122,7 @@ def dcgmCreateNvmlInjectionGpu(dcgmHandle, index):
 
 
 @dcgm_agent.ensure_byte_strings()
-def dcgmInjectNvmlDevice(dcgmHandle, gpuId, key, extraKeys, extraKeyCount, injectNvmlRet):
+def dcgmInjectNvmlDevice(dcgmHandle: str, gpuId, key, extraKeys, extraKeyCount, injectNvmlRet):
     fn = dcgm_structs._dcgmGetFunctionPointer("dcgmInjectNvmlDevice")
     if extraKeys is None:
         ret = fn(dcgmHandle, c_uint(gpuId), key, None,
@@ -197,7 +204,7 @@ def dcgmSetEntityNvLinkLinkState(dcgmHandle, entityGroupId, entityId, linkId, li
 
 
 @dcgm_agent.ensure_byte_strings()
-def dcgmGetCacheManagerFieldInfo(dcgmHandle, entityId, entityGroupId, fieldId):
+def dcgmGetCacheManagerFieldInfo(dcgmHandle: str, entityId, entityGroupId, fieldId) -> dcgmCacheManagerFieldInfo_v4:
     fn = dcgm_structs._dcgmGetFunctionPointer("dcgmGetCacheManagerFieldInfo")
     cmfi = dcgm_structs_internal.dcgmCacheManagerFieldInfo_v4()
 
@@ -211,7 +218,7 @@ def dcgmGetCacheManagerFieldInfo(dcgmHandle, entityId, entityGroupId, fieldId):
 
 
 @dcgm_agent.ensure_byte_strings()
-def dcgmCreateFakeEntities(dcgmHandle, cfe):
+def dcgmCreateFakeEntities(dcgmHandle: str, cfe):
     fn = dcgm_structs._dcgmGetFunctionPointer("dcgmCreateFakeEntities")
 
     cfe.version = dcgm_structs_internal.dcgmCreateFakeEntities_version2
@@ -228,7 +235,7 @@ dcgmFieldValueEnumeration_f = CFUNCTYPE(c_int32, c_uint32, POINTER(
 
 
 @dcgm_agent.ensure_byte_strings()
-def dcgmGetFieldValuesSince(dcgmHandle, groupId, sinceTimestamp, fieldIds, enumCB, userData):
+def dcgmGetFieldValuesSince(dcgmHandle, groupId, sinceTimestamp, fieldIds, enumCB, userData) -> int:
     fn = dcgm_structs._dcgmGetFunctionPointer("dcgmGetFieldValuesSince")
     c_fieldIds = (c_uint32 * len(fieldIds))(*fieldIds)
     c_nextSinceTimestamp = c_int64()
@@ -275,7 +282,7 @@ def dcgmVgpuConfigEnforce(dcgm_handle, group_id, status_handle):
 
 
 @dcgm_agent.ensure_byte_strings()
-def dcgmGetVgpuDeviceAttributes(dcgm_handle, gpuId):
+def dcgmGetVgpuDeviceAttributes(dcgm_handle, gpuId) -> c_dcgmVgpuDeviceAttributes_v7:
     fn = dcgm_structs._dcgmGetFunctionPointer("dcgmGetVgpuDeviceAttributes")
     device_values = dcgm_structs.c_dcgmVgpuDeviceAttributes_v7()
     device_values.version = dcgm_structs.dcgmVgpuDeviceAttributes_version7
@@ -286,7 +293,7 @@ def dcgmGetVgpuDeviceAttributes(dcgm_handle, gpuId):
 
 
 @dcgm_agent.ensure_byte_strings()
-def dcgmGetVgpuInstanceAttributes(dcgm_handle, vgpuId):
+def dcgmGetVgpuInstanceAttributes(dcgm_handle, vgpuId) -> c_dcgmVgpuInstanceAttributes_v1:
     fn = dcgm_structs._dcgmGetFunctionPointer("dcgmGetVgpuInstanceAttributes")
     device_values = dcgm_structs.c_dcgmVgpuInstanceAttributes_v1()
     device_values.version = dcgm_structs.dcgmVgpuInstanceAttributes_version1
@@ -344,7 +351,7 @@ def dcgmEmptyCache(dcgmHandle):
 
 
 @dcgm_agent.ensure_byte_strings()
-def dcgmMarkModulesReloadable(dcgmHandle, moduleMask):
+def dcgmMarkModulesReloadable(dcgmHandle: str, moduleMask) -> int:
     fn = dcgm_structs._dcgmGetFunctionPointer("dcgmMarkModulesReloadable")
     info = dcgm_structs.c_dcgmModulesReloadable_v1()
     info.version = dcgm_structs.dcgmModulesReloadable_version1

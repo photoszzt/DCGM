@@ -36,7 +36,7 @@ import json
 from apps.app_runner import AppRunner
 
 
-def helper_test_denylist_briefly():
+def helper_test_denylist_briefly() -> None:
     # Run a basic test of the denylist script to make sure we don't break compatibility
     denylistApp = dcgm_internal_helpers.createDenylistApp(instantaneous=True)
     try:
@@ -57,11 +57,11 @@ def helper_test_denylist_briefly():
 
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_only_with_live_gpus()
-def test_basic_denylisting_script(handle, gpuIds):
+def test_basic_denylisting_script(handle, gpuIds) -> None:
     helper_test_denylist_briefly()
 
 
-def helper_test_denylist_checks(handle, gpuIds):
+def helper_test_denylist_checks(handle, gpuIds) -> None:
     handleObj = DcgmHandle.DcgmHandle(handle=handle)
     settings = {}
     settings['instant'] = True
@@ -112,5 +112,5 @@ def helper_test_denylist_checks(handle, gpuIds):
 
 @test_utils.run_with_embedded_host_engine()
 @test_utils.run_only_with_live_gpus()
-def test_denylist_checks(handle, gpuIds):
+def test_denylist_checks(handle, gpuIds) -> None:
     helper_test_denylist_checks(handle, gpuIds)

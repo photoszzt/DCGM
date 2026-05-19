@@ -18,18 +18,18 @@ import dcgm_structs
 
 
 class DcgmStatus:
-    def __init__(self):
+    def __init__(self) -> None:
         self.handle = dcgm_agent.dcgmStatusCreate()
         self.errors = []
 
-    def __del__(self):
+    def __del__(self) -> None:
         dcgm_agent.dcgmStatusDestroy(self.handle)
 
     '''
     Take any errors stored in our handle and update self.errors with them
     '''
 
-    def UpdateErrors(self):
+    def UpdateErrors(self) -> None:
         errorCount = dcgm_agent.dcgmStatusGetCount(self.handle)
         if errorCount < 1:
             return
@@ -43,7 +43,7 @@ class DcgmStatus:
     The exception text will contain all of the errors
     '''
 
-    def ThrowExceptionOnErrors(self):
+    def ThrowExceptionOnErrors(self) -> None:
         # Make sure we've captured all errors before looking at them
         self.UpdateErrors()
 

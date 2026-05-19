@@ -13,6 +13,10 @@
 # limitations under the License.
 
 
+from dcgm_structs import c_dcgmNvLinkP2PStatus_v1
+from dcgm_fields import c_dcgm_field_meta_t
+from DcgmGroup import DcgmGroup
+from ctypes import c_void_p
 import pydcgm
 import dcgm_agent
 import dcgm_structs
@@ -25,7 +29,7 @@ class DcgmSystemDiscovery:
     Constructor
     '''
 
-    def __init__(self, dcgmHandle):
+    def __init__(self, dcgmHandle) -> None:
         self._dcgmHandle = dcgmHandle
 
     '''
@@ -101,7 +105,7 @@ class DcgmSystemDiscovery:
     Returns a dcgm_structs.c_dcgmNvLinkP2PStatus_v1 object.
     '''
 
-    def GetNvLinkP2PStatus(self):
+    def GetNvLinkP2PStatus(self) -> c_dcgmNvLinkP2PStatus_v1:
         inOutStatus = dcgm_structs.c_dcgmNvLinkP2PStatus_v1()
         inOutStatus.numGpus = 0  # full retrieval.
         dcgm_agent.dcgmGetNvLinkP2PStatus(self._dcgmHandle.handle, inOutStatus)
@@ -133,7 +137,7 @@ class DcgmSystemIntrospect:
     Class to access the system-wide introspection modules of DCGM
     '''
 
-    def __init__(self, dcgmHandle):
+    def __init__(self, dcgmHandle) -> None:
         self._handle = dcgmHandle
         self.memory = DcgmSystemIntrospectMemory(dcgmHandle)
         self.cpuUtil = DcgmSystemIntrospectCpuUtil(dcgmHandle)
@@ -144,10 +148,10 @@ class DcgmSystemIntrospectMemory:
     Class to access information about the memory usage of DCGM itself
     '''
 
-    def __init__(self, dcgmHandle):
+    def __init__(self, dcgmHandle) -> None:
         self._dcgmHandle = dcgmHandle
 
-    def GetForHostengine(self, waitIfNoData=True):
+    def GetForHostengine(self, waitIfNoData: bool=True):
         '''
         Retrieve the total amount of virtual memory that the hostengine process is currently using.
         This measurement represents both the resident set size (what is currently in RAM) and
@@ -166,10 +170,10 @@ class DcgmSystemIntrospectCpuUtil:
     Class to access information about the CPU Utilization of DCGM
     '''
 
-    def __init__(self, dcgmHandle):
+    def __init__(self, dcgmHandle) -> None:
         self._dcgmHandle = dcgmHandle
 
-    def GetForHostengine(self, waitIfNoData=True):
+    def GetForHostengine(self, waitIfNoData: bool=True):
         '''
         Get the current CPU Utilization of the hostengine process.
 
@@ -188,7 +192,7 @@ Class to encapsulate DCGM field-metadata requests
 
 class DcgmSystemFields:
 
-    def GetFieldById(self, fieldId):
+    def GetFieldById(self, fieldId) -> c_dcgm_field_meta_t | None:
         '''
         Get a field's metadata by its dcgm_fields.DCGM_FI_* field ID
 
@@ -198,7 +202,7 @@ class DcgmSystemFields:
         '''
         return dcgm_fields.DcgmFieldGetById(fieldId)
 
-    def GetFieldByTag(self, tag):
+    def GetFieldByTag(self, tag) -> c_dcgm_field_meta_t | None:
         '''
         Get a field's metadata by its tag name. Ex: 'brand'
 
@@ -219,7 +223,7 @@ class DcgmSystemModules:
     Constructor
     '''
 
-    def __init__(self, dcgmHandle):
+    def __init__(self, dcgmHandle) -> None:
         self._dcgmHandle = dcgmHandle
 
     '''
@@ -231,7 +235,7 @@ class DcgmSystemModules:
     Raises a DCGM_ST_IN_USE exception if the module was already loaded
     '''
 
-    def Denylist(self, moduleId):
+    def Denylist(self, moduleId) -> None:
         dcgm_agent.dcgmModuleDenylist(self._dcgmHandle.handle, moduleId)
 
     '''
@@ -254,7 +258,7 @@ class DcgmSystemProfiling:
     Constructor
     '''
 
-    def __init__(self, dcgmHandle):
+    def __init__(self, dcgmHandle) -> None:
         self._dcgmHandle = dcgmHandle
 
     '''
@@ -298,7 +302,7 @@ class DcgmSystem:
     dcgmHandle is a pydcgm.DcgmHandle instance of the connection that will be used by all methods of this class
     '''
 
-    def __init__(self, dcgmHandle):
+    def __init__(self, dcgmHandle) -> None:
         self._dcgmHandle = dcgmHandle
 
         # Child classes
@@ -322,7 +326,7 @@ class DcgmSystem:
     values immediately after calling this.
     '''
 
-    def UpdateAllFields(self, waitForUpdate):
+    def UpdateAllFields(self, waitForUpdate) -> None:
         ret = dcgm_agent.dcgmUpdateAllFields(
             self._dcgmHandle.handle, waitForUpdate)
         # Throw an exception on error
@@ -335,7 +339,7 @@ class DcgmSystem:
     AddGpu() and RemoveGpu() operations are not allowed on the default group
     '''
 
-    def GetDefaultGroup(self):
+    def GetDefaultGroup(self) -> DcgmGroup:
         return pydcgm.DcgmGroup(self._dcgmHandle, groupId=dcgm_structs.DCGM_GROUP_ALL_GPUS)
 
     '''
@@ -349,7 +353,7 @@ class DcgmSystem:
     Note: The group will be deleted from the host engine when the returned object goes out of scope
     '''
 
-    def GetEmptyGroup(self, groupName):
+    def GetEmptyGroup(self, groupName) -> DcgmGroup:
         return pydcgm.DcgmGroup(self._dcgmHandle, groupName=groupName)
 
     '''
@@ -362,7 +366,7 @@ class DcgmSystem:
     Note: The group will be deleted from the host engine when the returned object goes out of scope
     '''
 
-    def GetGroupWithGpuIds(self, groupName, gpuIds):
+    def GetGroupWithGpuIds(self, groupName, gpuIds) -> DcgmGroup:
         newGroup = pydcgm.DcgmGroup(self._dcgmHandle, groupName=groupName)
         for gpuId in gpuIds:
             newGroup.AddGpu(gpuId)
@@ -378,7 +382,7 @@ class DcgmSystem:
     Note: The group will be deleted from the host engine when the returned object goes out of scope
     '''
 
-    def GetGroupWithEntities(self, groupName, entities):
+    def GetGroupWithEntities(self, groupName, entities: bool) -> DcgmGroup:
         group = pydcgm.DcgmGroup(self._dcgmHandle, groupName=groupName)
         for entity in entities:
             group.AddEntity(entity.entityGroupId, entity.entityId)
@@ -406,7 +410,7 @@ class DcgmSystem:
              None if not found
     '''
 
-    def GetFieldGroupIdByName(self, name):
+    def GetFieldGroupIdByName(self, name) -> c_void_p | None:
         allGroups = self.GetAllFieldGroups()
         for i in range(0, allGroups.numFieldGroups):
             if allGroups.fieldGroups[i].fieldGroupName == name:
@@ -414,12 +418,12 @@ class DcgmSystem:
 
         return None
 
-    def PauseTelemetryForDiag(self):
+    def PauseTelemetryForDiag(self) -> None:
         """Pause DCGM modules from updating field values."""
         import dcgm_agent_internal
         dcgm_agent_internal.dcgmPauseTelemetryForDiag(self._dcgmHandle.handle)
 
-    def ResumeTelemetryForDiag(self):
+    def ResumeTelemetryForDiag(self) -> None:
         """Resume previously paused DCGM modules so that they can update field values."""
         import dcgm_agent_internal
         dcgm_agent_internal.dcgmResumeTelemetryForDiag(self._dcgmHandle.handle)

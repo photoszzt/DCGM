@@ -44,7 +44,7 @@ publishFieldIds = [
 
 
 class DcgmJson(DcgmReader):
-    def __init__(self):
+    def __init__(self) -> None:
         DcgmReader.__init__(self, fieldIds=publishFieldIds,
                             ignoreList=ignore_List)
         self.m_jsonData = {}  # Json data for each field.
@@ -63,7 +63,7 @@ class DcgmJson(DcgmReader):
 
     '''
 
-    def CustomDataHandler(self, fvs):
+    def CustomDataHandler(self, fvs) -> None:
         for gpuId in list(fvs.keys()):
             gpuFv = fvs[gpuId]
             typeInstance = str(gpuId)

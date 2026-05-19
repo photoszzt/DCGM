@@ -24,7 +24,7 @@ import subprocess
 import os
 
 
-def helper_imex_fields_basic_retrieval(handle, gpuIds):
+def helper_imex_fields_basic_retrieval(handle, gpuIds) -> None:
     """Helper function to test basic retrieval of IMEX field values"""
 
     # Create a field group with IMEX fields
@@ -110,7 +110,7 @@ def helper_imex_fields_basic_retrieval(handle, gpuIds):
             logger.warning(f"Failed to destroy field group: {e}")
 
 
-def helper_imex_domain_status_values(handle, gpuIds):
+def helper_imex_domain_status_values(handle, gpuIds) -> None:
     """Helper function to test IMEX domain status field returns valid values"""
 
     # Create field group for domain status only
@@ -171,7 +171,7 @@ def helper_imex_domain_status_values(handle, gpuIds):
             logger.warning(f"Failed to destroy field group: {e}")
 
 
-def helper_imex_daemon_status_values(handle, gpuIds):
+def helper_imex_daemon_status_values(handle, gpuIds) -> None:
     """Helper function to test IMEX daemon status field returns valid values"""
 
     # Create field group for daemon status only
@@ -250,7 +250,7 @@ def helper_imex_daemon_status_values(handle, gpuIds):
             logger.warning(f"Failed to destroy field group: {e}")
 
 
-def helper_imex_fields_consistency(handle, gpuIds):
+def helper_imex_fields_consistency(handle, gpuIds) -> None:
     """Helper function to test that IMEX field values are consistent across multiple GPUs"""
 
     fieldGroupId = dcgm_agent.dcgmFieldGroupCreate(handle,
@@ -336,7 +336,7 @@ def helper_imex_fields_consistency(handle, gpuIds):
             logger.warning(f"Failed to destroy field group: {e}")
 
 
-def helper_imex_fields_update_frequency(handle, gpuIds):
+def helper_imex_fields_update_frequency(handle, gpuIds) -> None:
     """Helper function to test that IMEX fields can be updated at different frequencies"""
 
     fieldGroupId = dcgm_agent.dcgmFieldGroupCreate(handle,
@@ -394,34 +394,34 @@ def helper_imex_fields_update_frequency(handle, gpuIds):
 
 @test_utils.run_with_standalone_host_engine(20)
 @test_utils.run_only_with_live_gpus()
-def test_imex_fields_basic_retrieval(handle, gpuIds):
+def test_imex_fields_basic_retrieval(handle, gpuIds) -> None:
     """Test basic retrieval of IMEX field values"""
     helper_imex_fields_basic_retrieval(handle, gpuIds)
 
 
 @test_utils.run_with_standalone_host_engine(20)
 @test_utils.run_only_with_live_gpus()
-def test_imex_domain_status_values(handle, gpuIds):
+def test_imex_domain_status_values(handle, gpuIds) -> None:
     """Test IMEX domain status field returns valid values"""
     helper_imex_domain_status_values(handle, gpuIds)
 
 
 @test_utils.run_with_standalone_host_engine(20)
 @test_utils.run_only_with_live_gpus()
-def test_imex_daemon_status_values(handle, gpuIds):
+def test_imex_daemon_status_values(handle, gpuIds) -> None:
     """Test IMEX daemon status field returns valid values"""
     helper_imex_daemon_status_values(handle, gpuIds)
 
 
 @test_utils.run_with_standalone_host_engine(20)
 @test_utils.run_only_with_live_gpus()
-def test_imex_fields_consistency(handle, gpuIds):
+def test_imex_fields_consistency(handle, gpuIds) -> None:
     """Test that IMEX field values are consistent across multiple GPUs"""
     helper_imex_fields_consistency(handle, gpuIds)
 
 
 @test_utils.run_with_standalone_host_engine(20)
 @test_utils.run_only_with_live_gpus()
-def test_imex_fields_update_frequency(handle, gpuIds):
+def test_imex_fields_update_frequency(handle, gpuIds) -> None:
     """Test that IMEX fields can be updated at different frequencies"""
     helper_imex_fields_update_frequency(handle, gpuIds)

@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from DcgmSystem import DcgmSystem
+from subprocess import Popen
 import time
 import datetime
 import inspect
@@ -58,7 +60,7 @@ TOTAL_TEST_COUNT = 0
 TOTAL_TEST_CYCLES = 0
 
 
-def get_dcgmi_bin_directory():
+def get_dcgmi_bin_directory() -> str:
     """
     Function to return the directory where dcgmi is expected
 
@@ -79,7 +81,7 @@ def get_dcgmi_bin_directory():
     return path
 
 
-def get_dcgmi_bin_path():
+def get_dcgmi_bin_path() -> str:
     """
     Function to figure out what dcgmi binary to use based on the platform
     """
@@ -91,7 +93,7 @@ def get_dcgmi_bin_path():
 dcgmi_absolute_path = os.path.join(script_dir, get_dcgmi_bin_path())
 
 
-def get_newest_field_group_id(dcgmSystem):
+def get_newest_field_group_id(dcgmSystem: DcgmSystem):
     field_group_id = ""
 
     maxFieldGroupId = None
@@ -112,7 +114,7 @@ def get_newest_field_group_id(dcgmSystem):
     return maxFieldGroupId
 
 
-def updateTestResults(result):
+def updateTestResults(result: str) -> None:
     """
     Helper to function to update test results count
     """
@@ -135,7 +137,7 @@ def updateTestResults(result):
         TOTAL_TEST_CYCLES += 1
 
 
-def getTestSummary():
+def getTestSummary() -> None:
     """
     Function to print out final results
     """
@@ -149,7 +151,7 @@ def getTestSummary():
     print("\n===============================================\n")
 
 
-def setupEnvironment():
+def setupEnvironment() -> None:
     """
     Function to prepare the test environment
     """
@@ -213,7 +215,7 @@ class bcolors:
 
 class Logger(object):
 
-    def __init__(self):
+    def __init__(self) -> None:
         import socket
         self.terminal = sys.stdout
         self.timestamp = str(time.strftime('%Y-%m-%d'))
@@ -229,24 +231,24 @@ class Logger(object):
 
         self.log = open(self.logName, 'a+')
 
-    def write(self, message):
+    def write(self, message) -> None:
         self.terminal.write(message)
         self.log.write(message)
 
-    def flush(self):
+    def flush(self) -> None:
         self.terminal.flush()
         self.log.flush()
 
 
 class RunHostEngine(apps.NvHostEngineApp):
-    def __init__(self, writeDebugFile=False):
+    def __init__(self, writeDebugFile: bool=False) -> None:
         self.timestamp = str(time.strftime('%Y-%m-%d'))
         self.memlog = "HOST_ENGINE_MEMORY_USAGE_%s.log" % self.timestamp
         self.cpulog = "HOST_ENGINE_CPU_USAGE_%s.log" % self.timestamp
         super(RunHostEngine, self).__init__()
         self.writeDebugFile = writeDebugFile
 
-    def mem_usage(self, timeout):
+    def mem_usage(self, timeout: int) -> None:
         """
         Monitors memory usage of the hostEngine
         """
@@ -300,7 +302,7 @@ class RunHostEngine(apps.NvHostEngineApp):
 
         hm.close()
 
-    def cpu_usage(self, timeout):
+    def cpu_usage(self, timeout: int) -> None:
         """
         Monitors cpu usage of the hostEngine
         """
@@ -335,19 +337,19 @@ class BurnInHandle(object):
     burnInCfg is the parsed command-line parameters. Note that we're not using the IP address from these
     """
 
-    def __init__(self, hostEngineIp, burnInCfg):
+    def __init__(self, hostEngineIp, burnInCfg) -> None:
         self.dcgmHandle = None
         self.dcgmSystem = None
         self.burnInCfg = burnInCfg
         self.hostEngineIp = hostEngineIp
         self.Connect()
 
-    def Connect(self):
+    def Connect(self) -> None:
         self.dcgmHandle = pydcgm.DcgmHandle(
             ipAddress=self.hostEngineIp, opMode=dcgm_structs.DCGM_OPERATION_MODE_AUTO)
         self.dcgmSystem = self.dcgmHandle.GetSystem()
 
-    def __del__(self):
+    def __del__(self) -> None:
         if self.dcgmSystem is not None:
             del (self.dcgmSystem)
             self.dcgmSystem = None
@@ -407,7 +409,7 @@ class BurnInHandle(object):
 
         return busIdList
 
-    def GetValueForFieldId(self, gpuId, fieldId):
+    def GetValueForFieldId(self, gpuId, fieldId: int):
         '''
         Watch and get the value of a fieldId
 
@@ -420,7 +422,7 @@ class BurnInHandle(object):
             self.dcgmHandle.handle, gpuId, [fieldId, ])
         return values[0]
 
-    def GpuSupportsEcc(self, gpuId):
+    def GpuSupportsEcc(self, gpuId) -> bool:
         '''
         Returns whether (True) or not (False) a gpu supports ECC
         '''
@@ -444,7 +446,7 @@ class BurnInHandle(object):
 
 
 class RunCudaCtxCreate:
-    def __init__(self, gpuIds, burnInHandle, runTimeSeconds, timeoutSeconds):
+    def __init__(self, gpuIds, burnInHandle, runTimeSeconds, timeoutSeconds) -> None:
         self.burnInHandle = burnInHandle
         self.runTimeSeconds = runTimeSeconds
         self.timeoutSeconds = timeoutSeconds
@@ -469,17 +471,17 @@ class RunCudaCtxCreate:
             app.busId = busId
             self._apps.append(app)
 
-    def start(self):
+    def start(self) -> None:
         for app in self._apps:
             print("Generating Cuda Workload for GPU %s " %
                   app.busId + " at %s \n" % time.asctime())
             app.start(timeout=self.timeoutSeconds)
 
-    def wait(self):
+    def wait(self) -> None:
         for app in self._apps:
             app.wait()
 
-    def terminate(self):
+    def terminate(self) -> None:
         for app in self._apps:
             app.terminate()
             app.validate()
@@ -500,20 +502,20 @@ def get_host_ip(burnInCfg):
 # Helper Class to do group operations
 class GroupsOperationsHelper:
 
-    def __init__(self, burnInHandle):
+    def __init__(self, burnInHandle) -> None:
         self.group_id = None
         self.burnInHandle = burnInHandle
         self.dcgmi_path = get_dcgmi_bin_path()
         self.host_ip = get_host_ip(self.burnInHandle.burnInCfg)
 
-    def __safe_checkcall(self, args):
+    def __safe_checkcall(self, args) -> bool:
         try:
             check_call([self.dcgmi_path] + args)
         except CalledProcessError:
             pass
         return True
 
-    def __safe_checkoutput(self, args):
+    def __safe_checkoutput(self, args) -> bytes | None:
         rc = None
         try:
             rc = check_output([self.dcgmi_path] + args)
@@ -521,7 +523,7 @@ class GroupsOperationsHelper:
             pass
         return rc
 
-    def create_group(self, groupName, gpuIds):
+    def create_group(self, groupName, gpuIds) -> int:
         if groupName is None:
             groupName = "Group"
         args = ["group", "--host", self.host_ip, "-c", groupName]
@@ -534,30 +536,30 @@ class GroupsOperationsHelper:
 
         return self.group_id
 
-    def list_group(self):
+    def list_group(self) -> None:
         args = ["group", "--host", self.host_ip, "-l"]
         self.__safe_checkcall(args)
 
-    def get_group_info(self):
+    def get_group_info(self) -> bool:
         assert self.group_id is not None
         args = ["group", "--host", self.host_ip,
                 "-g", str(self.group_id), "-i"]
         return self.__safe_checkcall(args)
 
-    def add_device(self, gpuId):
+    def add_device(self, gpuId) -> bool:
         assert self.group_id is not None
         args = ["group", "--host", self.host_ip, "-g",
                 str(self.group_id), "-a", str(gpuId)]
         return self.__safe_checkcall(args)
 
-    def remove_device(self, gpuId):
+    def remove_device(self, gpuId) -> bool:
         assert self.group_id is not None
 
         args = ["group", "--host", self.host_ip, "-g",
                 str(self.group_id), "-r", str(gpuId)]
         return self.__safe_checkcall(args)
 
-    def delete_group(self):
+    def delete_group(self) -> bool:
         assert self.group_id is not None
         args = ["group", "--host", self.host_ip, "-d", str(self.group_id)]
         return self.__safe_checkcall(args)
@@ -566,7 +568,7 @@ class GroupsOperationsHelper:
 # Run the GROUPS subsystem tests
 class GroupTests:
 
-    def __init__(self, burnInHandle):
+    def __init__(self, burnInHandle) -> None:
         self.groups_op = GroupsOperationsHelper(burnInHandle)
         self.group_id = None
         self.burnInHandle = burnInHandle
@@ -574,7 +576,7 @@ class GroupTests:
 
         print("The hostEngine IP is %s\n" % self.host_ip)
 
-    def test1_create_group(self, gpuIds):
+    def test1_create_group(self, gpuIds) -> bool:
         """ Test to create groups using the subsystem groups """
         # Intentionally create the group as empty so that test5_add_device_to_group doesn't fail
         self.group_id = self.groups_op.create_group(None, [])
@@ -616,7 +618,7 @@ class GroupTests:
 
         return args
 
-    def test6_delete_group(self, gpuIds):
+    def test6_delete_group(self, gpuIds) -> bool:
         """ Test deleting existing groups using the subsystem groups """
 
         print("Deleting the default test group: %s" % self.group_id)
@@ -626,18 +628,18 @@ class GroupTests:
 
 # Run the CONFIG subsystem tests
 class ConfigTests:
-    def __init__(self, burnInHandle):
+    def __init__(self, burnInHandle) -> None:
         self.groups_op = GroupsOperationsHelper(burnInHandle)
         self.group_id = None
         self.burnInHandle = burnInHandle
         self.host_ip = get_host_ip(self.burnInHandle.burnInCfg)
 
-    def test1_create_group(self, gpuIds):
+    def test1_create_group(self, gpuIds) -> bool:
         """ Creates a group for testing the subsystem config """
         self.group_id = self.groups_op.create_group(None, gpuIds)
         return self.group_id > 1
 
-    def _set_compute_mode_helper(self, gpuIds, comp):
+    def _set_compute_mode_helper(self, gpuIds, comp: str):
         """ Test --set compute mode values on "config" subsystem """
 
         args = ["config", "--host", self.host_ip, "-g",
@@ -658,7 +660,7 @@ class ConfigTests:
     def test2_set_compute_mode_value_2(self, gpuIds):
         return self._set_compute_mode_helper(gpuIds, "0")
 
-    def get_power_power_limit(self, pLimitType, gpuIds):
+    def get_power_power_limit(self, pLimitType: int, gpuIds) -> str:
         """
         Helper function to get power limit for the device
         """
@@ -674,7 +676,7 @@ class ConfigTests:
 
         return pwrLimit
 
-    def _set_power_limit_helper(self, kind, pwr):
+    def _set_power_limit_helper(self, kind: str, pwr: str):
         """ Test --set power limit values on "config" subsystem """
 
         args = ["config", "--host", self.host_ip, "-g",
@@ -712,7 +714,7 @@ class ConfigTests:
         defPowerLimit = self.get_power_power_limit(DEFAULT_POWER_LIMIT, gpuIds)
         return self._set_power_limit_helper("default", defPowerLimit)
 
-    def _set_application_clocks_helper(self, mem, sm):
+    def _set_application_clocks_helper(self, mem: str, sm: str):
         """ Test --set application clocks on "config" subsystem """
 
         args = ["config", "--host", self.host_ip, "-g",
@@ -781,7 +783,7 @@ class ConfigTests:
         time.sleep(1)
         return args
 
-    def test12_delete_group(self, gpuIds):
+    def test12_delete_group(self, gpuIds) -> bool:
         """ Removes group used for testing """
 
         return self.groups_op.delete_group()
@@ -790,13 +792,13 @@ class ConfigTests:
 # Run the DISCOVERY subsystem tests
 class DiscoveryTests():
 
-    def __init__(self, burnInHandle):
+    def __init__(self, burnInHandle) -> None:
         self.groups_op = GroupsOperationsHelper(burnInHandle)
         self.group_id = None
         self.burnInHandle = burnInHandle
         self.host_ip = get_host_ip(self.burnInHandle.burnInCfg)
 
-    def test1_create_group(self, gpuIds):
+    def test1_create_group(self, gpuIds) -> bool:
         """ Creates a group for testing the subsystem discovery """
         self.group_id = self.groups_op.create_group(None, gpuIds)
         return self.group_id > 1
@@ -809,7 +811,7 @@ class DiscoveryTests():
 
         return args
 
-    def _discovery_device_info_helper(self, gpuIds, flag):
+    def _discovery_device_info_helper(self, gpuIds, flag: str):
         """ Test to get discovery info for device per feature """
 
         args = ["discovery", "--host", self.host_ip,
@@ -838,7 +840,7 @@ class DiscoveryTests():
         print("Querying info for GPU %s: %s" % (gpuIds[0], args))
         return args
 
-    def test5_delete_group(self, gpuIds):
+    def test5_delete_group(self, gpuIds) -> bool:
         """ Removes group used for testing """
 
         return self.groups_op.delete_group()
@@ -847,19 +849,19 @@ class DiscoveryTests():
 # Run the HEALTH subsystem tests
 class HealthTests:
 
-    def __init__(self, burnInHandle):
+    def __init__(self, burnInHandle) -> None:
         self.groups_op = GroupsOperationsHelper(burnInHandle)
         self.group_id = None
         self.burnInHandle = burnInHandle
 
         self.host_ip = get_host_ip(self.burnInHandle.burnInCfg)
 
-    def test1_create_group(self, gpuIds):
+    def test1_create_group(self, gpuIds) -> bool:
         """ Creates a group for testing the subsystem health """
         self.group_id = self.groups_op.create_group(None, gpuIds)
         return self.group_id > 1
 
-    def _set_health_watches_helper(self, gpuIds, flag):
+    def _set_health_watches_helper(self, gpuIds, flag: str):
         """ Test to set health watches """
 
         args = ["health", "--host", self.host_ip,
@@ -913,7 +915,7 @@ class HealthTests:
 
         return args
 
-    def test6_delete_group(self, gpuIds):
+    def test6_delete_group(self, gpuIds) -> bool:
         """ Removes group used for testing """
 
         return self.groups_op.delete_group()
@@ -922,19 +924,19 @@ class HealthTests:
 # Runs the DIAG subsystem tests
 class DiagnosticsTests:
 
-    def __init__(self, burnInHandle):
+    def __init__(self, burnInHandle) -> None:
         self.groups_op = GroupsOperationsHelper(burnInHandle)
         self.group_id = None
         self.burnInHandle = burnInHandle
 
         self.host_ip = get_host_ip(self.burnInHandle.burnInCfg)
 
-    def test1_create_group(self, gpuIds):
+    def test1_create_group(self, gpuIds) -> bool:
         """ Creates a group for testing the subsystem diag """
         self.group_id = self.groups_op.create_group(None, gpuIds)
         return self.group_id > 1
 
-    def _set_diag_helper(self, gpuIds, flag):
+    def _set_diag_helper(self, gpuIds, flag: str):
         """ Test to run diag tests """
         args = ["diag", "--host", self.host_ip,
                 "-g", str(self.group_id), "--run", flag]
@@ -951,7 +953,7 @@ class DiagnosticsTests:
     def test2_diag3_long(
         self, gpuIds): return self._set_diag_helper(gpuIds, "3")
 
-    def test3_delete_group(self, gpuIds):
+    def test3_delete_group(self, gpuIds) -> bool:
         """ Removes group used for testing """
 
         return self.groups_op.delete_group()
@@ -960,14 +962,14 @@ class DiagnosticsTests:
 # Run the TOPO subsystem tests
 class TopologyTests:
 
-    def __init__(self, burnInHandle):
+    def __init__(self, burnInHandle) -> None:
         self.groups_op = GroupsOperationsHelper(burnInHandle)
         self.group_id = None
         self.burnInHandle = burnInHandle
 
         self.host_ip = get_host_ip(self.burnInHandle.burnInCfg)
 
-    def test1_create_group(self, gpuIds):
+    def test1_create_group(self, gpuIds) -> bool:
         """ Creates a group for testing the subsystem diag """
         self.group_id = self.groups_op.create_group(None, gpuIds)
         return self.group_id > 1
@@ -986,7 +988,7 @@ class TopologyTests:
         print("Reading topology by GPU Id %s: %s" % (gpuIds[0], args))
         return args
 
-    def test4_delete_group(self, dev):
+    def test4_delete_group(self, dev) -> bool:
         """ Removes group used for testing """
         return self.groups_op.delete_group()
 
@@ -994,14 +996,14 @@ class TopologyTests:
 # Run the POLICY subsystem tests
 class PolicyTests:
 
-    def __init__(self, burnInHandle):
+    def __init__(self, burnInHandle) -> None:
         self.groups_op = GroupsOperationsHelper(burnInHandle)
         self.group_id = None
         self.burnInHandle = burnInHandle
 
         self.host_ip = get_host_ip(self.burnInHandle.burnInCfg)
 
-    def test1_create_group(self, gpuIds):
+    def test1_create_group(self, gpuIds) -> bool:
         """ Creates a group for testing the subsystem policy """
         self.group_id = self.groups_op.create_group(None, gpuIds)
         return self.group_id > 1
@@ -1081,7 +1083,7 @@ class PolicyTests:
 
         return args
 
-    def test8_delete_group(self, gpuIds):
+    def test8_delete_group(self, gpuIds) -> bool:
         """ Removes group used for testing """
 
         return self.groups_op.delete_group()
@@ -1090,13 +1092,13 @@ class PolicyTests:
 # Run the STATS subsystem tests
 class ProcessStatsTests:
 
-    def __init__(self, burnInHandle):
+    def __init__(self, burnInHandle) -> None:
         self.groups_op = GroupsOperationsHelper(burnInHandle)
         self.group_id = None
         self.burnInHandle = burnInHandle
         self.host_ip = get_host_ip(self.burnInHandle.burnInCfg)
 
-    def test1_create_group(self, gpuIds):
+    def test1_create_group(self, gpuIds) -> bool:
         """ Creates a group for testing the subsystem diag """
         self.gpuIds = gpuIds
         self.group_id = self.groups_op.create_group(None, self.gpuIds)
@@ -1146,7 +1148,7 @@ class ProcessStatsTests:
 
         return args
 
-    def test5_delete_group(self, gpuIds):
+    def test5_delete_group(self, gpuIds) -> bool:
         """ Removes group used for testing """
 
         return self.groups_op.delete_group()
@@ -1155,13 +1157,13 @@ class ProcessStatsTests:
 # Run the NVLINK subsystem tests
 class NvlinkTests:
 
-    def __init__(self, burnInHandle):
+    def __init__(self, burnInHandle) -> None:
         self.groups_op = GroupsOperationsHelper(burnInHandle)
         self.group_id = None
         self.burnInHandle = burnInHandle
         self.host_ip = get_host_ip(self.burnInHandle.burnInCfg)
 
-    def test1_create_group(self, gpuIds):
+    def test1_create_group(self, gpuIds) -> bool:
         """ Creates a group for testing the subsystem nvlink """
         self.group_id = self.groups_op.create_group(None, gpuIds)
         return self.group_id > 1
@@ -1189,7 +1191,7 @@ class NvlinkTests:
                 "Running queries to get errors for various nvlinks on the system in Json format: %s" % args)
         return args
 
-    def test5_delete_group(self, gpuIds):
+    def test5_delete_group(self, gpuIds) -> bool:
         """ Removes group used for testing """
 
         return self.groups_op.delete_group()
@@ -1198,7 +1200,7 @@ class NvlinkTests:
 # Run the Introspection subsystem tests
 class IntrospectionTests:
 
-    def __init__(self, burnInHandle):
+    def __init__(self, burnInHandle) -> None:
         self.burnInHandle = burnInHandle
         self.host_ip = get_host_ip(self.burnInHandle.burnInCfg)
 
@@ -1214,7 +1216,7 @@ class IntrospectionTests:
 # Run the Fieldgroups subsystem tests
 class FieldGroupsTests():
 
-    def __init__(self, burnInHandle):
+    def __init__(self, burnInHandle) -> None:
         self.groups_op = GroupsOperationsHelper(burnInHandle)
         self.group_id = None
         self.burnInHandle = burnInHandle
@@ -1223,7 +1225,7 @@ class FieldGroupsTests():
         self.dcgmSystem = self.dcgmHandle.GetSystem()
         self.numFieldGroupsAdded = 0
 
-    def test1_create_group(self, gpuIds):
+    def test1_create_group(self, gpuIds) -> bool:
         self.group_id = self.groups_op.create_group(None, gpuIds)
         return self.group_id > 1
 
@@ -1275,7 +1277,7 @@ class FieldGroupsTests():
         print("Deleting a field group: %s" % args)
         return args
 
-    def test7_delete_group(self, gpuIds):
+    def test7_delete_group(self, gpuIds) -> bool:
         """ Removes group used for testing """
         return self.groups_op.delete_group()
 
@@ -1283,12 +1285,12 @@ class FieldGroupsTests():
 # Run the Modules subsystem tests
 class ModulesTests():
 
-    def __init__(self, burnInHandle):
+    def __init__(self, burnInHandle) -> None:
         self.groups_op = GroupsOperationsHelper(burnInHandle)
         self.burnInHandle = burnInHandle
         self.host_ip = get_host_ip(self.burnInHandle.burnInCfg)
 
-    def test1_create_group(self, gpuIds):
+    def test1_create_group(self, gpuIds) -> bool:
         self.group_id = self.groups_op.create_group(None, gpuIds)
         return self.group_id > 1
 
@@ -1302,7 +1304,7 @@ class ModulesTests():
         print("Listing existing modules Json format: %s" % args)
         return args
 
-    def test4_delete_group(self, gpuIds):
+    def test4_delete_group(self, gpuIds) -> bool:
         """ Removes group used for testing """
         return self.groups_op.delete_group()
 
@@ -1310,7 +1312,7 @@ class ModulesTests():
 # Run the dmon subsystem tests
 class DmonTests:
 
-    def __init__(self, burnInHandle):
+    def __init__(self, burnInHandle) -> None:
         self.groups_op = GroupsOperationsHelper(burnInHandle)
         self.group_id = None
         self.burnInHandle = burnInHandle
@@ -1318,7 +1320,7 @@ class DmonTests:
         self.dcgmHandle = pydcgm.DcgmHandle(ipAddress=self.host_ip)
         self.dcgmSystem = self.dcgmHandle.GetSystem()
 
-    def test1_create_group(self, gpuIds):
+    def test1_create_group(self, gpuIds) -> bool:
         """ Creates a group for testing the subsystem dmon """
         self.group_id = self.groups_op.create_group(None, gpuIds)
         return self.group_id > 1
@@ -1329,7 +1331,7 @@ class DmonTests:
         print("Listing available items for dmon to monitor: %s" % args)
         return args
 
-    def test3_dmon_with_various_field_ids_per_device(self, gpuIds):
+    def test3_dmon_with_various_field_ids_per_device(self, gpuIds) -> str:
         """ Runs dmon to get field group info for each device """
 
         print_header = False
@@ -1390,12 +1392,12 @@ class DmonTests:
         print("Running dmon on a group to monitor data on field group DCGM_INTERNAL_JOB:  %s" % args)
         return args
 
-    def test5_delete_group(self, gpuIds):
+    def test5_delete_group(self, gpuIds) -> bool:
         """ Removes group used for testing """
         return self.groups_op.delete_group()
 
 
-def IsDiagTest(testname):
+def IsDiagTest(testname: str):
     if testname == 'test2_diag1_short':
         return 1
     elif testname == 'test2_diag2_medium':
@@ -1426,7 +1428,7 @@ class RunDcgmi():
         "(null)",  # e.g. from printing %s from null ptr
     ]
 
-    def __init__(self, burnInHandle):
+    def __init__(self, burnInHandle) -> None:
         self.burnInHandle = burnInHandle
 
         self.dcgmi_path = get_dcgmi_bin_path()
@@ -1453,7 +1455,7 @@ class RunDcgmi():
         self.modules_tests = ModulesTests(burnInHandle)
         self.dmon_tests = DmonTests(burnInHandle)
 
-    def _get_sorted_tests(self, obj):
+    def _get_sorted_tests(self, obj: ConfigTests | DiagnosticsTests | DiscoveryTests | DmonTests | FieldGroupsTests | GroupTests | HealthTests | IntrospectionTests | ModulesTests | NvlinkTests | PolicyTests | ProcessStatsTests | TopologyTests):
         """ Helper function to get test elements from each class and sort them in ascending order
 
             Lambda breakdown:
@@ -1502,12 +1504,12 @@ class RunDcgmi():
         return self._get_sorted_tests(self.dmon_tests)
 
     @staticmethod
-    def print_test_header(testName):
+    def print_test_header(testName: str) -> None:
         print(("&&&& RUNNING " + testName + "\n"))
         print("Test %s start time: %s" % (testName, datetime.datetime.now()))
 
     @staticmethod
-    def print_test_footer(testName, statusText, color):
+    def print_test_footer(testName: str, statusText: str, color: str) -> None:
         print("Test %s end time: %s" % (testName, datetime.datetime.now()))
         # Don't include colors for eris
         if option_parser.options.dvssc_testing or option_parser.options.eris:
@@ -1516,7 +1518,7 @@ class RunDcgmi():
             print(color + "&&&& " + statusText +
                   " " + testName + bcolors.ENDC + "\n")
 
-    def start(self, timeout=None, server=None):
+    def start(self, timeout: int | None=None, server=None):
         """
         Launches dcgmi application.
         """
@@ -1745,7 +1747,7 @@ class RunDcgmi():
 # Start host egine on headnode
 
 
-def run_local_host_engine(burnInCfg):
+def run_local_host_engine(burnInCfg: BurnInGlobalConfig) -> RunHostEngine:
 
     # Starting HostEngine
     host_engine = RunHostEngine(burnInCfg.writeHostEngineDebugFile)
@@ -1764,7 +1766,7 @@ def run_local_host_engine(burnInCfg):
 # Start cuda workload
 
 
-def run_cuda_workload(burnInCfg):
+def run_cuda_workload(burnInCfg: BurnInGlobalConfig) -> None:
     burnInHandle = BurnInHandle(burnInCfg.ip, burnInCfg)
 
     # Creates cuda workload
@@ -1776,7 +1778,7 @@ def run_cuda_workload(burnInCfg):
 
 
 # Start dcgmi testing
-def run_dcgmi_client(burnInCfg):
+def run_dcgmi_client(burnInCfg: BurnInGlobalConfig) -> None:
     burnInHandle = BurnInHandle(burnInCfg.ip, burnInCfg)
     dcgmi_client = RunDcgmi(burnInHandle)
     dcgmi_client.start(int(burnInCfg.runtime) + 1, burnInCfg.srv)
@@ -1785,7 +1787,7 @@ def run_dcgmi_client(burnInCfg):
 # Copy packages to test nodes
 
 
-def copy_files_to_targets(ip):
+def copy_files_to_targets(ip) -> None:
 
     # Gets current user name
     user = os.getlogin()
@@ -1813,7 +1815,7 @@ def copy_files_to_targets(ip):
 # Run the tests on the remote nodes
 
 
-def run_remote(runtime, address, srv, nodes):
+def run_remote(runtime: int, address, srv, nodes) -> Popen[bytes]:
 
     # Gets current user name
     user = os.getlogin()
@@ -1828,7 +1830,7 @@ def run_remote(runtime, address, srv, nodes):
 # Run the tests on the local (single) node
 
 
-def run_tests(burnInCfg):
+def run_tests(burnInCfg: BurnInGlobalConfig) -> None:
 
     color = bcolors()
 
@@ -1890,7 +1892,7 @@ def run_tests(burnInCfg):
     burnInHandle = None
 
 
-def validate_ip(s):
+def validate_ip(s) -> bool:
     # Function to validate ip addresses
     a = s.split('.')
     if len(a) != 4:
@@ -1909,7 +1911,7 @@ def validate_ip(s):
 
 
 class BurnInGlobalConfig:
-    def __init__(self):
+    def __init__(self) -> None:
         self.remote = False  # Are we connecting to a remote server? True = Yes. False = No
         self.eud = True  # Should we run the EUD? True = Yes
         self.runtime = 0  # How long to run the tests in seconds
@@ -1923,7 +1925,7 @@ class BurnInGlobalConfig:
         self.server = []
 
 
-def parseCommandLine():
+def parseCommandLine() -> BurnInGlobalConfig:
     burnInCfg = BurnInGlobalConfig()
 
     color = bcolors()
@@ -2057,14 +2059,14 @@ def parseCommandLine():
     return burnInCfg
 
 
-def cleanup():
+def cleanup() -> None:
     '''
     Clean up our environment before exit
     '''
     apps.AppRunner.clean_all()
 
 
-def main_wrapped():
+def main_wrapped() -> None:
     # Initialize the framework's option parser so we can use framework classes
     option_parser.initialize_as_stub()
 
@@ -2102,7 +2104,7 @@ def main_wrapped():
     getTestSummary()
 
 
-def main():
+def main() -> None:
     try:
         main_wrapped()
     except Exception as e:

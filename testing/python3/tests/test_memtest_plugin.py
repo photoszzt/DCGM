@@ -21,7 +21,7 @@ import dcgm_fields
 @test_utils.run_with_standalone_host_engine(120, heEnv=test_utils.smallFbModeEnv)
 @test_utils.run_only_with_live_gpus()
 @test_utils.run_only_if_mig_is_disabled()
-def test_memtest_plugin_skip_if_free_mem_less_than_threshold(handle, gpuIds):
+def test_memtest_plugin_skip_if_free_mem_less_than_threshold(handle, gpuIds) -> None:
     dd = DcgmDiag.DcgmDiag(gpuIds=[gpuIds[0]], testNamesStr="memtest",
                            paramsStr="memtest.is_allowed=True;memtest.minimum_allocation_percentage=100")
 

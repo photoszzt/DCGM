@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Self
 import subprocess
 import signal
 import os
@@ -85,7 +86,7 @@ class DcgmReader(object):
     val : the value class that comes from DCGM (v.value is the value for the field)
     '''
 
-    def CustomFieldHandler(self, gpuId, fieldId, fieldTag, val):
+    def CustomFieldHandler(self, gpuId, fieldId, fieldTag, val) -> None:
         print("GPU %s field %s=%s" % (str(gpuId), fieldTag, str(val.value)))
 
     ###########################################################################
@@ -101,7 +102,7 @@ class DcgmReader(object):
     val : the value class that comes from DCGM (v.value is the value for the field)
     '''
 
-    def CustomFieldHandler_v2(self, entityGroupId, entityId, fieldId, fieldTag, val):
+    def CustomFieldHandler_v2(self, entityGroupId, entityId, fieldId, fieldTag, val) -> None:
         print("%s %s field %s=%s" % (entity_group_id_to_string(
             entityGroupId), str(entityId), fieldTag, str(val.value)))
 
@@ -114,7 +115,7 @@ class DcgmReader(object):
     fvs : Data in the format entityGroupId -> entityId -> values (dictionary of dictionaries)
     '''
 
-    def CustomDataHandler_v2(self, fvs):
+    def CustomDataHandler_v2(self, fvs) -> None:
         for entityGroupId in list(fvs.keys()):
             entityGroup = fvs[entityGroupId]
 
@@ -143,7 +144,7 @@ class DcgmReader(object):
     fvs : Dictionary with gpuID as key and values as Value
     '''
 
-    def CustomDataHandler(self, fvs):
+    def CustomDataHandler(self, fvs) -> None:
         for gpuId in list(fvs.keys()):
             gpuFv = fvs[gpuId]
 
@@ -161,7 +162,7 @@ class DcgmReader(object):
                 self.CustomFieldHandler(gpuId, fieldId, fieldTag, val)
 
     ###########################################################################
-    def SetupGpuIdUUIdMappings(self):
+    def SetupGpuIdUUIdMappings(self) -> None:
         '''
         Populate the m_gpuIdToUUId map
         '''
@@ -186,9 +187,9 @@ class DcgmReader(object):
                       False to get data for all requested fieldId.
     '''
 
-    def __init__(self, hostname='localhost', fieldIds=None, updateFrequency=10000000,
-                 maxKeepAge=3600.0, ignoreList=None, fieldGroupName='dcgm_fieldgroupData', gpuIds=None,
-                 entities=None, fieldIntervalMap=None, ignoreBlank=True):
+    def __init__(self, hostname: str='localhost', fieldIds=None, updateFrequency: int=10000000,
+                 maxKeepAge: float=3600.0, ignoreList=None, fieldGroupName: str='dcgm_fieldgroupData', gpuIds=None,
+                 entities=None, fieldIntervalMap=None, ignoreBlank: bool=True) -> None:
         fieldIds = fieldIds or defaultFieldIds
         ignoreList = ignoreList or []
         self.m_dcgmHostName = hostname
@@ -243,7 +244,7 @@ class DcgmReader(object):
     been called.
     '''
 
-    def __enter__(self):
+    def __enter__(self) -> Self:
         return self
 
     ###########################################################################
@@ -251,7 +252,7 @@ class DcgmReader(object):
     Define the cleanup
     '''
 
-    def __exit__(self, type, value, traceback):
+    def __exit__(self, type, value, traceback) -> None:
         self.Shutdown()
 
     ###########################################################################
@@ -260,7 +261,7 @@ class DcgmReader(object):
     the host engine.
     '''
 
-    def InitWrapped(self, path=None):
+    def InitWrapped(self, path=None) -> None:
         dcgm_structs._dcgmInit(libDcgmPath=path)
         self.Reconnect()
 
@@ -270,7 +271,7 @@ class DcgmReader(object):
     the dcgm.
     '''
 
-    def Init(self, libpath=None):
+    def Init(self, libpath=None) -> None:
         with self.m_lock:
             try:
                 self.InitWrapped(path=libpath)
@@ -284,7 +285,7 @@ class DcgmReader(object):
     on shutdown.
     '''
 
-    def SetDisconnected(self):
+    def SetDisconnected(self) -> None:
         # Force destructors since DCGM currently doesn't support more than one client connection per process
         if self.m_dcgmGroup is not None:
             del (self.m_dcgmGroup)
@@ -302,7 +303,7 @@ class DcgmReader(object):
     DCGM and clears DCGM handle and DCGM group.
     '''
 
-    def Shutdown(self):
+    def Shutdown(self) -> None:
         with self.m_lock:
             if self.m_closeHandle == True:
                 self.SetDisconnected()
@@ -312,14 +313,14 @@ class DcgmReader(object):
     Turns debugging output on
     '''
 
-    def AddDebugOutput(self):
+    def AddDebugOutput(self) -> None:
         self.m_debug = True
 
     ############################################################################
     '''
     '''
 
-    def InitializeFromHandle(self):
+    def InitializeFromHandle(self) -> None:
         self.m_dcgmSystem = self.m_dcgmHandle.GetSystem()
 
         if not self.m_requestedGpuIds and not self.m_requestedEntities:
@@ -348,7 +349,7 @@ class DcgmReader(object):
     Has DcgmReader use but not own a handle. Currently for the unit tests.
     '''
 
-    def SetHandle(self, handle):
+    def SetHandle(self, handle) -> None:
         self.m_dcgmHandle = pydcgm.DcgmHandle(handle)
         self.InitializeFromHandle()
 
@@ -360,7 +361,7 @@ class DcgmReader(object):
     field Ids mentioned in the idToWatch list.
     '''
 
-    def Reconnect(self):
+    def Reconnect(self) -> None:
         if self.m_dcgmHandle is not None:
             return
 
@@ -383,7 +384,7 @@ class DcgmReader(object):
     gpuID to the BusID.
     '''
 
-    def SetupGpuIdBusMappings(self):
+    def SetupGpuIdBusMappings(self) -> None:
         self.m_gpuIdToBusId = {}
 
         gpuIds = self.m_dcgmGroup.GetGpuIds()
@@ -397,7 +398,7 @@ class DcgmReader(object):
     list. It also updates the field values for the first time.
     '''
 
-    def AddFieldWatches(self):
+    def AddFieldWatches(self) -> None:
         maxKeepSamples = 0  # No limit. Handled by m_maxKeepAge
         for interval, fieldGroup in self.m_fieldGroups.items():
             self.LogDebug("AddWatchFields: interval = " + str(interval) + "\n")
@@ -412,7 +413,7 @@ class DcgmReader(object):
     the fields mentioned in idToWatch. Then information of each field is acquired from its id.
     '''
 
-    def GetFieldMetadata(self):
+    def GetFieldMetadata(self) -> None:
         self.m_fieldIdToInfo = {}
         self.m_fieldGroups = {}
         self.m_fieldGroup = None
@@ -481,7 +482,7 @@ class DcgmReader(object):
     requested to be watched.
     '''
 
-    def Process(self):
+    def Process(self) -> None:
         with self.m_lock:
             try:
                 self.Reconnect()
@@ -503,15 +504,15 @@ class DcgmReader(object):
                 self.SetDisconnected()
 
     ###########################################################################
-    def LogInfo(self, msg):
+    def LogInfo(self, msg) -> None:
         logging.info(msg)
 
     ###########################################################################
-    def LogDebug(self, msg):
+    def LogDebug(self, msg: str) -> None:
         logging.debug(msg)
 
     ###########################################################################
-    def LogError(self, msg):
+    def LogError(self, msg: str) -> None:
         logging.error(msg)
 
     ###########################################################################
@@ -522,7 +523,7 @@ class DcgmReader(object):
     id mapped to value depending on the parameter mapById.
     '''
 
-    def GetLatestGpuValuesAsDict(self, mapById):
+    def GetLatestGpuValuesAsDict(self, mapById: bool):
         systemDictionary = {}
 
         with self.m_lock:
@@ -562,7 +563,7 @@ class DcgmReader(object):
     id mapped to value depending on the parameter mapById.
     '''
 
-    def GetLatestEntityValuesAsDict(self, mapById):
+    def GetLatestEntityValuesAsDict(self, mapById: bool):
         systemDictionary = {}
 
         with self.m_lock:
@@ -607,7 +608,7 @@ class DcgmReader(object):
     the last retrieval.
     '''
 
-    def GetAllGpuValuesAsDictSinceLastCall(self, mapById):
+    def GetAllGpuValuesAsDictSinceLastCall(self, mapById: bool):
         systemDictionary = {}
 
         with self.m_lock:
@@ -660,7 +661,7 @@ class DcgmReader(object):
     The list of values are the values for each field since the last retrieval.
     '''
 
-    def GetAllEntityValuesAsDictSinceLastCall(self, mapById):
+    def GetAllEntityValuesAsDictSinceLastCall(self, mapById: bool):
         systemDictionary = {}
 
         with self.m_lock:

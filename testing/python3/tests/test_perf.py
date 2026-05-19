@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # test the performance of DCGM
+from DcgmHandle import DcgmHandle
 import time
 import datetime
 import json
@@ -39,7 +40,7 @@ from test_globals import BOUNDED_TEST_DURATION
 REQ_MATPLOTLIB_VER = '1.5.1'
 
 
-def isReqMatplotlibVersion():
+def isReqMatplotlibVersion() -> bool:
     return 'matplotlib' in sys.modules and \
         LooseVersion(matplotlib.__version__) >= LooseVersion(
             REQ_MATPLOTLIB_VER)
@@ -64,7 +65,7 @@ else:
 
 class MetadataTimeseries(object):
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.timestamps = []
         self.fieldVals = defaultdict(list)
         self.fieldGroupVals = defaultdict(list)
@@ -74,12 +75,12 @@ class MetadataTimeseries(object):
 
 class CpuTimeseries(object):
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.timestamps = []
         self.cpuInfo = []
 
 
-def _plotFinalValueOrderedBarChart(points, title, ylabel, filenameBase, topValCount=20):
+def _plotFinalValueOrderedBarChart(points, title, ylabel, filenameBase, topValCount=20) -> None:
     '''points are (x, y) pairs where x is the xlabel and y is the height of the var'''
     if not isReqMatplotlibVersion():
         logger.info(
@@ -119,7 +120,7 @@ def _plotFinalValueOrderedBarChart(points, title, ylabel, filenameBase, topValCo
                 (title, utils.shorten_path(figName)))
 
 
-def _plot_metadata(x, yLists, title, ylabel, plotNum):
+def _plot_metadata(x, yLists, title, ylabel, plotNum) -> None:
     ax = plt.subplot(2, 2, plotNum)
     ax.set_title(title)
 
@@ -130,7 +131,7 @@ def _plot_metadata(x, yLists, title, ylabel, plotNum):
     plt.ylabel(ylabel)
 
 
-def _generate_metadata_line_charts(metadataTSeries, ylabel, title):
+def _generate_metadata_line_charts(metadataTSeries: MetadataTimeseries, ylabel, title) -> None:
     if not isReqMatplotlibVersion():
         logger.info(
             'Not generating memory usage plots since "matplotlib" is not the required version')
@@ -179,7 +180,7 @@ def _generate_metadata_line_charts(metadataTSeries, ylabel, title):
     logger.info('%s figure saved in %s' % (title, utils.shorten_path(figName)))
 
 
-def _gather_perf_timeseries(handle, watchedFieldIds):
+def _gather_perf_timeseries(handle: DcgmHandle, watchedFieldIds: set[int]) -> tuple[MetadataTimeseries, MetadataTimeseries, MetadataTimeseries, CpuTimeseries]:
     '''
     Gathers metadata over time and returns a tuple of 
     4 MetadataTimeseries (mem usage, exec time, avg exec time, cpu utilization)
@@ -263,7 +264,7 @@ def _gather_perf_timeseries(handle, watchedFieldIds):
 
 
 @test_utils.run_with_standalone_host_engine(timeout=BOUNDED_TEST_DURATION + 20)
-def test_dcgm_standalone_perf_bounded(handle):
+def test_dcgm_standalone_perf_bounded(handle) -> None:
     '''
     Test that runs some subtests.  When we bound the number of samples to keep for each field: 
       - DCGM memory usage eventually flatlines on a field, field group, all fields, and process level.
@@ -336,7 +337,7 @@ def test_dcgm_standalone_perf_bounded(handle):
                                    filenameBase='test-perf')
 
 
-def _generate_cpu_line_charts(cpuUtilTS):
+def _generate_cpu_line_charts(cpuUtilTS: CpuTimeseries) -> None:
     if not isReqMatplotlibVersion():
         logger.info(
             'Not generating CPU utilization graphs since "matplotlib" is not the required version')
@@ -379,7 +380,7 @@ def _generate_cpu_line_charts(cpuUtilTS):
                 ('CPU-Util', utils.shorten_path(figName)))
 
 
-def _test_exectime_bounded_linear_growth(execTimeTS):
+def _test_exectime_bounded_linear_growth(execTimeTS) -> None:
     '''
     Test that when the number of samples that DCGM collects is limited there is linear growth 
     in the total amount of time used to retrieve that each field.  
@@ -426,7 +427,7 @@ def _test_exectime_bounded_linear_growth(execTimeTS):
             'Tolerated min: %s, tolerated max: %s' % (minSlope, maxSlope))
 
 
-def _assert_flatlines(seriesType, seriesId, series):
+def _assert_flatlines(seriesType: str, seriesId: str, series) -> None:
     if sum(series) == 0:
         return
 
@@ -445,25 +446,25 @@ def _assert_flatlines(seriesType, seriesId, series):
                                                 + 'See the the memory usage plot ".png" file outputted on the terminal above for further details')
 
 
-def _test_mem_bounded_flatlines_allfields(memUsageTS):
+def _test_mem_bounded_flatlines_allfields(memUsageTS) -> None:
     _assert_flatlines('all-fields', '', memUsageTS.allFieldsVals)
 
 
-def _test_mem_bounded_flatlines_process(memUsageTS):
+def _test_mem_bounded_flatlines_process(memUsageTS) -> None:
     _assert_flatlines('process', '', memUsageTS.processVals)
 
 
-def _test_mem_bounded_flatlines_fields(memUsageTS):
+def _test_mem_bounded_flatlines_fields(memUsageTS) -> None:
     for id, series in memUsageTS.fieldVals.items():
         _assert_flatlines('field', id, series)
 
 
-def _test_mem_bounded_flatlines_fieldgroups(memUsageTS):
+def _test_mem_bounded_flatlines_fieldgroups(memUsageTS) -> None:
     for id, series in memUsageTS.fieldGroupVals.items():
         _assert_flatlines('field-group', id, series)
 
 
-def helper_field_has_variable_size(fieldId):
+def helper_field_has_variable_size(fieldId) -> bool:
     '''
     Returns True if a field has a variable memory size per record. False if it doesn't.
     '''
@@ -480,7 +481,7 @@ def helper_field_has_variable_size(fieldId):
         return False
 
 
-def _test_mem_bounded_golden_values_fields(activeGpuCount, memUsageTS, tailStart):
+def _test_mem_bounded_golden_values_fields(activeGpuCount, memUsageTS, tailStart) -> None:
     # 1 KB plus some swag per field instance (Global, GPU). This is based off of the keyed vector block size and default number of blocks
     goldenVal = 1148
     tolerance = 0.10      # low tolerance, amount of records stored is bounded
@@ -508,7 +509,7 @@ def _test_mem_bounded_golden_values_fields(activeGpuCount, memUsageTS, tailStart
             + 'If this new value is expected, change the golden value used for comparison.'
 
 
-def _test_mem_bounded_golden_values_allfields(activeGpuCount, memUsageTS, tailStart, numFieldIds):
+def _test_mem_bounded_golden_values_allfields(activeGpuCount, memUsageTS, tailStart, numFieldIds) -> None:
     # 2 KiB per fieldId per GPU. This gives some swag for the binary fields that are larger
     goldenVal = 2000 * numFieldIds * activeGpuCount
     tolerance = 0.15    # low tolerance, amount of records stored is bounded
@@ -522,7 +523,7 @@ def _test_mem_bounded_golden_values_allfields(activeGpuCount, memUsageTS, tailSt
         + 'If this new value is expected, change the golden value used for comparison.'
 
 
-def _test_mem_bounded_golden_values_process(memUsageTS, tailStart, numFieldIds):
+def _test_mem_bounded_golden_values_process(memUsageTS, tailStart, numFieldIds) -> None:
     # Setting a canary in the coal mine value. This comes from the /proc filesystem and can report anywhere from 15 to 28 MiB.
     highWaterMark = 29000000
 
@@ -533,7 +534,7 @@ def _test_mem_bounded_golden_values_process(memUsageTS, tailStart, numFieldIds):
         + 'If this new value is expected, change the high water mark.'
 
 
-def _test_cpuutil_bounded_flatlines_hostengine(cpuUtilTS):
+def _test_cpuutil_bounded_flatlines_hostengine(cpuUtilTS) -> None:
     '''
     Test that the CPU utilization flatlines when record storage is bounded
     '''

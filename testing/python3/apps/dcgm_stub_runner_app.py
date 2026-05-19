@@ -38,7 +38,7 @@ class DcgmStubRunnerApp(app_runner.AppRunner):
         "(null)",  # e.g. from printing %s from null ptr
     ]
 
-    def __init__(self, args=None):
+    def __init__(self, args=None) -> None:
         path = DcgmStubRunnerApp.paths[utils.platform_identifier]
         self.stub = None
         self.output_filename = None
@@ -58,7 +58,7 @@ class DcgmStubRunnerApp(app_runner.AppRunner):
             self.nvml_trace_fname = None
             self.dcgm_trace_fname = None
 
-    def _process_finish(self, stdout_buf, stderr_buf):
+    def _process_finish(self, stdout_buf, stderr_buf) -> None:
         super(DcgmStubRunnerApp, self)._process_finish(stdout_buf, stderr_buf)
 
         # Skip this part if --no-logging option is used
@@ -71,9 +71,9 @@ class DcgmStubRunnerApp(app_runner.AppRunner):
             assert stdout.find(
                 forbidden_text) == -1, "stub_library_test printed \"%s\", this should never happen!" % forbidden_text
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "stub_library_test" + super(DcgmStubRunnerApp, self).__str__()
 
-    def stdout(self):
+    def stdout(self) -> str:
         stdout = "\n".join(self.stdout_lines)
         return stdout

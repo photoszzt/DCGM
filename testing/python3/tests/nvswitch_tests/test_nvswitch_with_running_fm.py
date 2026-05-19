@@ -25,7 +25,7 @@ from . import test_nvswitch_utils
 
 @test_utils.run_with_standalone_host_engine()
 @test_utils.run_only_with_live_nvswitches()
-def test_nvswitch_traffic_p2p(handle, switchIds):
+def test_nvswitch_traffic_p2p(handle, switchIds) -> None:
     """
     Verifies that fabric can pass p2p read and write traffic successfully
     """

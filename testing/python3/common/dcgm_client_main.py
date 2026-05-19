@@ -26,13 +26,13 @@ def exit_handler(signum, frame):
 ###############################################################################
 
 
-def initialize_signal_handlers():
+def initialize_signal_handlers() -> None:
     signal.signal(signal.SIGINT, exit_handler)
     signal.signal(signal.SIGTERM, exit_handler)
 
 
 ###############################################################################
-def main(DRConstructor, name, default_port, add_target_host=False):
+def main(DRConstructor, name, default_port, add_target_host: bool=False) -> None:
     '''
     This main function should work for most DCGM clients. It creates a
     DcgmReader object using DRConstructor and enters a loop that queries DCGM

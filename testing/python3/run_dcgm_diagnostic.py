@@ -13,6 +13,7 @@
 # limitations under the License.
 
 
+from argparse import Namespace
 import os
 import sys
 import copy
@@ -44,7 +45,7 @@ test_name = ""
 ################################################################################
 
 
-def print_parseable_status(phase_name, iteration):
+def print_parseable_status(phase_name: str, iteration: int | None) -> None:
     if iteration:
         print("&&&& %s %s_%d" % (phase_name, test_name, iteration))
     else:
@@ -53,7 +54,7 @@ def print_parseable_status(phase_name, iteration):
 ################################################################################
 
 
-def remove_file_yolo(filename):
+def remove_file_yolo(filename: str) -> None:
     '''
     Try to remove a file, not caring if any error occurs
     '''
@@ -64,7 +65,7 @@ def remove_file_yolo(filename):
 
 
 ################################################################################
-def setupEnvironment(cmdArgs):
+def setupEnvironment(cmdArgs: Namespace) -> None:
     """
     Function to prepare the test environment
     """
@@ -136,7 +137,7 @@ DIAG_MIG_MULTIPLE_GPU_SUGGEST = "You must run on only one GPU at a time when MIG
 class TestRunner():
 
     ################################################################################
-    def __init__(self, cycles, dcgmiDiag, verbose):
+    def __init__(self, cycles, dcgmiDiag, verbose) -> None:
         self.cycles = int(cycles)
         self.dcgmiDiag = dcgmiDiag
         self.verbose = verbose
@@ -152,7 +153,7 @@ class TestRunner():
         ]
 
     ################################################################################
-    def matchesExclusion(self, warnings):
+    def matchesExclusion(self, warnings) -> str | None:
         for exclusion in self.exclusions:
             for warning in warnings:
                 if warning['warning'].find(exclusion[0]) != -1:
@@ -160,7 +161,7 @@ class TestRunner():
 
         return None
 
-    def getErrorMessage(self, failureInfo, runIndex, recommendation):
+    def getErrorMessage(self, failureInfo, runIndex, recommendation: str | None) -> str:
         msg = ''
         if recommendation:
             msg = "Iteration %d test '%s' is ignoring error '%s' : %s" % \
@@ -173,7 +174,7 @@ class TestRunner():
         return msg
 
     ################################################################################
-    def checkForErrors(self):
+    def checkForErrors(self) -> list[int]:
         '''
         Check the NVVS JSON output for errors, filtering out any errors that are environmental rather
         than NVVS bugs. Returns a count of the number of errors. Anything > 0 will result in bugs against
@@ -208,7 +209,7 @@ class TestRunner():
         return [numErrors, numExclusions]
 
     ################################################################################
-    def run_command(self, cycles):
+    def run_command(self, cycles: int) -> list[int]:
         """
         Helper method to run a give command
         """
@@ -259,7 +260,7 @@ class TestRunner():
         return [0, exclusionCount]
 
     ################################################################################
-    def run(self):
+    def run(self) -> list[int]:
         self.dcgmiDiag.SetConfigFile(None)
         failCount, exclusionCount = self.run_command(self.cycles)
         return [failCount, exclusionCount]
@@ -267,7 +268,7 @@ class TestRunner():
 ################################################################################
 
 
-def checkCmdLine(cmdArgs, settings):
+def checkCmdLine(cmdArgs: Namespace, settings) -> None:
 
     if cmdArgs.device_id:
         # Verify devices have been specified correctly
@@ -309,7 +310,7 @@ def checkCmdLine(cmdArgs, settings):
 ################################################################################
 
 
-def parseCommandLine():
+def parseCommandLine() -> Namespace:
 
     parser = argparse.ArgumentParser(
         description="DCGM DIAGNOSTIC TEST FRAMEWORK")
@@ -333,7 +334,7 @@ def parseCommandLine():
 ################################################################################
 
 
-def main(cmdArgs):
+def main(cmdArgs: Namespace) -> list[int]:
 
     settings = {}
     checkCmdLine(cmdArgs, settings)

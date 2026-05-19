@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from argparse import Namespace
 import csv
 import argparse
 import re
@@ -19,7 +20,7 @@ import re
 class ParseDcgmProftesterSingleMetric:
     "class for parsing a single metric"
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.data_lines_lines = ['PcieTxBytes', 'PcieRxBytes', 'GrActivity:', 'SmActivity',
                                  'SmActivity:', 'SmOccupancy', 'SmOccupancy:',
                                  'TensorEngineUtil', 'DramUtil', 'Fp64EngineUtil',
@@ -50,7 +51,7 @@ class ParseDcgmProftesterSingleMetric:
         elif metric == '1003':
             return 9
 
-    def parseAndWriteToCsv(self, fName, metric, gpu_index):
+    def parseAndWriteToCsv(self, fName, metric, gpu_index) -> None:
         csvFileName = 'dcgmProfTester' + '_' + \
             str(metric) + '_gpu' + str(gpu_index) + '.csv'
         sample_num = 0
@@ -88,7 +89,7 @@ class ParseDcgmProftesterSingleMetric:
         print("Outside loop")
 
 
-def main(cmdArgs):
+def main(cmdArgs: Namespace) -> None:
     fName = cmdArgs.fileName
     metric = cmdArgs.metric
     gpu_index = cmdArgs.gpu_index
@@ -97,7 +98,7 @@ def main(cmdArgs):
     po.parseAndWriteToCsv(fName, metric, gpu_index)
 
 
-def parseCommandLine():
+def parseCommandLine() -> Namespace:
     parser = argparse.ArgumentParser(
         description="Parse logs from dcgmLogs into a csv")
     parser.add_argument("-f", "--fileName", required=True, help="fielName of the \

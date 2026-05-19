@@ -12,6 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from dcgm_structs import c_dcgmNvLinkP2PStatus_v1
+from DcgmSystem import DcgmSystem
+from DcgmGroup import DcgmGroup
+from DcgmFieldGroup import DcgmFieldGroup
+from ctypes import _CFunctionType
 import os
 import pydcgm
 import dcgm_structs_internal
@@ -47,11 +52,11 @@ from _test_helpers import skip_test_if_no_dcgm_nvml
 from ctypes import byref
 
 
-def in_nvml_injection_mode():
+def in_nvml_injection_mode() -> bool:
     return os.getenv(test_utils.INJECTION_MODE_VAR, default='False') == 'True'
 
 
-def trigger_bind_gpu_event(uuids=None, pcibusIds=None):
+def trigger_bind_gpu_event(uuids=None, pcibusIds=None) -> None:
     '''
     Trigger the bind GPU event.
     Args:
@@ -75,7 +80,7 @@ def trigger_bind_gpu_event(uuids=None, pcibusIds=None):
         test_utils.attach_gpus(pcibusIds)
 
 
-def trigger_unbind_gpu_event(uuids=None, pcibusIds=None):
+def trigger_unbind_gpu_event(uuids=None, pcibusIds=None) -> None:
     '''
     Trigger the unbind GPU event.
     Args:
@@ -99,12 +104,12 @@ def trigger_unbind_gpu_event(uuids=None, pcibusIds=None):
         test_utils.detach_gpus(pcibusIds)
 
 
-def get_gpu_uuid(dcgmSystem, gpuId):
+def get_gpu_uuid(dcgmSystem: DcgmSystem, gpuId):
     gpuAttributes = dcgmSystem.discovery.GetGpuAttributes(gpuId)
     return gpuAttributes.identifiers.uuid
 
 
-def wait_gpu_status(dcgmSystem, gpuId, expectedStatus):
+def wait_gpu_status(dcgmSystem: DcgmSystem, gpuId, expectedStatus: int) -> None:
     retryTimes = 64
     sleepTime = 0.1
     if not in_nvml_injection_mode():
@@ -120,7 +125,7 @@ def wait_gpu_status(dcgmSystem, gpuId, expectedStatus):
             f"Expected GPU {gpuId} to be {expectedStatus}, but it is not")
 
 
-def bind_gpu_and_wait_for_status_updated(dcgmSystem, gpuIds, gpuUuids=None, pcibusIds=None):
+def bind_gpu_and_wait_for_status_updated(dcgmSystem: DcgmSystem, gpuIds, gpuUuids=None, pcibusIds=None) -> None:
     '''
     Bind the GPUs and wait for the status to be updated.
     It will correctly determine whether NVML Injection mode is used and apply the appropriate parameters to trigger the event.
@@ -170,7 +175,7 @@ def bind_gpu_and_wait_for_status_updated(dcgmSystem, gpuIds, gpuUuids=None, pcib
                                    dcgm_structs.DCGM_BU_EVENT_STATE_SYSTEM_REINITIALIZATION_COMPLETED: 1})
 
 
-def unbind_gpu_and_wait_for_status_updated(dcgmSystem, gpuIds, pcibusIds=None):
+def unbind_gpu_and_wait_for_status_updated(dcgmSystem: DcgmSystem, gpuIds, pcibusIds=None) -> None:
     '''
     Unbind the GPUs and wait for the status to be updated.
     It will correctly determine whether NVML Injection mode is used and apply the appropriate parameters to trigger the event.
@@ -213,7 +218,7 @@ def unbind_gpu_and_wait_for_status_updated(dcgmSystem, gpuIds, pcibusIds=None):
                                    dcgm_structs.DCGM_BU_EVENT_STATE_SYSTEM_REINITIALIZATION_COMPLETED: 1})
 
 
-def helper_run_dcgmi(args):
+def helper_run_dcgmi(args: list[str]):
     """
     Helper function to run dcgmi commands.
     Returns tuple: (returnCode, stdout_lines, stderr_lines)
@@ -225,7 +230,7 @@ def helper_run_dcgmi(args):
     return retValue, dcgmi.stdout_lines, dcgmi.stderr_lines
 
 
-def get_gpu_section(output, gpuId):
+def get_gpu_section(output: str, gpuId) -> str:
     """Extract the section of discovery output for a specific GPU (excludes other device types)."""
     lines = output.split('\n')
     in_gpu_list = False
@@ -244,7 +249,7 @@ def get_gpu_section(output, gpuId):
     return ""
 
 
-def helper_test_bind_unbind_gpu_status(handle, gpuIds, pcibusIds=None):
+def helper_test_bind_unbind_gpu_status(handle, gpuIds, pcibusIds=None) -> None:
     dcgmHandle = pydcgm.DcgmHandle(handle=handle)
     dcgmSystem = dcgmHandle.GetSystem()
 
@@ -297,7 +302,7 @@ def helper_test_bind_unbind_gpu_status(handle, gpuIds, pcibusIds=None):
 @test_utils.run_with_injection_nvml_using_specific_sku('H200.yaml')
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_nvml_injected_gpus()
-def test_bind_unbind_gpu_status(handle, gpuIds):
+def test_bind_unbind_gpu_status(handle, gpuIds) -> None:
     helper_test_bind_unbind_gpu_status(handle, gpuIds, pcibusIds=None)
 
 
@@ -307,11 +312,11 @@ def test_bind_unbind_gpu_status(handle, gpuIds):
 @test_utils.auto_restore_detached_gpus()
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_only_with_live_gpus()
-def test_bind_unbind_gpu_status_live(handle, gpuIds, pcibusIds):
+def test_bind_unbind_gpu_status_live(handle, gpuIds, pcibusIds) -> None:
     helper_test_bind_unbind_gpu_status(handle, gpuIds, pcibusIds)
 
 
-def helper_test_bind_unbind_gpu_index_order_remain_the_same(handle, gpuIds, pcibusIds=None):
+def helper_test_bind_unbind_gpu_index_order_remain_the_same(handle, gpuIds, pcibusIds=None) -> None:
     dcgmHandle = pydcgm.DcgmHandle(handle=handle)
     dcgmSystem = dcgmHandle.GetSystem()
 
@@ -337,7 +342,7 @@ def helper_test_bind_unbind_gpu_index_order_remain_the_same(handle, gpuIds, pcib
 @test_utils.run_with_injection_nvml_using_specific_sku('H200.yaml')
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_nvml_injected_gpus()
-def test_bind_unbind_gpu_index_order_remain_the_same(handle, gpuIds):
+def test_bind_unbind_gpu_index_order_remain_the_same(handle, gpuIds) -> None:
     helper_test_bind_unbind_gpu_index_order_remain_the_same(
         handle, gpuIds, pcibusIds=None)
 
@@ -348,7 +353,7 @@ def test_bind_unbind_gpu_index_order_remain_the_same(handle, gpuIds):
 @test_utils.auto_restore_detached_gpus()
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_only_with_live_gpus()
-def test_bind_unbind_gpu_index_order_remain_the_same_live(handle, gpuIds, pcibusIds):
+def test_bind_unbind_gpu_index_order_remain_the_same_live(handle, gpuIds, pcibusIds) -> None:
     helper_test_bind_unbind_gpu_index_order_remain_the_same(
         handle, gpuIds, pcibusIds)
 
@@ -356,7 +361,7 @@ def test_bind_unbind_gpu_index_order_remain_the_same_live(handle, gpuIds, pcibus
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_only_with_live_gpus()
 @test_utils.run_only_with_nvml()
-def test_dcgm_attach_driver_when_nvml_is_loaded(handle, gpuIds):
+def test_dcgm_attach_driver_when_nvml_is_loaded(handle, gpuIds) -> None:
     try:
         dcgm_agent.dcgmAttachDriver(handle)
     except Exception as e:
@@ -366,7 +371,7 @@ def test_dcgm_attach_driver_when_nvml_is_loaded(handle, gpuIds):
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_only_with_live_gpus()
 @test_utils.run_only_with_nvml()
-def test_dcgm_detach_driver_when_nvml_is_not_loaded(handle, gpuIds):
+def test_dcgm_detach_driver_when_nvml_is_not_loaded(handle, gpuIds) -> None:
     # detach driver first to make sure nvml is not loaded
     dcgm_agent.dcgmDetachDriver(handle)
     try:
@@ -375,7 +380,7 @@ def test_dcgm_detach_driver_when_nvml_is_not_loaded(handle, gpuIds):
         assert False, f"Expected DCGM_ST_OK, but got {e}"
 
 
-def get_host_engine_pid():
+def get_host_engine_pid() -> str | None:
     pgrep_path = shutil.which("pgrep")
     if pgrep_path is None:
         test_utils.skip_test("pgrep is not found")
@@ -403,7 +408,7 @@ def get_host_engine_pid():
     test_utils.skip_test("Unexpected pgrep output: {}".format(output))
 
 
-def get_lsof_of_host_engine():
+def get_lsof_of_host_engine() -> str:
     lsof_path = shutil.which("lsof")
     if lsof_path is None:
         test_utils.skip_test("lsof is not found")
@@ -418,7 +423,7 @@ def get_lsof_of_host_engine():
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_only_with_live_gpus()
 @test_utils.run_only_with_nvml()
-def test_dcgm_attach_detach_driver(handle, gpuIds):
+def test_dcgm_attach_detach_driver(handle, gpuIds) -> None:
     dcgmHandle = pydcgm.DcgmHandle(handle=handle)
     dcgmSystem = dcgmHandle.GetSystem()
 
@@ -440,7 +445,7 @@ def test_dcgm_attach_detach_driver(handle, gpuIds):
     assert len(newGpuIds) == len(gpuIds), "Expected GPU number to be the same"
 
 
-def helper_test_dcgm_add_inactive_gpu_to_group_will_fail(handle, gpuIds, pcibusIds=None):
+def helper_test_dcgm_add_inactive_gpu_to_group_will_fail(handle, gpuIds, pcibusIds=None) -> None:
     '''
     Try to add an inactive GPU to a group, and make sure it fails.
     '''
@@ -466,7 +471,7 @@ def helper_test_dcgm_add_inactive_gpu_to_group_will_fail(handle, gpuIds, pcibusI
 @test_utils.run_with_injection_nvml_using_specific_sku('H200.yaml')
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_nvml_injected_gpus()
-def test_dcgm_add_inactive_gpu_to_group_will_fail(handle, gpuIds):
+def test_dcgm_add_inactive_gpu_to_group_will_fail(handle, gpuIds) -> None:
     helper_test_dcgm_add_inactive_gpu_to_group_will_fail(
         handle, gpuIds, pcibusIds=None)
 
@@ -477,12 +482,12 @@ def test_dcgm_add_inactive_gpu_to_group_will_fail(handle, gpuIds):
 @test_utils.auto_restore_detached_gpus()
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_only_with_live_gpus()
-def test_dcgm_add_inactive_gpu_to_group_will_fail_live(handle, gpuIds, pcibusIds):
+def test_dcgm_add_inactive_gpu_to_group_will_fail_live(handle, gpuIds, pcibusIds) -> None:
     helper_test_dcgm_add_inactive_gpu_to_group_will_fail(
         handle, gpuIds, pcibusIds)
 
 
-def helper_test_dcgm_field_watch_inactive_to_active(handle, gpuIds, pcibusIds=None):
+def helper_test_dcgm_field_watch_inactive_to_active(handle, gpuIds, pcibusIds=None) -> None:
     '''
     Watch fields on a group with a GPU that is not active, and make sure the field values are not returned for this GPU even when it backs to active.
     '''
@@ -533,7 +538,7 @@ def helper_test_dcgm_field_watch_inactive_to_active(handle, gpuIds, pcibusIds=No
 @test_utils.run_with_injection_nvml_using_specific_sku('H200.yaml')
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_nvml_injected_gpus()
-def test_dcgm_field_watch_inactive_to_active(handle, gpuIds):
+def test_dcgm_field_watch_inactive_to_active(handle, gpuIds) -> None:
     helper_test_dcgm_field_watch_inactive_to_active(
         handle, gpuIds, pcibusIds=None)
 
@@ -544,11 +549,11 @@ def test_dcgm_field_watch_inactive_to_active(handle, gpuIds):
 @test_utils.auto_restore_detached_gpus()
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_only_with_live_gpus()
-def test_dcgm_field_watch_inactive_to_active_live(handle, gpuIds, pcibusIds):
+def test_dcgm_field_watch_inactive_to_active_live(handle, gpuIds, pcibusIds) -> None:
     helper_test_dcgm_field_watch_inactive_to_active(handle, gpuIds, pcibusIds)
 
 
-def helper_test_dcgm_field_watch_on_meta_group_will_affect_on_new_attached_gpus(handle, gpuIds, pcibusIds=None):
+def helper_test_dcgm_field_watch_on_meta_group_will_affect_on_new_attached_gpus(handle, gpuIds, pcibusIds=None) -> None:
     '''
     Watch fields on a meta group, and make sure the field values are correctly updated when new GPUs are attached.
     '''
@@ -590,7 +595,7 @@ def helper_test_dcgm_field_watch_on_meta_group_will_affect_on_new_attached_gpus(
 @test_utils.run_with_injection_nvml_using_specific_sku('H200.yaml')
 @test_utils.run_with_standalone_host_engine(120, heEnv={"DCGM_NVML_INJECTION_GPU_DETACHED_BEFORE_HAND": "3"})
 @test_utils.run_with_nvml_injected_gpus()
-def test_dcgm_field_watch_on_meta_group_will_affect_on_new_attached_gpus(handle, gpuIds):
+def test_dcgm_field_watch_on_meta_group_will_affect_on_new_attached_gpus(handle, gpuIds) -> None:
     helper_test_dcgm_field_watch_on_meta_group_will_affect_on_new_attached_gpus(
         handle, gpuIds, pcibusIds=None)
 
@@ -601,14 +606,14 @@ def test_dcgm_field_watch_on_meta_group_will_affect_on_new_attached_gpus(handle,
 @test_utils.auto_restore_detached_gpus(detachGpusBeforeHand=[0])
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_only_with_live_gpus()
-def test_dcgm_field_watch_on_meta_group_will_affect_on_new_attached_gpus_live(handle, gpuIds, pcibusIds):
+def test_dcgm_field_watch_on_meta_group_will_affect_on_new_attached_gpus_live(handle, gpuIds, pcibusIds) -> None:
     helper_test_dcgm_field_watch_on_meta_group_will_affect_on_new_attached_gpus(
         handle, gpuIds, pcibusIds)
 
 
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_only_with_live_gpus()
-def test_dcgm_field_watch_on_meta_group_will_not_add_to_new_attached_gpus_if_unwatch_is_called(handle, gpuIds):
+def test_dcgm_field_watch_on_meta_group_will_not_add_to_new_attached_gpus_if_unwatch_is_called(handle, gpuIds) -> None:
     '''
     Watch fields on a meta group, and make sure the field values are not updated when new GPUs are attached if unwatch is called.
     '''
@@ -634,7 +639,7 @@ def test_dcgm_field_watch_on_meta_group_will_not_add_to_new_attached_gpus_if_unw
 
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_only_with_live_gpus()
-def test_dcgm_field_watch_meta_group_when_existing_gpu_is_attached(handle, gpuIds):
+def test_dcgm_field_watch_meta_group_when_existing_gpu_is_attached(handle, gpuIds) -> None:
     '''
     Watch fields on a meta group, and make sure the field values are correctly updated when the existing GPU is attached.
     '''
@@ -657,12 +662,12 @@ def test_dcgm_field_watch_meta_group_when_existing_gpu_is_attached(handle, gpuId
                                                   ][dcgm_fields.DCGM_FI_DEV_GPU_TEMP][0].isBlank == False
 
 
-def get_diag_entity_result(response, entityGroupId, entityId):
+def get_diag_entity_result(response, entityGroupId: int, entityId):
     return next(filter(lambda cur: cur.entity.entityGroupId == entityGroupId and cur.entity.entityId == entityId,
                        response.entities[:min(response.numEntities, dcgm_structs.DCGM_DIAG_RESPONSE_ENTITIES_MAX)]), None)
 
 
-def helper_test_diag_should_only_run_on_active_gpus(handle, gpuIds, pcibusIds=None):
+def helper_test_diag_should_only_run_on_active_gpus(handle, gpuIds, pcibusIds=None) -> None:
     '''
     Make sure the diag should only run on active GPUs.
     '''
@@ -720,7 +725,7 @@ def helper_test_diag_should_only_run_on_active_gpus(handle, gpuIds, pcibusIds=No
 @test_utils.run_with_injection_nvml_using_specific_sku('H200.yaml')
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_only_with_live_gpus()
-def test_diag_should_only_run_on_active_gpus(handle, gpuIds):
+def test_diag_should_only_run_on_active_gpus(handle, gpuIds) -> None:
     helper_test_diag_should_only_run_on_active_gpus(
         handle, gpuIds, pcibusIds=None)
 
@@ -733,13 +738,13 @@ def test_diag_should_only_run_on_active_gpus(handle, gpuIds):
 @test_utils.run_only_with_live_gpus()
 @test_utils.run_only_if_mig_is_disabled()
 @test_utils.for_all_same_sku_gpus()
-def test_diag_should_only_run_on_active_gpus_live(handle, gpuIds, pcibusIds):
+def test_diag_should_only_run_on_active_gpus_live(handle, gpuIds, pcibusIds) -> None:
     if len(gpuIds) != len(pcibusIds):
         test_utils.skip_test("Skip on mixed SKU setup")
     helper_test_diag_should_only_run_on_active_gpus(handle, gpuIds, pcibusIds)
 
 
-def check_nvvs_started_running_on_gpu():
+def check_nvvs_started_running_on_gpu() -> bool:
     tree = nvidia_smi_utils.helper_nvidia_smi_xml()
 
     if tree is None:
@@ -754,7 +759,7 @@ def check_nvvs_started_running_on_gpu():
     return False
 
 
-def wait_for_nvvs_started_running_on_gpu():
+def wait_for_nvvs_started_running_on_gpu() -> None:
     for _ in range(160):
         if check_nvvs_started_running_on_gpu():
             return
@@ -762,7 +767,7 @@ def wait_for_nvvs_started_running_on_gpu():
     test_utils.skip_test("NVVS did not start within 10 seconds")
 
 
-def helper_test_diag_should_be_stopped_when_gpu_is_attached(handle, gpuIds, pcibusIds=None):
+def helper_test_diag_should_be_stopped_when_gpu_is_attached(handle, gpuIds, pcibusIds=None) -> None:
     if len(gpuIds) <= 1:
         test_utils.skip_test("Skipping because test requires >1 live gpus")
 
@@ -790,7 +795,7 @@ def helper_test_diag_should_be_stopped_when_gpu_is_attached(handle, gpuIds, pcib
     wait_gpu_status(dcgmSystem, gpuIds[1],
                     dcgm_structs_internal.DcgmEntityStatusOk)
 
-    def bind_thread_fn():
+    def bind_thread_fn() -> None:
         running, debug_output = dcgm_internal_helpers.check_nvvs_process(
             want_running=True, attempts=50)
         if not running:
@@ -823,7 +828,7 @@ def helper_test_diag_should_be_stopped_when_gpu_is_attached(handle, gpuIds, pcib
 @test_utils.exclude_confidential_compute_gpus()
 @test_utils.run_only_if_mig_is_disabled()
 @test_utils.for_all_same_sku_gpus()
-def test_diag_should_be_stopped_when_gpu_is_attached(handle, gpuIds):
+def test_diag_should_be_stopped_when_gpu_is_attached(handle, gpuIds) -> None:
     helper_test_diag_should_be_stopped_when_gpu_is_attached(
         handle, gpuIds, pcibusIds=None)
 
@@ -836,7 +841,7 @@ def test_diag_should_be_stopped_when_gpu_is_attached(handle, gpuIds):
 @test_utils.run_only_with_live_gpus()
 @test_utils.run_only_if_mig_is_disabled()
 @test_utils.for_all_same_sku_gpus()
-def test_diag_should_be_stopped_when_gpu_is_attached_live(handle, gpuIds, pcibusIds):
+def test_diag_should_be_stopped_when_gpu_is_attached_live(handle, gpuIds, pcibusIds) -> None:
     if len(gpuIds) != len(pcibusIds):
         test_utils.skip_test("Skip on mixed SKU setup")
     helper_test_diag_should_be_stopped_when_gpu_is_attached(
@@ -848,14 +853,14 @@ def test_diag_should_be_stopped_when_gpu_is_attached_live(handle, gpuIds, pcibus
 @test_utils.exclude_confidential_compute_gpus()
 @test_utils.run_only_if_mig_is_disabled()
 @test_utils.run_only_with_nvml()
-def test_diag_should_be_stopped_when_detach_driver(handle, gpuIds):
+def test_diag_should_be_stopped_when_detach_driver(handle, gpuIds) -> None:
     gpuId = gpuIds[0]
     # First check whether the GPU is healthy/supported
     if not skip_test_helpers.gpu_is_healthy_and_support_memtest(handle, gpuId):
         test_utils.skip_test("Skipping because GPU %s does not pass memtest. "
                              "Please verify whether the GPU is supported and healthy." % gpuId)
 
-    def detach_thread_fn():
+    def detach_thread_fn() -> None:
         running, debug_output = dcgm_internal_helpers.check_nvvs_process(
             want_running=True, attempts=50)
         if not running:
@@ -886,7 +891,7 @@ def test_diag_should_be_stopped_when_detach_driver(handle, gpuIds):
         lsof_output) is None, f"Expected /dev/nvidia to not be in lsof output {lsof_output}"
 
 
-def helper_test_diag_should_be_stopped_when_gpu_is_detached(handle, gpuIds, pcibusIds=None):
+def helper_test_diag_should_be_stopped_when_gpu_is_detached(handle, gpuIds, pcibusIds=None) -> None:
     gpuId = gpuIds[0]
     # First check whether the GPU is healthy/supported
     if not skip_test_helpers.gpu_is_healthy_and_support_memtest(handle, gpuId):
@@ -896,7 +901,7 @@ def helper_test_diag_should_be_stopped_when_gpu_is_detached(handle, gpuIds, pcib
     dcgmHandle = pydcgm.DcgmHandle(handle=handle)
     dcgmSystem = dcgmHandle.GetSystem()
 
-    def unbind_thread_fn():
+    def unbind_thread_fn() -> None:
         running, debug_output = dcgm_internal_helpers.check_nvvs_process(
             want_running=True, attempts=50)
         if not running:
@@ -933,7 +938,7 @@ def helper_test_diag_should_be_stopped_when_gpu_is_detached(handle, gpuIds, pcib
 @test_utils.run_only_with_live_gpus()
 @test_utils.exclude_confidential_compute_gpus()
 @test_utils.run_only_if_mig_is_disabled()
-def test_diag_should_be_stopped_when_gpu_is_detached(handle, gpuIds):
+def test_diag_should_be_stopped_when_gpu_is_detached(handle, gpuIds) -> None:
     helper_test_diag_should_be_stopped_when_gpu_is_detached(
         handle, gpuIds, pcibusIds=None)
 
@@ -946,14 +951,14 @@ def test_diag_should_be_stopped_when_gpu_is_detached(handle, gpuIds):
 @test_utils.run_only_with_live_gpus()
 @test_utils.run_only_if_mig_is_disabled()
 @test_utils.for_all_same_sku_gpus()
-def test_diag_should_be_stopped_when_gpu_is_detached_live(handle, gpuIds, pcibusIds):
+def test_diag_should_be_stopped_when_gpu_is_detached_live(handle, gpuIds, pcibusIds) -> None:
     if len(gpuIds) != len(pcibusIds):
         test_utils.skip_test("Skip on mixed SKU setup")
     helper_test_diag_should_be_stopped_when_gpu_is_detached(
         handle, gpuIds, pcibusIds)
 
 
-def helper_test_dcgm_health_watch_on_meta_group_will_affect_on_new_attached_gpus(handle, gpuIds, pcibusIds=None):
+def helper_test_dcgm_health_watch_on_meta_group_will_affect_on_new_attached_gpus(handle, gpuIds, pcibusIds=None) -> None:
     '''
     Health watch on a meta group, and make sure the field values are correctly updated when new GPUs are attached.
     '''
@@ -1003,7 +1008,7 @@ def helper_test_dcgm_health_watch_on_meta_group_will_affect_on_new_attached_gpus
 @test_utils.run_with_injection_nvml_using_specific_sku('H200.yaml')
 @test_utils.run_with_standalone_host_engine(120, heEnv={"DCGM_NVML_INJECTION_GPU_DETACHED_BEFORE_HAND": "3"})
 @test_utils.run_with_nvml_injected_gpus()
-def test_dcgm_health_watch_on_meta_group_will_affect_on_new_attached_gpus(handle, gpuIds):
+def test_dcgm_health_watch_on_meta_group_will_affect_on_new_attached_gpus(handle, gpuIds) -> None:
     helper_test_dcgm_health_watch_on_meta_group_will_affect_on_new_attached_gpus(
         handle, gpuIds, pcibusIds=None)
 
@@ -1014,12 +1019,12 @@ def test_dcgm_health_watch_on_meta_group_will_affect_on_new_attached_gpus(handle
 @test_utils.auto_restore_detached_gpus(detachGpusBeforeHand=[0])
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_only_with_live_gpus()
-def test_dcgm_health_watch_on_meta_group_will_affect_on_new_attached_gpus_live(handle, gpuIds, pcibusIds):
+def test_dcgm_health_watch_on_meta_group_will_affect_on_new_attached_gpus_live(handle, gpuIds, pcibusIds) -> None:
     helper_test_dcgm_health_watch_on_meta_group_will_affect_on_new_attached_gpus(
         handle, gpuIds, pcibusIds)
 
 
-def helper_test_dcgm_health_will_not_report_incident_for_inactive_gpus(handle, gpuIds, pcibusIds=None):
+def helper_test_dcgm_health_will_not_report_incident_for_inactive_gpus(handle, gpuIds, pcibusIds=None) -> None:
     '''
     Make sure the health will not report incident for inactive GPUs and when it comes back to active,
     because the watch is removed when the GPU is detached.
@@ -1082,7 +1087,7 @@ def helper_test_dcgm_health_will_not_report_incident_for_inactive_gpus(handle, g
 @test_utils.run_with_injection_nvml_using_specific_sku('H200.yaml')
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_nvml_injected_gpus()
-def test_dcgm_health_will_not_report_incident_for_inactive_gpus(handle, gpuIds):
+def test_dcgm_health_will_not_report_incident_for_inactive_gpus(handle, gpuIds) -> None:
     helper_test_dcgm_health_will_not_report_incident_for_inactive_gpus(
         handle, gpuIds, pcibusIds=None)
 
@@ -1093,12 +1098,12 @@ def test_dcgm_health_will_not_report_incident_for_inactive_gpus(handle, gpuIds):
 @test_utils.auto_restore_detached_gpus()
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_only_with_live_gpus()
-def test_dcgm_health_will_not_report_incident_for_inactive_gpus_live(handle, gpuIds, pcibusIds):
+def test_dcgm_health_will_not_report_incident_for_inactive_gpus_live(handle, gpuIds, pcibusIds) -> None:
     helper_test_dcgm_health_will_not_report_incident_for_inactive_gpus(
         handle, gpuIds, pcibusIds)
 
 
-def set_power_limit(group, value):
+def set_power_limit(group: DcgmGroup, value: int) -> None:
     configValues = dcgm_structs.c_dcgmDeviceConfig_v2()
     configValues.mEccMode = dcgmvalue.DCGM_INT32_BLANK
     configValues.mPerfState.syncBoost = dcgmvalue.DCGM_INT32_BLANK
@@ -1113,7 +1118,7 @@ def set_power_limit(group, value):
     group.config.Set(configValues)
 
 
-def assert_nvml_func_call_count(handle, funcName, expectedCount):
+def assert_nvml_func_call_count(handle, funcName: str, expectedCount: int) -> None:
     retryTimes = 32
     callCount = 0
     for _ in range(retryTimes):
@@ -1135,7 +1140,7 @@ def assert_nvml_func_call_count(handle, funcName, expectedCount):
         f"{funcName} should have been called {expectedCount} times, but got {callCount}")
 
 
-def assert_nvml_func_not_called(handle, funcName):
+def assert_nvml_func_not_called(handle, funcName) -> None:
     funcCallCounts = nvml_injection.c_injectNvmlFuncCallCounts_t()
     ret = dcgm_agent_internal.dcgmGetNvmlInjectFuncCallCount(
         handle, funcCallCounts)
@@ -1149,7 +1154,7 @@ def assert_nvml_func_not_called(handle, funcName):
 @test_utils.run_with_injection_nvml_using_specific_sku('H200.yaml')
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_only_with_live_gpus()
-def test_dcgm_config_will_re_apply_only_on_attached_gpus(handle, gpuIds):
+def test_dcgm_config_will_re_apply_only_on_attached_gpus(handle, gpuIds) -> None:
     '''
     Make sure the config will be re-applied only on the attached GPUs.
     '''
@@ -1191,7 +1196,7 @@ def test_dcgm_config_will_re_apply_only_on_attached_gpus(handle, gpuIds):
 @test_utils.run_with_injection_nvml_using_specific_sku('H200.yaml')
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_only_with_live_gpus()
-def test_dcgm_config_cannot_set_on_detached_gpu(handle, gpuIds):
+def test_dcgm_config_cannot_set_on_detached_gpu(handle, gpuIds) -> None:
     '''
     Make sure the config cannot be set on a detached GPU.
     '''
@@ -1229,7 +1234,7 @@ def test_dcgm_config_cannot_set_on_detached_gpu(handle, gpuIds):
 @test_utils.run_with_injection_nvml_using_specific_sku('H200.yaml')
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_only_with_live_gpus()
-def test_dcgm_config_cannot_acquire_on_detached_gpu(handle, gpuIds):
+def test_dcgm_config_cannot_acquire_on_detached_gpu(handle, gpuIds) -> None:
     '''
     Make sure the config cannot be acquired on a detached GPU.
     '''
@@ -1258,9 +1263,9 @@ def test_dcgm_config_cannot_acquire_on_detached_gpu(handle, gpuIds):
         assert ret[0].mPowerLimit.val == 256
 
 
-def create_c_callback(queue=None):
+def create_c_callback(queue=None) -> _CFunctionType:
     @CFUNCTYPE(None, POINTER(dcgm_structs.c_dcgmPolicyCallbackResponse_v2), c_uint64)
-    def c_callback(response, userData):
+    def c_callback(response, userData) -> None:
         if queue:
             # copy data into a python struct so that it is the right format and is not lost when "response" var is lost
             callbackResp = dcgm_structs.c_dcgmPolicyCallbackResponse_v2()
@@ -1270,7 +1275,7 @@ def create_c_callback(queue=None):
     return c_callback
 
 
-def helper_test_dcgm_policy_on_meta_group_will_affect_on_new_attached_gpus(handle, gpuIds, pcibusIds=None):
+def helper_test_dcgm_policy_on_meta_group_will_affect_on_new_attached_gpus(handle, gpuIds, pcibusIds=None) -> None:
     '''
     Register and set policy on a meta group, and make sure the callback is correctly triggered when error occurs on new attached GPUs.
     '''
@@ -1338,7 +1343,7 @@ def helper_test_dcgm_policy_on_meta_group_will_affect_on_new_attached_gpus(handl
 @test_utils.run_with_injection_nvml_using_specific_sku('H200.yaml')
 @test_utils.run_with_standalone_host_engine(120, heEnv={"DCGM_NVML_INJECTION_GPU_DETACHED_BEFORE_HAND": "3"})
 @test_utils.run_with_nvml_injected_gpus()
-def test_dcgm_policy_on_meta_group_will_affect_on_new_attached_gpus(handle, gpuIds):
+def test_dcgm_policy_on_meta_group_will_affect_on_new_attached_gpus(handle, gpuIds) -> None:
     helper_test_dcgm_policy_on_meta_group_will_affect_on_new_attached_gpus(
         handle, gpuIds, pcibusIds=None)
 
@@ -1349,12 +1354,12 @@ def test_dcgm_policy_on_meta_group_will_affect_on_new_attached_gpus(handle, gpuI
 @test_utils.auto_restore_detached_gpus(detachGpusBeforeHand=[0])
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_only_with_live_gpus()
-def test_dcgm_policy_on_meta_group_will_affect_on_new_attached_gpus_live(handle, gpuIds, pcibusIds):
+def test_dcgm_policy_on_meta_group_will_affect_on_new_attached_gpus_live(handle, gpuIds, pcibusIds) -> None:
     helper_test_dcgm_policy_on_meta_group_will_affect_on_new_attached_gpus(
         handle, gpuIds, pcibusIds)
 
 
-def helper_test_dcgm_policy_will_affect_on_alive_gpus(handle, gpuIds, pcibusIds=None):
+def helper_test_dcgm_policy_will_affect_on_alive_gpus(handle, gpuIds, pcibusIds=None) -> None:
     '''
     Register and set policy on GPUs, detach one of the GPUs, and make sure the callback is correctly triggered when error occurs on GPUs that are not detached.
     '''
@@ -1421,7 +1426,7 @@ def helper_test_dcgm_policy_will_affect_on_alive_gpus(handle, gpuIds, pcibusIds=
 @test_utils.run_with_injection_nvml_using_specific_sku('H200.yaml')
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_nvml_injected_gpus()
-def test_dcgm_policy_will_affect_on_alive_gpus(handle, gpuIds):
+def test_dcgm_policy_will_affect_on_alive_gpus(handle, gpuIds) -> None:
     helper_test_dcgm_policy_will_affect_on_alive_gpus(
         handle, gpuIds, pcibusIds=None)
 
@@ -1432,12 +1437,12 @@ def test_dcgm_policy_will_affect_on_alive_gpus(handle, gpuIds):
 @test_utils.auto_restore_detached_gpus()
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_only_with_live_gpus()
-def test_dcgm_policy_will_affect_on_alive_gpus_live(handle, gpuIds, pcibusIds):
+def test_dcgm_policy_will_affect_on_alive_gpus_live(handle, gpuIds, pcibusIds) -> None:
     helper_test_dcgm_policy_will_affect_on_alive_gpus(
         handle, gpuIds, pcibusIds)
 
 
-def helper_test_dcgm_policy_on_meta_group_will_not_affect_on_new_attached_gpus_after_unregister(handle, gpuIds, pcibusIds=None):
+def helper_test_dcgm_policy_on_meta_group_will_not_affect_on_new_attached_gpus_after_unregister(handle, gpuIds, pcibusIds=None) -> None:
     '''
     Register and set policy on a meta group, and make sure the callback is not triggered when error occurs on new attached GPUs after unregister.
     '''
@@ -1496,7 +1501,7 @@ def helper_test_dcgm_policy_on_meta_group_will_not_affect_on_new_attached_gpus_a
 @test_utils.run_with_injection_nvml_using_specific_sku('H200.yaml')
 @test_utils.run_with_standalone_host_engine(120, heEnv={"DCGM_NVML_INJECTION_GPU_DETACHED_BEFORE_HAND": "3"})
 @test_utils.run_with_nvml_injected_gpus()
-def test_dcgm_policy_on_meta_group_will_not_affect_on_new_attached_gpus_after_unregister(handle, gpuIds):
+def test_dcgm_policy_on_meta_group_will_not_affect_on_new_attached_gpus_after_unregister(handle, gpuIds) -> None:
     helper_test_dcgm_policy_on_meta_group_will_not_affect_on_new_attached_gpus_after_unregister(
         handle, gpuIds, pcibusIds=None)
 
@@ -1507,12 +1512,12 @@ def test_dcgm_policy_on_meta_group_will_not_affect_on_new_attached_gpus_after_un
 @test_utils.auto_restore_detached_gpus(detachGpusBeforeHand=[0])
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_only_with_live_gpus()
-def test_dcgm_policy_on_meta_group_will_not_affect_on_new_attached_gpus_after_unregister_live(handle, gpuIds, pcibusIds):
+def test_dcgm_policy_on_meta_group_will_not_affect_on_new_attached_gpus_after_unregister_live(handle, gpuIds, pcibusIds) -> None:
     helper_test_dcgm_policy_on_meta_group_will_not_affect_on_new_attached_gpus_after_unregister(
         handle, gpuIds, pcibusIds)
 
 
-def helper_test_dcgm_policy_on_normal_group_will_not_affect_on_new_attached_gpus(handle, gpuIds, pcibusIds=None):
+def helper_test_dcgm_policy_on_normal_group_will_not_affect_on_new_attached_gpus(handle, gpuIds, pcibusIds=None) -> None:
     '''
     Register and set policy on a normal group, and make sure the callback is not triggered when error occurs on new attached GPUs.
     '''
@@ -1570,7 +1575,7 @@ def helper_test_dcgm_policy_on_normal_group_will_not_affect_on_new_attached_gpus
 @test_utils.run_with_injection_nvml_using_specific_sku('H200.yaml')
 @test_utils.run_with_standalone_host_engine(120, heEnv={"DCGM_NVML_INJECTION_GPU_DETACHED_BEFORE_HAND": "3"})
 @test_utils.run_with_nvml_injected_gpus()
-def test_dcgm_policy_on_normal_group_will_not_affect_on_new_attached_gpus(handle, gpuIds):
+def test_dcgm_policy_on_normal_group_will_not_affect_on_new_attached_gpus(handle, gpuIds) -> None:
     helper_test_dcgm_policy_on_normal_group_will_not_affect_on_new_attached_gpus(
         handle, gpuIds, pcibusIds=None)
 
@@ -1581,7 +1586,7 @@ def test_dcgm_policy_on_normal_group_will_not_affect_on_new_attached_gpus(handle
 @test_utils.auto_restore_detached_gpus(detachGpusBeforeHand=[0])
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_only_with_live_gpus()
-def test_dcgm_policy_on_normal_group_will_not_affect_on_new_attached_gpus_live(handle, gpuIds, pcibusIds):
+def test_dcgm_policy_on_normal_group_will_not_affect_on_new_attached_gpus_live(handle, gpuIds, pcibusIds) -> None:
     helper_test_dcgm_policy_on_normal_group_will_not_affect_on_new_attached_gpus(
         handle, gpuIds, pcibusIds)
 
@@ -1591,14 +1596,14 @@ def test_dcgm_policy_on_normal_group_will_not_affect_on_new_attached_gpus_live(h
 @test_utils.run_with_injection_nvml_using_specific_sku('H200.yaml')
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_nvml_injected_gpus()
-def test_dcgm_policy_will_not_trigger_on_inactive_gpus(handle, gpuIds):
+def test_dcgm_policy_will_not_trigger_on_inactive_gpus(handle, gpuIds) -> None:
     '''
     Register and set policy on ALL_GPUS, and make sure the callback is not triggered when error occurs on inactive GPUs.
     '''
     dcgmHandle = pydcgm.DcgmHandle(handle=handle)
     dcgmSystem = dcgmHandle.GetSystem()
 
-    def mock_ecc_memory_error_counter(handle, gpuId):
+    def mock_ecc_memory_error_counter(handle, gpuId) -> None:
         injectedRet = nvml_injection.c_injectNvmlRet_t()
         injectedRet.nvmlRet = dcgm_nvml.NVML_SUCCESS
         injectedRet.values[0].type = nvml_injection_structs.c_injectionArgType_t.INJECTION_ULONG_LONG
@@ -1650,7 +1655,7 @@ def test_dcgm_policy_will_not_trigger_on_inactive_gpus(handle, gpuIds):
     assert queueEmpty, "Callback should not be triggered"
 
 
-def helper_test_dcgm_gpu_index_and_nvml_index_mapping(handle, gpuIds, pcibusIds=None):
+def helper_test_dcgm_gpu_index_and_nvml_index_mapping(handle, gpuIds, pcibusIds=None) -> None:
     '''
     Make sure the gpu index and nvml index mapping is correct after bind / unbind.
     '''
@@ -1715,7 +1720,7 @@ def helper_test_dcgm_gpu_index_and_nvml_index_mapping(handle, gpuIds, pcibusIds=
 @test_utils.run_with_injection_nvml_using_specific_sku('H200.yaml')
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_nvml_injected_gpus()
-def test_dcgm_gpu_index_and_nvml_index_mapping(handle, gpuIds):
+def test_dcgm_gpu_index_and_nvml_index_mapping(handle, gpuIds) -> None:
     helper_test_dcgm_gpu_index_and_nvml_index_mapping(
         handle, gpuIds, pcibusIds=None)
 
@@ -1726,12 +1731,12 @@ def test_dcgm_gpu_index_and_nvml_index_mapping(handle, gpuIds):
 @test_utils.auto_restore_detached_gpus()
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_only_with_live_gpus()
-def test_dcgm_gpu_index_and_nvml_index_mapping_live(handle, gpuIds, pcibusIds):
+def test_dcgm_gpu_index_and_nvml_index_mapping_live(handle, gpuIds, pcibusIds) -> None:
     helper_test_dcgm_gpu_index_and_nvml_index_mapping(
         handle, gpuIds, pcibusIds)
 
 
-def helper_check_bind_unbind_event(handle, startTs, expectedValues):
+def helper_check_bind_unbind_event(handle, startTs, expectedValues: dict[int, int]):
     fieldId = dcgm_fields.DCGM_FI_BIND_UNBIND_EVENT
     maxCount = 100
     endTs = 0
@@ -1765,7 +1770,7 @@ def helper_check_bind_unbind_event(handle, startTs, expectedValues):
     return readTs
 
 
-def helper_test_topology_device_with_detached_gpu(handle, gpuIds, pcibusIds=None):
+def helper_test_topology_device_with_detached_gpu(handle, gpuIds, pcibusIds=None) -> None:
     '''
     Make sure the topology device works correctly when detached GPUs exist.
     '''
@@ -1804,7 +1809,7 @@ def helper_test_topology_device_with_detached_gpu(handle, gpuIds, pcibusIds=None
 @test_utils.run_with_injection_nvml_using_specific_sku('H200.yaml')
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_nvml_injected_gpus()
-def test_topology_device_with_detached_gpu(handle, gpuIds):
+def test_topology_device_with_detached_gpu(handle, gpuIds) -> None:
     helper_test_topology_device_with_detached_gpu(
         handle, gpuIds, pcibusIds=None)
 
@@ -1815,11 +1820,11 @@ def test_topology_device_with_detached_gpu(handle, gpuIds):
 @test_utils.auto_restore_detached_gpus()
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_only_with_live_gpus()
-def test_topology_device_with_detached_gpu_live(handle, gpuIds, pcibusIds):
+def test_topology_device_with_detached_gpu_live(handle, gpuIds, pcibusIds) -> None:
     helper_test_topology_device_with_detached_gpu(handle, gpuIds, pcibusIds)
 
 
-def helper_test_select_gpus_by_topology_with_detached_gpu(handle, gpuIds, pcibusIds=None):
+def helper_test_select_gpus_by_topology_with_detached_gpu(handle, gpuIds, pcibusIds=None) -> None:
     '''
     Make sure the select gpus by topology behave correctly when detached GPUs are included.
     '''
@@ -1868,7 +1873,7 @@ def helper_test_select_gpus_by_topology_with_detached_gpu(handle, gpuIds, pcibus
 @test_utils.run_with_injection_nvml_using_specific_sku('H200.yaml')
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_nvml_injected_gpus()
-def test_select_gpus_by_topology_with_detached_gpu(handle, gpuIds):
+def test_select_gpus_by_topology_with_detached_gpu(handle, gpuIds) -> None:
     helper_test_select_gpus_by_topology_with_detached_gpu(
         handle, gpuIds, pcibusIds=None)
 
@@ -1879,12 +1884,12 @@ def test_select_gpus_by_topology_with_detached_gpu(handle, gpuIds):
 @test_utils.auto_restore_detached_gpus()
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_only_with_live_gpus()
-def test_select_gpus_by_topology_with_detached_gpu_live(handle, gpuIds, pcibusIds):
+def test_select_gpus_by_topology_with_detached_gpu_live(handle, gpuIds, pcibusIds) -> None:
     helper_test_select_gpus_by_topology_with_detached_gpu(
         handle, gpuIds, pcibusIds)
 
 
-def healper_test_dcgm_field_bind_unbind_event_gpu_is_unbound_bound(handle, gpuIds, pcibusIds=None):
+def healper_test_dcgm_field_bind_unbind_event_gpu_is_unbound_bound(handle, gpuIds, pcibusIds=None) -> None:
     '''
     Watch the bind/unbind event field, and make sure the field values are correctly updated when a GPU is bound/unbound.
     '''
@@ -1943,7 +1948,7 @@ def healper_test_dcgm_field_bind_unbind_event_gpu_is_unbound_bound(handle, gpuId
 @test_utils.run_with_injection_nvml_using_specific_sku('H200.yaml')
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_nvml_injected_gpus()
-def test_dcgm_field_bind_unbind_event_gpu_is_unbound_bound(handle, gpuIds):
+def test_dcgm_field_bind_unbind_event_gpu_is_unbound_bound(handle, gpuIds) -> None:
     healper_test_dcgm_field_bind_unbind_event_gpu_is_unbound_bound(
         handle, gpuIds, pcibusIds=None)
 
@@ -1954,7 +1959,7 @@ def test_dcgm_field_bind_unbind_event_gpu_is_unbound_bound(handle, gpuIds):
 @test_utils.auto_restore_detached_gpus()
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_only_with_live_gpus()
-def test_dcgm_field_bind_unbind_event_gpu_is_unbound_bound_live(handle, gpuIds, pcibusIds):
+def test_dcgm_field_bind_unbind_event_gpu_is_unbound_bound_live(handle, gpuIds, pcibusIds) -> None:
     healper_test_dcgm_field_bind_unbind_event_gpu_is_unbound_bound(
         handle, gpuIds, pcibusIds)
 
@@ -1962,7 +1967,7 @@ def test_dcgm_field_bind_unbind_event_gpu_is_unbound_bound_live(handle, gpuIds, 
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_only_with_live_gpus()
 @test_utils.run_only_with_nvml()
-def test_dcgm_field_bind_unbind_event_detach_attach_driver(handle, gpuIds):
+def test_dcgm_field_bind_unbind_event_detach_attach_driver(handle, gpuIds) -> None:
     '''
     Watch the bind/unbind event field, and make sure the field values are correctly updated when the driver is detached/attached.
     '''
@@ -1993,7 +1998,7 @@ def test_dcgm_field_bind_unbind_event_detach_attach_driver(handle, gpuIds):
     helper_check_bind_unbind_event(handle, startTs, expectedValues)
 
 
-def helper_test_group_manager_will_remove_detached_gpu_from_group(handle, gpuIds, pcibusIds=None):
+def helper_test_group_manager_will_remove_detached_gpu_from_group(handle, gpuIds, pcibusIds=None) -> None:
     '''
     Make sure the group manager will remove detached GPUs from the group.
     '''
@@ -2037,7 +2042,7 @@ def helper_test_group_manager_will_remove_detached_gpu_from_group(handle, gpuIds
 @test_utils.run_with_injection_nvml_using_specific_sku('H200-With-MIG.yaml')
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_nvml_injected_gpus()
-def test_group_manager_will_remove_detached_gpu_from_group(handle, gpuIds):
+def test_group_manager_will_remove_detached_gpu_from_group(handle, gpuIds) -> None:
     helper_test_group_manager_will_remove_detached_gpu_from_group(
         handle, gpuIds, pcibusIds=None)
 
@@ -2048,7 +2053,7 @@ def test_group_manager_will_remove_detached_gpu_from_group(handle, gpuIds):
 @test_utils.auto_restore_detached_gpus()
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_only_with_live_gpus()
-def test_group_manager_will_remove_detached_gpu_from_group_live(handle, gpuIds, pcibusIds):
+def test_group_manager_will_remove_detached_gpu_from_group_live(handle, gpuIds, pcibusIds) -> None:
     helper_test_group_manager_will_remove_detached_gpu_from_group(
         handle, gpuIds, pcibusIds)
 
@@ -2056,7 +2061,7 @@ def test_group_manager_will_remove_detached_gpu_from_group_live(handle, gpuIds, 
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_only_with_live_gpus()
 @test_utils.run_only_with_nvml()
-def test_dcgm_load_module_when_gpu_is_detached(handle, gpuIds):
+def test_dcgm_load_module_when_gpu_is_detached(handle, gpuIds) -> None:
     '''
     Verify that modules cannot be loaded when the GPUs are detached.
     '''
@@ -2079,7 +2084,7 @@ def test_dcgm_load_module_when_gpu_is_detached(handle, gpuIds):
         drd, handle, runDiagVersion=dcgm_structs.dcgmRunDiag_version10)
 
 
-def watch_profiling_field(group, fieldGroup, gpuIds):
+def watch_profiling_field(group: DcgmGroup, fieldGroup: DcgmFieldGroup, gpuIds) -> None:
     try:
         group.samples.WatchFields(fieldGroup, 1000000, 3600.0, 0)
     except dcgm_structs.dcgmExceptionClass(dcgm_structs.DCGM_ST_PROFILING_NOT_SUPPORTED) as e:
@@ -2090,7 +2095,7 @@ def watch_profiling_field(group, fieldGroup, gpuIds):
         test_utils.skip_test("The profiling module is not supported")
 
 
-def helper_test_diag_some_requested_gpus_detached(handle, gpuIds, pcibusIds=None):
+def helper_test_diag_some_requested_gpus_detached(handle, gpuIds, pcibusIds=None) -> None:
     """
     Test that diag handles some requested GPUs are detached correctly.
     """
@@ -2158,7 +2163,7 @@ def helper_test_diag_some_requested_gpus_detached(handle, gpuIds, pcibusIds=None
 @test_utils.run_with_injection_nvml_using_specific_sku('H200.yaml')
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_nvml_injected_gpus()
-def test_diag_some_requested_gpus_detached(handle, gpuIds):
+def test_diag_some_requested_gpus_detached(handle, gpuIds) -> None:
     helper_test_diag_some_requested_gpus_detached(
         handle, gpuIds, pcibusIds=None)
 
@@ -2171,13 +2176,13 @@ def test_diag_some_requested_gpus_detached(handle, gpuIds):
 @test_utils.run_only_with_live_gpus()
 @test_utils.run_only_if_mig_is_disabled()
 @test_utils.for_all_same_sku_gpus()
-def test_diag_some_requested_gpus_detached_live(handle, gpuIds, pcibusIds):
+def test_diag_some_requested_gpus_detached_live(handle, gpuIds, pcibusIds) -> None:
     if len(gpuIds) != len(pcibusIds):
         test_utils.skip_test("Skip on mixed SKU setup")
     helper_test_diag_some_requested_gpus_detached(handle, gpuIds, pcibusIds)
 
 
-def helper_test_diag_all_requested_gpus_detached(handle, gpuIds, pcibusIds=None):
+def helper_test_diag_all_requested_gpus_detached(handle, gpuIds, pcibusIds=None) -> None:
     """
     Test that diag handles the case when all requested GPUs are detached.
     """
@@ -2236,7 +2241,7 @@ def helper_test_diag_all_requested_gpus_detached(handle, gpuIds, pcibusIds=None)
 @test_utils.run_with_injection_nvml_using_specific_sku('H200.yaml')
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_nvml_injected_gpus()
-def test_diag_all_requested_gpus_detached(handle, gpuIds):
+def test_diag_all_requested_gpus_detached(handle, gpuIds) -> None:
     helper_test_diag_all_requested_gpus_detached(
         handle, gpuIds, pcibusIds=None)
 
@@ -2249,13 +2254,13 @@ def test_diag_all_requested_gpus_detached(handle, gpuIds):
 @test_utils.run_only_with_live_gpus()
 @test_utils.run_only_if_mig_is_disabled()
 @test_utils.for_all_same_sku_gpus()
-def test_diag_all_requested_gpus_detached_live(handle, gpuIds, pcibusIds):
+def test_diag_all_requested_gpus_detached_live(handle, gpuIds, pcibusIds) -> None:
     if len(gpuIds) != len(pcibusIds):
         test_utils.skip_test("Skip on mixed SKU setup")
     helper_test_diag_all_requested_gpus_detached(handle, gpuIds, pcibusIds)
 
 
-def helper_test_dcgm_prof_gpu_watch_should_not_be_resumed_when_gpu_is_detached(handle, gpuIds, pcibusIds=None):
+def helper_test_dcgm_prof_gpu_watch_should_not_be_resumed_when_gpu_is_detached(handle, gpuIds, pcibusIds=None) -> None:
     '''
     Make sure the GPU watch should not be resumed when the GPU is detached and then attached back later.
     '''
@@ -2303,7 +2308,7 @@ def helper_test_dcgm_prof_gpu_watch_should_not_be_resumed_when_gpu_is_detached(h
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_nvml_injected_gpus()
 @test_utils.with_gpu_filter(test_utils.non_gpm_gpus)
-def test_dcgm_prof_gpu_watch_should_not_be_resumed_when_gpu_is_detached(handle, gpuIds):
+def test_dcgm_prof_gpu_watch_should_not_be_resumed_when_gpu_is_detached(handle, gpuIds) -> None:
     helper_test_dcgm_prof_gpu_watch_should_not_be_resumed_when_gpu_is_detached(
         handle, gpuIds, pcibusIds=None)
 
@@ -2315,7 +2320,7 @@ def test_dcgm_prof_gpu_watch_should_not_be_resumed_when_gpu_is_detached(handle, 
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_only_with_live_gpus()
 @test_utils.with_gpu_filter(test_utils.non_gpm_gpus)
-def test_dcgm_prof_gpu_watch_should_not_be_resumed_when_gpu_is_detached_live(handle, gpuIds, pcibusIds):
+def test_dcgm_prof_gpu_watch_should_not_be_resumed_when_gpu_is_detached_live(handle, gpuIds, pcibusIds) -> None:
     helper_test_dcgm_prof_gpu_watch_should_not_be_resumed_when_gpu_is_detached(
         handle, gpuIds, pcibusIds)
 
@@ -2324,7 +2329,7 @@ def test_dcgm_prof_gpu_watch_should_not_be_resumed_when_gpu_is_detached_live(han
 @test_utils.run_only_with_live_gpus()
 @test_utils.run_only_with_nvml()
 @test_utils.with_gpu_filter(test_utils.non_gpm_gpus)
-def test_dcgm_prof_gpu_watch_should_be_resumed_when_gpu_is_still_attached(handle, gpuIds):
+def test_dcgm_prof_gpu_watch_should_be_resumed_when_gpu_is_still_attached(handle, gpuIds) -> None:
     '''
     Make sure the GPU watch should be resumed when the GPU is still attached during the reinitialization.
     '''
@@ -2365,7 +2370,7 @@ def test_dcgm_prof_gpu_watch_should_be_resumed_when_gpu_is_still_attached(handle
 @test_utils.run_only_with_live_gpus()
 @test_utils.run_only_with_nvml()
 @test_utils.with_gpu_filter(test_utils.non_gpm_gpus)
-def test_dcgm_prof_field_should_be_blank_when_gpu_is_detached(handle, gpuIds):
+def test_dcgm_prof_field_should_be_blank_when_gpu_is_detached(handle, gpuIds) -> None:
     '''
     Make sure the profiling field should be blank when the GPU is detached.
     '''
@@ -2390,7 +2395,7 @@ def test_dcgm_prof_field_should_be_blank_when_gpu_is_detached(handle, gpuIds):
     dcgm_agent.dcgmAttachDriver(handle)
 
 
-def helper_test_dcgm_prof_on_all_gpus_should_be_resumed(handle, gpuIds, pcibusIds=None):
+def helper_test_dcgm_prof_on_all_gpus_should_be_resumed(handle, gpuIds, pcibusIds=None) -> None:
     '''
     Make sure that when we watch on all GPUs, the watch should be resumed when the GPU is attached back.
     '''
@@ -2462,7 +2467,7 @@ def helper_test_dcgm_prof_on_all_gpus_should_be_resumed(handle, gpuIds, pcibusId
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_nvml_injected_gpus()
 @test_utils.with_gpu_filter(test_utils.non_gpm_gpus)
-def test_dcgm_prof_on_all_gpus_should_be_resumed(handle, gpuIds):
+def test_dcgm_prof_on_all_gpus_should_be_resumed(handle, gpuIds) -> None:
     helper_test_dcgm_prof_on_all_gpus_should_be_resumed(
         handle, gpuIds, pcibusIds=None)
 
@@ -2474,7 +2479,7 @@ def test_dcgm_prof_on_all_gpus_should_be_resumed(handle, gpuIds):
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_only_with_live_gpus()
 @test_utils.with_gpu_filter(test_utils.non_gpm_gpus)
-def test_dcgm_prof_on_all_gpus_should_be_resumed_live(handle, gpuIds, pcibusIds):
+def test_dcgm_prof_on_all_gpus_should_be_resumed_live(handle, gpuIds, pcibusIds) -> None:
     helper_test_dcgm_prof_on_all_gpus_should_be_resumed(
         handle, gpuIds, pcibusIds)
 
@@ -2484,7 +2489,7 @@ def test_dcgm_prof_on_all_gpus_should_be_resumed_live(handle, gpuIds, pcibusIds)
 @test_utils.run_with_injection_nvml_using_specific_sku('H200.yaml')
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_nvml_injected_gpus()
-def test_bind_gpu_back_will_re_register_nvml_events(handle, gpuIds):
+def test_bind_gpu_back_will_re_register_nvml_events(handle, gpuIds) -> None:
     '''
     Make sure that when we bind GPUs back, the NVML events will be re-registered.
     '''
@@ -2512,14 +2517,14 @@ def test_bind_gpu_back_will_re_register_nvml_events(handle, gpuIds):
     assert_nvml_func_call_count(handle, "nvmlDeviceRegisterEvents", 16)
 
 
-def helper_test_dcgmi_diag_with_one_gpu_detached(handle, gpuIds, pcibusIds=None):
+def helper_test_dcgmi_diag_with_one_gpu_detached(handle, gpuIds, pcibusIds=None) -> None:
     """
     Test dcgmi diag command with GPU 0 detached and GPU 1 attached.
     Validates that detached GPU 0 has device_id and serial_num in JSON output.
     """
     import json
 
-    def validate_gpu_entity(entities, gpuId, gpuType):
+    def validate_gpu_entity(entities, gpuId, gpuType: str) -> None:
         entity = next((e for e in entities if e["entity_id"] == gpuId), None)
         assert entity is not None, f"Entity with entity_id {gpuId} ({gpuType} GPU) not found in JSON output"
 
@@ -2588,7 +2593,7 @@ def helper_test_dcgmi_diag_with_one_gpu_detached(handle, gpuIds, pcibusIds=None)
 @test_utils.run_with_injection_nvml_using_specific_sku('H200.yaml')
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_nvml_injected_gpus()
-def test_dcgmi_diag_with_one_gpu_detached(handle, gpuIds):
+def test_dcgmi_diag_with_one_gpu_detached(handle, gpuIds) -> None:
     helper_test_dcgmi_diag_with_one_gpu_detached(
         handle, gpuIds, pcibusIds=None)
 
@@ -2601,13 +2606,13 @@ def test_dcgmi_diag_with_one_gpu_detached(handle, gpuIds):
 @test_utils.run_only_with_live_gpus()
 @test_utils.run_only_if_mig_is_disabled()
 @test_utils.for_all_same_sku_gpus()
-def test_dcgmi_diag_with_one_gpu_detached_live(handle, gpuIds, pcibusIds):
+def test_dcgmi_diag_with_one_gpu_detached_live(handle, gpuIds, pcibusIds) -> None:
     if len(gpuIds) != len(pcibusIds):
         test_utils.skip_test("Skip on mixed SKU setup")
     helper_test_dcgmi_diag_with_one_gpu_detached(handle, gpuIds, pcibusIds)
 
 
-def helper_test_dcgmi_discovery_shows_detached_gpu_status(handle, gpuIds, pcibusIds=None):
+def helper_test_dcgmi_discovery_shows_detached_gpu_status(handle, gpuIds, pcibusIds=None) -> None:
     """
     Test 'dcgmi discovery' filtering behavior with detached GPUs.
 
@@ -2717,7 +2722,7 @@ def helper_test_dcgmi_discovery_shows_detached_gpu_status(handle, gpuIds, pcibus
 @test_utils.run_with_injection_nvml_using_specific_sku('H200.yaml')
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_nvml_injected_gpus()
-def test_dcgmi_discovery_shows_detached_gpu_status(handle, gpuIds):
+def test_dcgmi_discovery_shows_detached_gpu_status(handle, gpuIds) -> None:
     helper_test_dcgmi_discovery_shows_detached_gpu_status(
         handle, gpuIds, pcibusIds=None)
 
@@ -2728,7 +2733,7 @@ def test_dcgmi_discovery_shows_detached_gpu_status(handle, gpuIds):
 @test_utils.auto_restore_detached_gpus()
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_only_with_live_gpus()
-def test_dcgmi_discovery_shows_detached_gpu_status_live(handle, gpuIds, pcibusIds):
+def test_dcgmi_discovery_shows_detached_gpu_status_live(handle, gpuIds, pcibusIds) -> None:
     helper_test_dcgmi_discovery_shows_detached_gpu_status(
         handle, gpuIds, pcibusIds)
 
@@ -2736,7 +2741,7 @@ def test_dcgmi_discovery_shows_detached_gpu_status_live(handle, gpuIds, pcibusId
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_only_with_live_gpus()
 @test_utils.run_only_with_nvml()
-def test_dcgmi_discovery_detached_status_after_detach_driver(handle, gpuIds):
+def test_dcgmi_discovery_detached_status_after_detach_driver(handle, gpuIds) -> None:
     """Test 'dcgmi discovery -l -a' shows all GPUs with DETACHED status after detach-driver."""
     dcgmHandle = pydcgm.DcgmHandle(handle=handle)
     dcgmSystem = dcgmHandle.GetSystem()
@@ -2786,7 +2791,7 @@ def test_dcgmi_discovery_detached_status_after_detach_driver(handle, gpuIds):
             f"GPU {gpuId}: has blank values after re-attach\n{section}"
 
 
-def inject_p2p_status(handle, gpuId, nvmlIndex, p2pStatus):
+def inject_p2p_status(handle, gpuId, nvmlIndex: int, p2pStatus: int) -> None:
     injectedRetsArray = nvml_injection.c_injectNvmlRet_t * 1
     injectedRets = injectedRetsArray()
     injectedRets[0].nvmlRet = dcgm_nvml.NVML_SUCCESS
@@ -2812,7 +2817,7 @@ def inject_p2p_status(handle, gpuId, nvmlIndex, p2pStatus):
 @test_utils.run_with_injection_nvml_using_specific_sku('H200.yaml')
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_nvml_injected_gpus()
-def test_nvlink_p2p_status_field_with_detached_gpu(handle, gpuIds):
+def test_nvlink_p2p_status_field_with_detached_gpu(handle, gpuIds) -> None:
     '''
     Test the query of nvlink p2p status with a detached GPU on the system.
     '''
@@ -2845,7 +2850,7 @@ def test_nvlink_p2p_status_field_with_detached_gpu(handle, gpuIds):
             0b11111100), f"Actual value: {values[0].value.i64}"
 
 
-def assert_nvlink_p2p_status(inOutStatus, detachedGpuId):
+def assert_nvlink_p2p_status(inOutStatus: c_dcgmNvLinkP2PStatus_v1, detachedGpuId) -> None:
     for i in range(inOutStatus.numGpus):
         assert (inOutStatus.gpus[i].entityId ==
                 i), f"Expected Entity {i} ID {i}, got {inOutStatus.gpus[i].entityId}."
@@ -2873,7 +2878,7 @@ def assert_nvlink_p2p_status(inOutStatus, detachedGpuId):
 @test_utils.run_with_injection_nvml_using_specific_sku('H200.yaml')
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_nvml_injected_gpus()
-def test_nvlink_p2p_status_api_with_detached_gpu(handle, gpuIds):
+def test_nvlink_p2p_status_api_with_detached_gpu(handle, gpuIds) -> None:
     '''
     Test the dcgmGetNvLinkP2PStatus with a detached GPU on the system.
     '''
@@ -2920,7 +2925,7 @@ def test_nvlink_p2p_status_api_with_detached_gpu(handle, gpuIds):
     assert_nvlink_p2p_status(inOutStatus, detachedGpuId)
 
 
-def helper_test_get_nvlink_status_api_with_detached_gpu(handle, gpuIds, pcibusIds=None):
+def helper_test_get_nvlink_status_api_with_detached_gpu(handle, gpuIds, pcibusIds=None) -> None:
     '''
     Test the dcgmGetNvLinkLinkStatus with a detached GPU on the system.
     '''
@@ -2954,7 +2959,7 @@ def helper_test_get_nvlink_status_api_with_detached_gpu(handle, gpuIds, pcibusId
 @test_utils.run_with_injection_nvml_using_specific_sku('H200.yaml')
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_nvml_injected_gpus()
-def test_get_nvlink_status_api_with_detached_gpu(handle, gpuIds):
+def test_get_nvlink_status_api_with_detached_gpu(handle, gpuIds) -> None:
     helper_test_get_nvlink_status_api_with_detached_gpu(
         handle, gpuIds, pcibusIds=None)
 
@@ -2965,7 +2970,7 @@ def test_get_nvlink_status_api_with_detached_gpu(handle, gpuIds):
 @test_utils.auto_restore_detached_gpus()
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_only_with_live_gpus()
-def test_get_nvlink_status_api_with_detached_gpu_live(handle, gpuIds, pcibusIds):
+def test_get_nvlink_status_api_with_detached_gpu_live(handle, gpuIds, pcibusIds) -> None:
     helper_test_get_nvlink_status_api_with_detached_gpu(
         handle, gpuIds, pcibusIds)
 
@@ -2975,7 +2980,7 @@ def test_get_nvlink_status_api_with_detached_gpu_live(handle, gpuIds, pcibusIds)
 @test_utils.run_with_injection_nvml_using_specific_sku('H200.yaml')
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_nvml_injected_gpus()
-def test_nvlink_errors_on_detached_gpu(handle, gpuIds):
+def test_nvlink_errors_on_detached_gpu(handle, gpuIds) -> None:
     '''
     Test the dcgmi nvlink -e -g on a detached GPU.
     '''

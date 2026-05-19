@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from datetime import datetime
 import datetime
 import time
 import json
@@ -20,7 +21,7 @@ from collections import OrderedDict
 
 class TestData:
     # -------------------------------------------------------------
-    def __init__(self):
+    def __init__(self) -> None:
         self.dataMapFinal = OrderedDict()
         self.dataMap = OrderedDict()
         self.summary = {
@@ -53,7 +54,7 @@ class TestData:
     # This adds a module with name moduleName. It has no effect if it already
     # exists except to cache the module name.
     #
-    def addModuleName(self, moduleName):
+    def addModuleName(self, moduleName) -> None:
         self.refreshClassVars()
         self.curModuleName = moduleName
 
@@ -70,7 +71,7 @@ class TestData:
     #    moduleName    - module name
     #    functionNames - list of functions
     #
-    def addModule(self, moduleName, functionNames):
+    def addModule(self, moduleName, functionNames) -> None:
         self.addModuleName(moduleName)
 
         temp = {}
@@ -87,7 +88,7 @@ class TestData:
     # refreshClassVars
     #
     # Reset the cached module and funcion name.
-    def refreshClassVars(self):
+    def refreshClassVars(self) -> None:
         self.curModuleName = ""
         self.curFuncName = ""
 
@@ -95,7 +96,7 @@ class TestData:
     #
     # initialize dictionary for currently cached function.
     #
-    def initFuncDic(self):
+    def initFuncDic(self) -> None:
         dictionary = dict(self.dataMapStorage)
         dictionary["name"] = self.curFuncName
         self.dataMap[self.curModuleName][self.curFuncName]["runData"].append(
@@ -107,7 +108,7 @@ class TestData:
     #
     #     functionName - function to add under curModuleName
     #
-    def addName(self, functionName):
+    def addName(self, functionName) -> None:
         self.curFuncName = functionName
 
         if self.curFuncName not in self.dataMap[self.curModuleName]:
@@ -125,7 +126,7 @@ class TestData:
     #
     # Add current time to cached module start time.
     #
-    def addModuleStarttime(self):
+    def addModuleStarttime(self) -> None:
         startTimeSeconds = time.time()
         startTimeMicroseconds = datetime.datetime.fromtimestamp(
             startTimeSeconds)
@@ -138,7 +139,7 @@ class TestData:
     #
     # Add current time to cached module end time and compute run time.
     #
-    def addModuleEndTime(self):
+    def addModuleEndTime(self) -> None:
         endTimeSeconds = time.time()
         endTimeMicroseconds = datetime.datetime.fromtimestamp(endTimeSeconds)
         endTime = endTimeMicroseconds.strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
@@ -160,7 +161,7 @@ class TestData:
     #
     #     runNumber - test run mumber (default 0)
     #
-    def addStartTime(self, runNumber=0):
+    def addStartTime(self, runNumber: int=0) -> None:
         startTimeSeconds = time.time()
         startTimeMicroseconds = datetime.datetime.fromtimestamp(
             startTimeSeconds)
@@ -182,7 +183,7 @@ class TestData:
     #     runNumber - test run mumber (default 0)
     #
 
-    def addEndTime(self, runNumber=0):
+    def addEndTime(self, runNumber: int=0) -> None:
         endTimeSeconds = time.time()
         endTimeMicroseconds = datetime.datetime.fromtimestamp(endTimeSeconds)
         endTime = endTimeMicroseconds.strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
@@ -200,7 +201,7 @@ class TestData:
     #
     # Add the current time as the start time of the current test suite.
     #
-    def addTestSuiteStartTime(self):
+    def addTestSuiteStartTime(self) -> None:
         startTimeSeconds = time.time()
         startTimeMicroseconds = datetime.datetime.fromtimestamp(
             startTimeSeconds)
@@ -213,7 +214,7 @@ class TestData:
     # Add the current time as the end time of the current test suite and compute
     # the run time.
     #
-    def addTestSuiteEndTime(self):
+    def addTestSuiteEndTime(self) -> None:
         endTimeSeconds = time.time()
         endTimeMicroseconds = datetime.datetime.fromtimestamp(endTimeSeconds)
         endTime = endTimeMicroseconds.strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
@@ -236,7 +237,7 @@ class TestData:
     # Arguments:
     #     status - status of test.
     #
-    def addTestStatus(self, status):
+    def addTestStatus(self, status) -> None:
         # adding test status
         self.dataMap[self.curModuleName][self.curFuncName]["runData"][-1]["status"] = status
 
@@ -256,7 +257,7 @@ class TestData:
     #     message - message to add the the last run of the cached module and
     # function.
     #
-    def addMessage(self, message):
+    def addMessage(self, message) -> None:
         self.dataMap[self.curModuleName][self.curFuncName]["runData"][-1]["message"] = message
 
     # deleteEntry
@@ -266,14 +267,14 @@ class TestData:
     # Arguments:
     #
     #     runNumber - run data to delete
-    def deleteEntry(self, runNumber):
+    def deleteEntry(self, runNumber) -> None:
         self.dataMap[self.curModuleName][self.curFuncName]["runData"][runNumber]["startTime"] = ""
         self.dataMap[self.curModuleName][self.curFuncName]["runData"][runNumber]["endTime"] = ""
 
     # updateMultiRun
     #
     # Set the multirun flag on the cached module and function.
-    def updateMultiRun(self):
+    def updateMultiRun(self) -> None:
         self.dataMap[self.curModuleName][self.curFuncName]["isMultiRun"] = 1
 
     # getFuncDic
@@ -286,7 +287,7 @@ class TestData:
     #
     # Add summarydata to dataMapFinal["testSuite"] from dataMap.
     #
-    def addSummary(self):
+    def addSummary(self) -> None:
         self.dataMapFinal["testSuite"] = dict(self.dataMap)
         self.dataMapFinal = OrderedDict(
             [("summary", self.summary)] + list(self.dataMapFinal.items()))
@@ -298,13 +299,13 @@ class TestData:
     def sortInDescendingOrderOfTime(self):
 
         # local functions
-        def convertToDatetime(timeStr):
+        def convertToDatetime(timeStr) -> datetime:
             try:
                 return datetime.datetime.strptime(timeStr, "%H:%M:%S.%f")
             except:
                 return datetime.datetime.strptime(timeStr, "%H:%M:%S")
 
-        def maxTimeOfRun(tData):
+        def maxTimeOfRun(tData) -> datetime:
             return max(convertToDatetime(run["timeOfRun"]) for run in tData["runData"])
 
         # logic
@@ -336,7 +337,7 @@ class TestData:
     #                    path
     #     compiled     - flag to write to compiled data to compiled path.
     #
-    def saveMapToJson(self, intermediate=0, compiled=0):
+    def saveMapToJson(self, intermediate: int=0, compiled: int=0) -> None:
         if compiled:
             # saving compiled version
             with open(self.jsonFilePathCompiled, 'w') as json_file:
@@ -354,7 +355,7 @@ class TestData:
     #
     # sort Final data map and save it to JSON on the regular path.
     #
-    def sortDataMap(self):
+    def sortDataMap(self) -> None:
         # sort the dictionary
         self.dataMapFinal["testSuite"] = self.sortInDescendingOrderOfTime()
         self.saveMapToJson()

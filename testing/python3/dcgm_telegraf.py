@@ -44,17 +44,17 @@ DEFAULT_TELEGRAF_PORT = 8094
 
 class DcgmTelegraf(DcgmJsonReader):
     ###########################################################################
-    def __init__(self, publish_hostname, publish_port, **kwargs):
+    def __init__(self, publish_hostname, publish_port, **kwargs) -> None:
         self.m_sock = socket(AF_INET, SOCK_DGRAM)
         self.m_dest = (publish_hostname, publish_port)
         super(DcgmTelegraf, self).__init__(**kwargs)
 
     ###########################################################################
-    def SendToTelegraf(self, payload):
+    def SendToTelegraf(self, payload) -> None:
         self.m_sock.sendto(payload, self.m_dest)
 
     ###########################################################################
-    def CustomJsonHandler(self, outJson):
+    def CustomJsonHandler(self, outJson) -> None:
         self.SendToTelegraf(outJson)
 
 

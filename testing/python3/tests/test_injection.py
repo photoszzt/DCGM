@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from dcgm_structs_internal import c_dcgmInjectFieldValue_v1
 import dcgm_structs
 import dcgm_structs_internal
 import dcgm_agent
@@ -24,12 +25,12 @@ from dcgm_structs import dcgmExceptionClass
 import time
 
 
-def get_usec_since_1970():
+def get_usec_since_1970() -> int:
     sec = time.time()
     return int(sec * 1000000.0)
 
 
-def helper_verify_fv_equal(fv1, fv2):
+def helper_verify_fv_equal(fv1, fv2: c_dcgmInjectFieldValue_v1) -> None:
     '''
     Helper function to verify that fv1 == fv2 with useful errors if they are not equal. An
     assertion is thrown from this if they are not equal
@@ -48,7 +49,7 @@ def helper_verify_fv_equal(fv1, fv2):
 
 @test_utils.run_with_embedded_host_engine()
 @test_utils.run_with_injection_gpus(1)
-def test_dcgm_injection_agent(handle, gpuIds):
+def test_dcgm_injection_agent(handle, gpuIds) -> None:
     """
     Verifies that injection works with the agent host engine
     """
@@ -112,7 +113,7 @@ def test_dcgm_injection_agent(handle, gpuIds):
 
 @test_utils.run_with_standalone_host_engine()
 @test_utils.run_with_injection_gpus(1)
-def test_dcgm_injection_remote(handle, gpuIds):
+def test_dcgm_injection_remote(handle, gpuIds) -> None:
     """
     Verifies that injection works with the remote host engine
     """
@@ -174,7 +175,7 @@ def test_dcgm_injection_remote(handle, gpuIds):
         dcgm_agent_internal.dcgmInjectFieldValue(handle, gpuId, fvBad)
 
 
-def helper_verify_multi_values(fieldValues, order, injectedValues):
+def helper_verify_multi_values(fieldValues, order: int, injectedValues: list[c_dcgmInjectFieldValue_v1]) -> None:
     """
     Helper to verify that a returned list of values is internally consistent
     The 'values' parameter is expected to be the result of a
@@ -229,7 +230,7 @@ def helper_verify_multi_values(fieldValues, order, injectedValues):
 
 @test_utils.run_with_embedded_host_engine()
 @test_utils.run_with_injection_gpus(1)
-def test_dcgm_injection_multi_fetch_agent(handle, gpuIds):
+def test_dcgm_injection_multi_fetch_agent(handle, gpuIds) -> None:
     """
     Verify that multi-fetches work with the agent
     """
@@ -287,7 +288,7 @@ def test_dcgm_injection_multi_fetch_agent(handle, gpuIds):
 
 @test_utils.run_with_standalone_host_engine()
 @test_utils.run_with_injection_gpus(1)
-def test_dcgm_injection_multi_fetch_remote(handle, gpuIds):
+def test_dcgm_injection_multi_fetch_remote(handle, gpuIds) -> None:
     """
     Verify that multi-fetches work with the agent
     """
@@ -343,7 +344,7 @@ def test_dcgm_injection_multi_fetch_remote(handle, gpuIds):
     helper_verify_multi_values(fvFetched, order, injectedValues)
 
 
-def helper_test_dcgm_injection_summaries(handle, gpuIds):
+def helper_test_dcgm_injection_summaries(handle, gpuIds) -> None:
 
     gpuId = gpuIds[0]
 
@@ -392,7 +393,7 @@ def helper_test_dcgm_injection_summaries(handle, gpuIds):
 
 @test_utils.run_with_embedded_host_engine()
 @test_utils.run_with_injection_gpus(1)
-def test_dcgm_injection_summaries_embedded(handle, gpuIds):
+def test_dcgm_injection_summaries_embedded(handle, gpuIds) -> None:
     """
     Verifies that inject works and we can get summaries of that data
     """

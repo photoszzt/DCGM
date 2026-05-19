@@ -35,7 +35,7 @@ class CollectdMetadata:
           but are not officially supported yet.
      '''
 
-    def __init__(self, name, kind, used=False):
+    def __init__(self, name, kind, used: bool=False) -> None:
         self.name = name
         self.kind = kind
         self.used = used
@@ -338,7 +338,7 @@ CollectdMetadataDict = {DCGM_FI_DRIVER_VERSION: None,
 __fieldDict = None
 
 
-def GenerateCollectdTypesDB():
+def GenerateCollectdTypesDB() -> None:
     length = max(map(lambda x: len(x.name) if x else 0,
                  CollectdMetadataDict.values()))
 
@@ -370,7 +370,7 @@ def GenerateCollectdTypesDB():
         exit("Failed on db.types table syntax errors.\n")
 
 
-def GetFieldByName(name):
+def GetFieldByName(name) -> int:
     global __fieldDict
 
     if name.isnumeric():

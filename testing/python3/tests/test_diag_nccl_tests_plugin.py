@@ -19,7 +19,7 @@ import dcgm_errors
 import test_helpers.helper_nccl_tests_plugin
 
 
-def _print_diag_response(response):
+def _print_diag_response(response) -> None:
     """Print basic diagnostic response details for debugging."""
     test_names = []
     for i in range(response.numTests):
@@ -34,7 +34,7 @@ def _print_diag_response(response):
     print(f"diag errors: {errors}")
 
 
-def _assert_nccl_present(response):
+def _assert_nccl_present(response) -> int:
     idx = get_nccl_test_index(response)
     if idx is None:
         _print_diag_response(response)
@@ -42,7 +42,7 @@ def _assert_nccl_present(response):
     return idx
 
 
-def get_nccl_test_index(response):
+def get_nccl_test_index(response) -> int | None:
     """Find the index of nccl_tests in the response."""
     for i in range(response.numTests):
         name = response.tests[i].name
@@ -56,7 +56,7 @@ def get_nccl_test_index(response):
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_only_with_live_gpus()
 @test_utils.run_only_if_mig_is_disabled()
-def test_diag_nccl_tests_skips_when_env_not_set(handle, gpuIds):
+def test_diag_nccl_tests_skips_when_env_not_set(handle, gpuIds) -> None:
     """
     Test that requesting nccl_tests without DCGM_NCCL_TESTS_BIN_PATH yields no available test.
     """
@@ -71,7 +71,7 @@ def test_diag_nccl_tests_skips_when_env_not_set(handle, gpuIds):
 @test_utils.run_with_standalone_host_engine(120, heEnv=test_helpers.helper_nccl_tests_plugin.HE_Env("pass"))
 @test_utils.run_only_with_live_gpus()
 @test_utils.run_only_if_mig_is_disabled()
-def test_diag_nccl_tests_pass(handle, gpuIds):
+def test_diag_nccl_tests_pass(handle, gpuIds) -> None:
     """
     Test that nccl_tests plugin passes when mock outputs passing results.
     """
@@ -86,7 +86,7 @@ def test_diag_nccl_tests_pass(handle, gpuIds):
 @test_utils.run_with_standalone_host_engine(120, heEnv=test_helpers.helper_nccl_tests_plugin.HE_Env("pass_exit_1"))
 @test_utils.run_only_with_live_gpus()
 @test_utils.run_only_if_mig_is_disabled()
-def test_diag_nccl_tests_pass_output_nonzero_exit(handle, gpuIds):
+def test_diag_nccl_tests_pass_output_nonzero_exit(handle, gpuIds) -> None:
     """
     Test that nccl_tests plugin fails when output is OK but exit code is non-zero.
     """
@@ -107,7 +107,7 @@ def test_diag_nccl_tests_pass_output_nonzero_exit(handle, gpuIds):
 @test_utils.run_with_standalone_host_engine(120, heEnv=test_helpers.helper_nccl_tests_plugin.HE_Env("fail_oob"))
 @test_utils.run_only_with_live_gpus()
 @test_utils.run_only_if_mig_is_disabled()
-def test_diag_nccl_tests_fail_oob(handle, gpuIds):
+def test_diag_nccl_tests_fail_oob(handle, gpuIds) -> None:
     """
     Test that nccl_tests plugin fails with DCGM_FR_NCCL_ERROR on out-of-bounds failure.
     """
@@ -128,7 +128,7 @@ def test_diag_nccl_tests_fail_oob(handle, gpuIds):
 @test_utils.run_with_standalone_host_engine(120, heEnv=test_helpers.helper_nccl_tests_plugin.HE_Env("fail_bw"))
 @test_utils.run_only_with_live_gpus()
 @test_utils.run_only_if_mig_is_disabled()
-def test_diag_nccl_tests_fail_bandwidth(handle, gpuIds):
+def test_diag_nccl_tests_fail_bandwidth(handle, gpuIds) -> None:
     """
     Test that nccl_tests plugin fails with DCGM_FR_NCCL_ERROR on bandwidth failure.
     """
@@ -149,7 +149,7 @@ def test_diag_nccl_tests_fail_bandwidth(handle, gpuIds):
 @test_utils.run_with_standalone_host_engine(120, heEnv=test_helpers.helper_nccl_tests_plugin.HE_Env("none_exit_1"))
 @test_utils.run_only_with_live_gpus()
 @test_utils.run_only_if_mig_is_disabled()
-def test_diag_nccl_tests_nonzero_exit_no_output(handle, gpuIds):
+def test_diag_nccl_tests_nonzero_exit_no_output(handle, gpuIds) -> None:
     """
     Test that nccl_tests plugin fails when output is missing expected result lines.
     """
@@ -170,7 +170,7 @@ def test_diag_nccl_tests_nonzero_exit_no_output(handle, gpuIds):
 @test_utils.run_with_standalone_host_engine(120, heEnv=test_helpers.helper_nccl_tests_plugin.HE_Env("none_exit_0"))
 @test_utils.run_only_with_live_gpus()
 @test_utils.run_only_if_mig_is_disabled()
-def test_diag_nccl_tests_zero_exit_no_output(handle, gpuIds):
+def test_diag_nccl_tests_zero_exit_no_output(handle, gpuIds) -> None:
     """
     Test that nccl_tests plugin fails when output is missing expected result lines.
     """
@@ -191,7 +191,7 @@ def test_diag_nccl_tests_zero_exit_no_output(handle, gpuIds):
 @test_utils.run_with_standalone_host_engine(120, heEnv=test_helpers.helper_nccl_tests_plugin.HE_Env_Live())
 @test_utils.run_only_with_live_gpus()
 @test_utils.run_only_if_mig_is_disabled()
-def test_diag_nccl_tests_live_pass(handle, gpuIds):
+def test_diag_nccl_tests_live_pass(handle, gpuIds) -> None:
     """
     Test that nccl_tests plugin passes with real all_reduce_perf binary.
     """
@@ -209,7 +209,7 @@ def test_diag_nccl_tests_live_pass(handle, gpuIds):
 @test_utils.run_with_standalone_host_engine(120, heEnv=test_helpers.helper_nccl_tests_plugin.HE_Env_Live({"NCCL_TESTS_MIN_BW": "99999"}))
 @test_utils.run_only_with_live_gpus()
 @test_utils.run_only_if_mig_is_disabled()
-def test_diag_nccl_tests_live_fail_min_bw(handle, gpuIds):
+def test_diag_nccl_tests_live_fail_min_bw(handle, gpuIds) -> None:
     """
     Test that nccl_tests plugin fails when minimum bandwidth threshold is unreachable.
     """

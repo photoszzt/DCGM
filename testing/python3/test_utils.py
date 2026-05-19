@@ -11,6 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from dcgm_structs_internal import c_dcgmCreateFakeEntities_v2
+from dcgm_structs import c_dcgmGroupEntityPair_t
+from typing import Self
+from types import ModuleType
+from types import FunctionType
 from functools import wraps
 import inspect
 import os
@@ -83,7 +88,7 @@ smallFbModeEnv = {DIAG_SMALL_FB_MODE_VAR: '1'}
 
 
 class FastRunAmortizedMethod:
-    def __init__(self, name, item, kwargs):
+    def __init__(self, name, item, kwargs) -> None:
         self.item = item
         self.kwargs = kwargs
         self.refCount = 1
@@ -97,14 +102,14 @@ class FastRunResetMethods:
     items = {}
 
     @classmethod
-    def Add(cls, name, item, kwargs):
+    def Add(cls, name: str, item: HostengineModuleManager | RunClientInitShutdown | RunEmbeddedHostEngine | RunInjectionGpusState | RunInjectionNvmlState, kwargs) -> None:
         if name in cls.items:
             cls.items[name].refCount += 1
         else:
             cls.items[name] = FastRunAmortizedMethod(name, item, kwargs)
 
     @classmethod
-    def Del(cls, name):
+    def Del(cls, name: str) -> None:
         if name in cls.items:
             cls.items[name].refCount -= 1
 
@@ -112,7 +117,7 @@ class FastRunResetMethods:
                 del cls.items[name]
 
     @classmethod
-    def Call(cls, kwargs):
+    def Call(cls, kwargs) -> None:
         for name, item in cls.items.items():
             if item and item.item:
                 item.item.reset(kwargs, item.kwargs)
@@ -120,7 +125,7 @@ class FastRunResetMethods:
     # This should be called if an amortized decorator throws an exception.
     # All decorators should cleanup after themselves in that case.
     @classmethod
-    def Reset(cls):
+    def Reset(cls) -> None:
         del cls.items
         cls.items = {}
 
@@ -136,14 +141,14 @@ class FastRunStartMethods:
     items = {}
 
     @classmethod
-    def Add(cls, name, item, kwargs):
+    def Add(cls, name: str, item: HostengineModuleManager | RunClientInitShutdown, kwargs) -> None:
         if name in cls.items:
             cls.items[name].refCount += 1
         else:
             cls.items[name] = FastRunAmortizedMethod(name, item, kwargs)
 
     @classmethod
-    def Del(cls, name):
+    def Del(cls, name: str) -> None:
         if name in cls.items:
             cls.items[name].refCount -= 1
 
@@ -151,7 +156,7 @@ class FastRunStartMethods:
                 del cls.items[name]
 
     @classmethod
-    def Call(cls, kwargs):
+    def Call(cls, kwargs) -> None:
         for _, item in cls.items.items():
             if item and item.item:
                 item.item.start(kwargs, item.kwargs)
@@ -167,10 +172,10 @@ fast_run_start_methods = FastRunStartMethods()
 
 
 class HostengineModuleManager:
-    def __init__(self, kwargs):
+    def __init__(self, kwargs) -> None:
         self.moduleMask = 0
 
-    def start(self, kwargs, itemKwargs):
+    def start(self, kwargs, itemKwargs) -> None:
         handle = kwargs['handle']
 
         # Get the list of modules initially loaded
@@ -180,7 +185,7 @@ class HostengineModuleManager:
         # limit to 32 modules
         self.moduleMask = (~self.moduleMask) & 0xFFFFFFFF
 
-    def reset(self, kwargs, itemKwargs):
+    def reset(self, kwargs, itemKwargs) -> None:
         handle = kwargs['handle']
 
         dcgm_agent_internal.dcgmMarkModulesReloadable(handle, self.moduleMask)
@@ -191,7 +196,7 @@ def check_output(*args, **kwargs):
     return subprocess.check_output(*args, **kwargs)
 
 
-def set_tests_directory(testDir):
+def set_tests_directory(testDir) -> None:
     '''
     Set the directory where test .py files will be looked for (ex: 'tests' for DCGM)
     '''
@@ -200,7 +205,7 @@ def set_tests_directory(testDir):
     test_directory = testDir
 
 
-def verify_dcgmi_executible_visible_for_all_users():
+def verify_dcgmi_executible_visible_for_all_users() -> bool:
     # We don't run it if not on this platform
     if utils.platform_identifier not in apps.dcgmi_app.DcgmiApp.paths:
         logger.info('Skip unsupported platform')
@@ -225,7 +230,7 @@ def verify_dcgmi_executible_visible_for_all_users():
     return True
 
 
-def is_nvswitch_detected():
+def is_nvswitch_detected() -> bool:
     """ Tries to detect if nvswitch is present """
 
     try:
@@ -242,7 +247,7 @@ def is_nvswitch_detected():
         return False
 
 
-def is_hostengine_running():
+def is_hostengine_running() -> bool:
     """ Helper function to detect if there is an existing host engine running """
 
     processList = check_output(["ps", "-ef"])
@@ -341,7 +346,7 @@ def get_cuda_driver_version(handle, gpuId):
     return [majorVersion, minorVersion]
 
 
-def cuda_visible_devices_required(handle, gpuId):
+def cuda_visible_devices_required(handle, gpuId) -> bool:
     # We need to have a cuda_visible_devices value if this GPU has any MIG entities
     try:
         hierarchy = dcgm_agent.dcgmGetGpuInstanceHierarchy(handle)
@@ -357,7 +362,7 @@ def cuda_visible_devices_required(handle, gpuId):
     return False
 
 
-def get_gpu_slices(handle, gpuId):
+def get_gpu_slices(handle, gpuId) -> int:
     # We need to count MIG CI slices, and consider a whole GPU as one.
     # A GPU in MIG mode, but with no MIG CI slices can't do anything, so
     # we return 0 in that case.
@@ -391,7 +396,7 @@ def get_gpu_slices(handle, gpuId):
     return slices
 
 
-def get_cuda_visible_devices_env(handle, gpuId):
+def get_cuda_visible_devices_env(handle, gpuId) -> dict[str, str]:
     env = {}
     # If we have no MIG entities, then don't bother passing a CUDA_VISIBLE_DEVICES value - it is error prone
     if cuda_visible_devices_required(handle, gpuId):
@@ -404,10 +409,10 @@ def get_cuda_visible_devices_env(handle, gpuId):
 
 
 class FilePrivilegesReduced(object):
-    def __init__(self, devnode):
+    def __init__(self, devnode) -> None:
         self.devnode = devnode
 
-    def __enter__(self):
+    def __enter__(self) -> None:
         if not self.devnode:  # For ease of programming, support case when devnode is None
             return           # See for_all_device_nodes for more context
 
@@ -420,7 +425,7 @@ class FilePrivilegesReduced(object):
 
             os.chmod(self.devnode, self.new_st_mode)
 
-    def __exit__(self, exception_type, exception, trace):
+    def __exit__(self, exception_type, exception, trace) -> None:
         if not self.devnode:
             return
 
@@ -437,7 +442,7 @@ class FilePrivilegesReduced(object):
 def run_as_root_and_non_root():
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwds):
+        def wrapper(*args, **kwds) -> None:
             with SubTest("As root", count=False):
                 RunAsRoot.is_supported(skip_if_not_supported=True)
                 with RunAsRoot():
@@ -454,7 +459,7 @@ def run_as_root_and_non_root():
 def run_only_as_root():
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwds):
+        def wrapper(*args, **kwds) -> None:
             RunAsRoot.is_supported(skip_if_not_supported=True)
             with RunAsRoot():
                 fn(*args, **kwds)
@@ -465,7 +470,7 @@ def run_only_as_root():
 def run_only_as_non_root():
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwds):
+        def wrapper(*args, **kwds) -> None:
             RunAsNonRoot.is_supported(skip_if_not_supported=True)
             with RunAsNonRoot():
                 fn(*args, **kwds)
@@ -477,7 +482,7 @@ def run_only_as_non_root():
 def run_only_on_windows():
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwds):
+        def wrapper(*args, **kwds) -> None:
             if utils.is_windows():
                 result = fn(*args, **kwds)
             else:
@@ -492,7 +497,7 @@ def run_only_on_x86():
     """
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwds):
+        def wrapper(*args, **kwds) -> None:
             if utils.platform_identifier in ["Linux_32bit", "Linux_64bit", "Windows_64bit"]:
                 result = fn(*args, **kwds)
             else:
@@ -504,7 +509,7 @@ def run_only_on_x86():
 def run_only_on_linux():
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwds):
+        def wrapper(*args, **kwds) -> None:
             if utils.is_linux():
                 result = fn(*args, **kwds)
             else:
@@ -519,7 +524,7 @@ def run_only_on_bare_metal():
     """
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwds):
+        def wrapper(*args, **kwds) -> None:
             if utils.is_bare_metal_system():
                 result = fn(*args, **kwds)
             else:
@@ -534,7 +539,7 @@ def run_only_on_architecture(arch):
     """
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwds):
+        def wrapper(*args, **kwds) -> None:
             framework_path = utils.get_testing_framework_library_path()
             match = re.search(arch, framework_path)
             if match is None:
@@ -552,7 +557,7 @@ def run_only_with_minimum_cuda_version(major_ver, minor_ver):
     """
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwds):
+        def wrapper(*args, **kwds) -> None:
             if 'handle' not in kwds:
                 skip_test(
                     "Can't guarantee the cuda version without a valid handle to DCGM, skipping test.")
@@ -580,7 +585,7 @@ def run_only_when_path_exists(path):
     """
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwds):
+        def wrapper(*args, **kwds) -> None:
             if not os.path.exists(path):
                 skip_test(
                     f"This test is skipped because [{path}] does not exist.")
@@ -603,7 +608,7 @@ def run_with_nvml_injection_folder():
     """
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwds):
+        def wrapper(*args, **kwds) -> None:
             created = False
             if not os.path.exists(NVML_INJECTION_FOLDER):
                 os.makedirs(NVML_INJECTION_FOLDER, exist_ok=True)
@@ -623,7 +628,7 @@ def run_only_with_nvml():
     """
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwds):
+        def wrapper(*args, **kwds) -> None:
             global nvmlNotLoaded
             if nvmlNotLoaded:
                 skip_test(
@@ -667,7 +672,7 @@ def needs_cuda():
     """
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwds):
+        def wrapper(*args, **kwds) -> None:
             if utils.is_cuda_supported_system():
                 result = fn(*args, **kwds)
             else:
@@ -677,7 +682,7 @@ def needs_cuda():
     return decorator
 
 
-def is_xorg_running():
+def is_xorg_running() -> bool:
     if utils.is_windows():
         return False
 
@@ -693,7 +698,7 @@ def is_xorg_running():
     return False
 
 
-def is_driver_in_use():
+def is_driver_in_use() -> bool:
     """
     Returns True if testing2 is the only process keeping the driver loaded.
 
@@ -721,7 +726,7 @@ def run_only_if_driver_unused():
     """
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwds):
+        def wrapper(*args, **kwds) -> None:
             # !!! Keep in sync with is_driver_in_use function !!!
             if utils.is_windows():
                 skip_test(
@@ -741,16 +746,16 @@ def run_only_if_driver_unused():
 
 
 class assert_raises(object):
-    def __init__(self, expected_exception):
+    def __init__(self, expected_exception: str) -> None:
         assert not (
             expected_exception is None), "expected_exception can't be None"
 
         self.expected_exception = expected_exception
 
-    def __enter__(self):
+    def __enter__(self) -> None:
         pass
 
-    def __exit__(self, exception_type, exception, trace):
+    def __exit__(self, exception_type, exception, trace) -> bool:
         if isinstance(exception, KeyboardInterrupt):
             return False
         # If we weren't expecting a connection exception and we get one, pass it up the stack rather than the assertion exception
@@ -774,7 +779,7 @@ class assert_raises(object):
         return isinstance(exception, self.expected_exception)
 
 
-def helper_check_for_duplicate_test_names(test_content):
+def helper_check_for_duplicate_test_names(test_content: list[tuple[ModuleType, list[FunctionType]]]) -> None:
     '''
     Iterates over every test in the list that will be returned from get_test_content and
     throws an exception if any duplicate test names are detected. This is needed because
@@ -791,7 +796,7 @@ def helper_check_for_duplicate_test_names(test_content):
             seenTestNames[testName] = True
 
 
-def get_test_content(run_compiled_flag=False):
+def get_test_content(run_compiled_flag: bool=False):
     '''
     Searches for all modules with name "test*" and all functions with name "test*" in each module.
 
@@ -820,7 +825,7 @@ def get_test_content(run_compiled_flag=False):
                                fromlist=("non-empty list has a side effect of import loading the module.submodule instead of module"))
                     for name in test_module_names]
 
-    def test_functions_in_module(module):
+    def test_functions_in_module(module: ModuleType):
         attributes = dir(module)
         attributes.sort()
         for attr_name in attributes:
@@ -845,7 +850,7 @@ def get_test_content(run_compiled_flag=False):
     # split into run_first, normal and run_last
     def filter_run_first(x): return hasattr(x, "run_first") and x.run_first
     def filter_run_last(x): return hasattr(x, "run_last") and x.run_last
-    def filter_run_normal(x): return not filter_run_first(
+    def filter_run_normal(x) -> bool: return not filter_run_first(
         x) and not filter_run_last(x)
 
     test_content_first = [(module, list(filter(filter_run_first, test_funcs))) for (
@@ -869,7 +874,7 @@ class TestSkipped(Exception):
     pass
 
 
-def skip_test(reason):
+def skip_test(reason: str):
     raise TestSkipped(reason)
 
 
@@ -889,7 +894,7 @@ class _RunAsUser(object):
 
     """
 
-    def __init__(self, target_user, reload_driver):
+    def __init__(self, target_user: str, reload_driver: bool) -> None:
         self._target_user = target_user
         self._reload_driver = reload_driver
 
@@ -904,7 +909,7 @@ class _RunAsUser(object):
             # on non-linux switching user is not supported
             assert (self._target_user == "root") == utils.is_root()
 
-    def __enter__(self):
+    def __enter__(self) -> None:
         if utils.is_linux():
             self._orig_uid = os.geteuid()
             self._orig_gid = os.getegid()
@@ -932,7 +937,7 @@ class _RunAsUser(object):
 
             logger.debug("Groups after: %s" % os.getgroups())
 
-    def __exit__(self, exception_type, exception, trace):
+    def __exit__(self, exception_type, exception, trace) -> None:
         if utils.is_linux():
             if self._target_user == self._orig_user:
                 return  # Nothing to do
@@ -961,14 +966,14 @@ class RunAsNonRoot(_RunAsUser):
 
     """
 
-    def __init__(self, reload_driver=True):
+    def __init__(self, reload_driver: bool=True) -> None:
         non_root_user = option_parser.options.non_root_user
         if not non_root_user and utils.is_linux() and not utils.is_root():
             non_root_user = utils.get_name_by_uid(os.getuid())
         super(RunAsNonRoot, self).__init__(non_root_user, reload_driver)
 
     @classmethod
-    def is_supported(cls, skip_if_not_supported=False):
+    def is_supported(cls, skip_if_not_supported: bool=False) -> bool:
         if not utils.is_root():
             return True  # if current user is non-root then running as non-root is supported
 
@@ -992,11 +997,11 @@ class RunAsRoot(_RunAsUser):
 
     """
 
-    def __init__(self, reload_driver=True):
+    def __init__(self, reload_driver: bool=True) -> None:
         super(RunAsRoot, self).__init__("root", reload_driver)
 
     @classmethod
-    def is_supported(cls, skip_if_not_supported=False):
+    def is_supported(cls, skip_if_not_supported: bool=False) -> bool:
         if utils.is_root():
             return True  # if current user is root then running as root is supported
 
@@ -1013,13 +1018,13 @@ class RunAsRoot(_RunAsUser):
         return True
 
 
-def tryRunAsNonRoot():
+def tryRunAsNonRoot() -> RunAsNonRoot | _DoNothingBlock:
     if RunAsNonRoot.is_supported():
         return RunAsNonRoot()
     return _DoNothingBlock()
 
 
-def tryRunAsRoot():
+def tryRunAsRoot() -> RunAsRoot | _DoNothingBlock:
     if RunAsRoot.is_supported():
         return RunAsRoot()
     return _DoNothingBlock()
@@ -1033,7 +1038,7 @@ class SubTest(object):
     ResultDetailsRaw = namedtuple(
         "ResultDetailsRaw", "exception_type, exception, trace")
 
-    def __init__(self, name, quiet=False, supress_errors=True, disconnect_is_failure=True, count=True, dvssc_log=False):
+    def __init__(self, name, quiet: bool=False, supress_errors: bool=True, disconnect_is_failure: bool=True, count: bool=True, dvssc_log: bool=False) -> None:
         """
         Set quiet to True if you want the test to be removed from the logs if it succeeded.
         Useful when test is minor and you don't want to clobber the output with minor tests.
@@ -1053,7 +1058,7 @@ class SubTest(object):
         self.count = count
         self.dvssc_log = dvssc_log
 
-    def __enter__(self):
+    def __enter__(self) -> Self:
         self.parent = SubTest._stack[-1]
         SubTest._stack.append(self)
         SubTest._log.append(self)
@@ -1066,7 +1071,7 @@ class SubTest(object):
         # returns the current subtest
         return self
 
-    def __exit__(self, exception_type, exception, trace):
+    def __exit__(self, exception_type, exception, trace) -> bool:
         subtestPriorityDict = {SubTest.SUCCESS: 0, SubTest.SKIPPED: 1,
                                SubTest.FAILED: 2, SubTest.FAILURE_LOGGED: 3, SubTest.NOT_CONNECTED: 4}
         SubTest._stack.pop()
@@ -1133,7 +1138,7 @@ class SubTest(object):
 
         return self.supress_errors
 
-    def __str__(self):
+    def __str__(self) -> str:
         # traverse the entire path from node to parent
         # to retrieve all the names of the subtests
         path_to_parent = [self]
@@ -1148,17 +1153,17 @@ class SubTest(object):
 
 
 class _IgnoreExceptions(object):
-    def __init__(self, dontignore=None):
+    def __init__(self, dontignore=None) -> None:
         """
         dontignore = optional argument, list of exception types that shouldn't be ignored
 
         """
         self.dontignore = dontignore
 
-    def __enter__(self):
+    def __enter__(self) -> None:
         pass
 
-    def __exit__(self, exception_type, exception, trace):
+    def __exit__(self, exception_type, exception, trace) -> bool:
         if isinstance(exception, KeyboardInterrupt):
             return False
         if self.dontignore:
@@ -1176,13 +1181,13 @@ class ExceptionAsWarning(object):
 
     """
 
-    def __init__(self, reason):
+    def __init__(self, reason) -> None:
         self.reason = reason
 
-    def __enter__(self):
+    def __enter__(self) -> None:
         pass
 
-    def __exit__(self, exception_type, exception, trace):
+    def __exit__(self, exception_type, exception, trace) -> bool:
         if isinstance(exception, KeyboardInterrupt):
             return False
         if isinstance(exception, TestSkipped):
@@ -1204,10 +1209,10 @@ class _DoNothingBlock(object):
 
     """
 
-    def __enter__(self):
+    def __enter__(self) -> None:
         pass
 
-    def __exit__(self, exception_type, exception, trace):
+    def __exit__(self, exception_type, exception, trace) -> None:
         pass
 
 
@@ -1218,13 +1223,13 @@ class RestoreDefaultEnvironment(object):
 
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         pass
 
-    def __enter__(self):
+    def __enter__(self) -> None:
         return
 
-    def __exit__(self, exception_type, exception, trace):
+    def __exit__(self, exception_type, exception, trace) -> None:
         logger.debug("Restoring default environment - START")
 
         # Restore env variables
@@ -1236,7 +1241,7 @@ class RestoreDefaultEnvironment(object):
         logger.debug("Restoring default environment - END")
 
     @classmethod
-    def restore(cls):
+    def restore(cls) -> None:
         """
         Restores environmental variables and NVML state to predefined default state.
         e.g.
@@ -1248,7 +1253,7 @@ class RestoreDefaultEnvironment(object):
             pass
 
     @classmethod
-    def restore_dev_node_permissions(cls):
+    def restore_dev_node_permissions(cls) -> None:
         if not utils.is_linux():
             return  # nothing to do
 
@@ -1267,7 +1272,7 @@ class RestoreDefaultEnvironment(object):
                             "Failed to change permission of %s. This might cause some failures down the line" % fname)
 
     @classmethod
-    def restore_env(cls):
+    def restore_env(cls) -> bool:
         unset_envs = ['CUDA_VISIBLE_DEVICES', ]
         for env in unset_envs:
             if os.getenv(env) is not None:
@@ -1291,7 +1296,7 @@ class RestoreDefaultEnvironment(object):
 knownWordDict = None
 
 
-def _loadWordList():
+def _loadWordList() -> None:
     global knownWordDict
     if knownWordDict is None:
         with open('./data/wordlist', 'r') as f:
@@ -1299,7 +1304,7 @@ def _loadWordList():
                                  for s in f.readlines())
 
 
-def check_spelling(text):
+def check_spelling(text) -> None:
     _loadWordList()
     global knownWordDict
     # split into words, remove special characters
@@ -1313,7 +1318,7 @@ def check_spelling(text):
     assert 0 == len(unknownWords), "Unknown words: " + str(unknownWords)
 
 
-def _busIdRemoveDomain(busId):
+def _busIdRemoveDomain(busId) -> str:
     return ":".join(string.split(busId, ':')[-2:])
 
 
@@ -1328,7 +1333,7 @@ class RunCudaAppInBackGround:
         # Cuda app is terminated
     """
 
-    def __init__(self, busId, timeToRun):
+    def __init__(self, busId, timeToRun) -> None:
         '''
         Initializes cuda context
         '''
@@ -1340,7 +1345,7 @@ class RunCudaAppInBackGround:
         self.app = apps.CudaCtxCreateAdvancedApp(
             ["--ctxCreate", self.busId, "--busyGpu", self.busId, self.timeToRun])
 
-    def __enter__(self):
+    def __enter__(self) -> None:
         '''
         Runs the CUDA app for the specified amount of time
         '''
@@ -1350,7 +1355,7 @@ class RunCudaAppInBackGround:
                        float(self.timeToRun) / 1000.0)
         self.app.stdout_readtillmatch(lambda s: s.find("Calling cuInit") != -1)
 
-    def __exit__(self, exception_type, exception, trace):
+    def __exit__(self, exception_type, exception, trace) -> None:
         '''
         Wait for completion of CUDA app
         '''
@@ -1368,7 +1373,7 @@ DCGM_CONNECT_MODE_EMBEDDED = 1  # Connected to an embedded host engine
 DCGM_CONNECT_MODE_REMOTE = 2
 
 
-def set_connect_mode(connectMode):
+def set_connect_mode(connectMode: int) -> None:
     global dcgm_connect_mode
     dcgm_connect_mode = connectMode
 
@@ -1385,11 +1390,11 @@ def get_connect_mode():
 
 
 class HostengineLogLevelHandler:
-    def __init__(self, handle):
+    def __init__(self, handle) -> None:
         self.hostengineHandle = handle
 
     # Required by logger.LevelUpdateManager
-    def updateLogLevel(self):
+    def updateLogLevel(self) -> None:
         dcgm_agent.dcgmHostengineSetLoggingSeverity(
             self.hostengineHandle, pydcgm.BASE_LOGGER, logger.logging_level_num)
 
@@ -1399,7 +1404,7 @@ class RunEmbeddedHostEngine:
     This class is used as part of a "with" clause to start and stop an embedded host engine
     """
 
-    def __init__(self, opmode=dcgm_structs.DCGM_OPERATION_MODE_AUTO, startTcpServer=False):
+    def __init__(self, opmode: int=dcgm_structs.DCGM_OPERATION_MODE_AUTO, startTcpServer: bool=False) -> None:
         self.hostEngineStarted = False
         self.opmode = opmode
         self.handle = None
@@ -1409,7 +1414,7 @@ class RunEmbeddedHostEngine:
             skip_test(
                 "Skipping embedded test due to option --use-running-hostengine")
 
-    def __enter__(self):
+    def __enter__(self) -> Self:
         dcgm_agent.dcgmInit()  # Will throw an exception on error
         self.handle = dcgm_agent.dcgmStartEmbedded(self.opmode)
         logger.info("embedded host engine started")
@@ -1424,7 +1429,7 @@ class RunEmbeddedHostEngine:
         pydcgm.DcgmGroup.clear()
         return self
 
-    def __exit__(self, exception_type, exception, trace):
+    def __exit__(self, exception_type, exception, trace) -> None:
         if self.hostEngineStarted:
             logger.LevelUpdateManager.deregister(self.logLevelHandler)
             pydcgm.DcgmHandle.reset()
@@ -1444,7 +1449,7 @@ class RunEmbeddedHostEngine:
     def Handle(self):
         return self.handle
 
-    def reset(self, kwargs, itemKwargs):
+    def reset(self, kwargs, itemKwargs) -> None:
         self.handle = kwargs["handle"]
         pydcgm.DcgmGroup.reset()
         pydcgm.DcgmFieldGroup.reset()
@@ -1454,14 +1459,14 @@ class RunEmbeddedHostEngine:
         logger.LevelUpdateManager.register(self.logLevelHandler)
 
 
-def run_with_embedded_host_engine(opmode=dcgm_structs.DCGM_OPERATION_MODE_AUTO, startTcpServer=False, heEnv=None):
+def run_with_embedded_host_engine(opmode: int | str=dcgm_structs.DCGM_OPERATION_MODE_AUTO, startTcpServer: bool=False, heEnv=None):
     """
     Run this test with an embedded host engine. This will start the host engine before the test
     and stop the host engine after the test
     """
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwds):
+        def wrapper(*args, **kwds) -> None:
             if heEnv:
                 for key in heEnv:
                     os.environ[key] = heEnv[key]
@@ -1498,7 +1503,7 @@ class RunStandaloneHostEngine:
 
     _nvswitches_detected = None
 
-    def __init__(self, timeout=15, heArgs=None, profile_dir=None, heEnv=None):  # DCGM_HE_PORT_NUMBER
+    def __init__(self, timeout: int=15, heArgs=None, profile_dir=None, heEnv=None) -> None:  # DCGM_HE_PORT_NUMBER
         self.hostEngineStarted = False
         self.timeout = timeout
         self.heArgs = heArgs
@@ -1515,7 +1520,7 @@ class RunStandaloneHostEngine:
             self.nvhost_engine = apps.NvHostEngineApp(heArgs, profile_dir=profile_dir, heEnv=heEnv)
         """
 
-    def startHostengine(self):
+    def startHostengine(self) -> Self:
         if self.nvhost_engine is not None:
             self.nvhost_engine.remove()
 
@@ -1537,10 +1542,10 @@ class RunStandaloneHostEngine:
             set_connect_mode(DCGM_CONNECT_MODE_REMOTE)
         return self
 
-    def __enter__(self):
+    def __enter__(self) -> Self:
         return self.startHostengine()
 
-    def __exit__(self, exception_type, exception, trace):
+    def __exit__(self, exception_type, exception, trace) -> None:
         if self.nvhost_engine is not None:
             if self.hostEngineStarted:
                 if self.nvhost_engine.poll() is None:
@@ -1555,7 +1560,7 @@ class RunStandaloneHostEngine:
         set_connect_mode(DCGM_CONNECT_MODE_UNKNOWN)
 
     # Reconnect if the hostengine was shut down.
-    def reconnect(self, handle, kwargs):
+    def reconnect(self, handle, kwargs) -> bool:
         if self.nvhost_engine.poll() is None:
             # There was no reason to restart -- hostengine running.
             return False
@@ -1575,14 +1580,14 @@ class RunClientInitShutdown:
     This class is used as part of a "with" clause to initialize and shutdown the client API
     """
 
-    def __init__(self, hostengineApp, pIpAddr="127.0.0.1", persistAfterDisconnect=False, handle=None):
+    def __init__(self, hostengineApp, pIpAddr: str="127.0.0.1", persistAfterDisconnect: bool=False, handle=None) -> None:
         self.hostengineApp = hostengineApp
         self.clientAPIStarted = False
         self.dcgm_handle = None
         self.ipAddress = pIpAddr
         self.persistAfterDisconnect = persistAfterDisconnect
 
-    def connect(self, hostengineApp=None):
+    def connect(self, hostengineApp: RunStandaloneHostEngine | None=None) -> None:
         if hostengineApp != None:
             self.hostengineApp = hostengineApp
 
@@ -1607,7 +1612,7 @@ class RunClientInitShutdown:
         if not self.dcgm_handle:
             raise Exception('failed connection to dcgm hostengine')
 
-    def __enter__(self):
+    def __enter__(self) -> Self:
         dcgm_agent.dcgmInit()
         self.connect()
         self.clientAPIStarted = True
@@ -1617,7 +1622,7 @@ class RunClientInitShutdown:
 
         return self
 
-    def __exit__(self, exception_type, exception, trace):
+    def __exit__(self, exception_type, exception, trace) -> None:
         if self.clientAPIStarted:
             logger.LevelUpdateManager.deregister(self.logLevelHandler)
             try:
@@ -1628,7 +1633,7 @@ class RunClientInitShutdown:
             pydcgm.DcgmFieldGroup.clear()
             self.clientAPIStarted = False
 
-    def start(self, kwargs, itemKwargs):
+    def start(self, kwargs, itemKwargs) -> None:
         handle = self.Handle()
         if handle is not None:
             """
@@ -1638,7 +1643,7 @@ class RunClientInitShutdown:
             """
             kwargs['handle'] = handle
 
-    def reset(self, kwargs, itemKwargs):
+    def reset(self, kwargs, itemKwargs) -> None:
         if self.hostengineApp.reconnect(self.dcgm_handle, kwargs):
             # Hostengine was stopped and restarted.
             pydcgm.DcgmGroup.clear()
@@ -1666,14 +1671,14 @@ class RunClientInitShutdown:
         return self.dcgm_handle
 
 
-def run_with_standalone_host_engine(timeout=15, ipAddress="127.0.0.1", heArgs=None, passAppAsArg=False, heEnv=None, initializedClient=True, *args, **kwargs):
+def run_with_standalone_host_engine(timeout: int=15, ipAddress: str="127.0.0.1", heArgs=None, passAppAsArg: bool=False, heEnv=None, initializedClient: bool=True, *args, **kwargs):
     """
     Run this test with the standalone host engine.  This will start the host engine process before the test
     and stop the host engine process after the test
     """
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwds):
+        def wrapper(*args, **kwds) -> None:
             local_heArgs = heArgs
             if 'heArgs' in kwds:
                 if heArgs == None:
@@ -1734,7 +1739,7 @@ def run_with_standalone_host_engine(timeout=15, ipAddress="127.0.0.1", heArgs=No
 
 
 class RunInjectionNvmlState:
-    def reset(self, kwargs, itemKwargs):
+    def reset(self, kwargs, itemKwargs) -> None:
         handle = kwargs['handle']
         gpuIds = kwargs['gpuIds']
 
@@ -1753,7 +1758,7 @@ def run_with_injection_nvml():
     """
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwds):
+        def wrapper(*args, **kwds) -> None:
             # This environment variable tells DCGM to load injection NVML
             os.environ[INJECTION_MODE_VAR] = 'True'
             try:
@@ -1774,7 +1779,7 @@ def run_with_additional_fatal_kmsg_xid(xid):
     """
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwds):
+        def wrapper(*args, **kwds) -> None:
             TEST_KMSG_XID_ENV = '__DCGM_XID_KMSG__'
             os.environ[TEST_KMSG_XID_ENV] = xid
             TEST_DCGM_FATAL_XIDS = '__DCGM_FATAL_XIDS__'
@@ -1799,7 +1804,7 @@ def run_with_current_system_injection_nvml(skuFileName):
     """
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwds):
+        def wrapper(*args, **kwds) -> None:
             skuFilePath = os.path.join(logger.default_log_dir, skuFileName)
             if not try_capture_nvml_env(skuFilePath):
                 skip_test(f"Skip test since we failed to capture nvml env.")
@@ -1825,7 +1830,7 @@ def run_with_injection_nvml_using_specific_sku(skuFileName: str):
     """
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwds):
+        def wrapper(*args, **kwds) -> None:
             skuFilePath = os.path.abspath(os.path.join("SKUs", skuFileName))
             if not os.path.exists(skuFilePath):
                 skip_test(f"Skip test due to miss SKU file {skuFilePath}")
@@ -1855,7 +1860,7 @@ def run_with_nvsdm_mock_config(configYamlPath: str):
     """
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwds):
+        def wrapper(*args, **kwds) -> None:
             configFilePath = os.path.abspath(
                 os.path.join("nvsdm_mock_configs", configYamlPath))
             if not os.path.exists(configFilePath):
@@ -1872,7 +1877,7 @@ def run_with_nvsdm_mock_config(configYamlPath: str):
     return decorator
 
 
-def get_live_entity_ids(handle, entityGroup):
+def get_live_entity_ids(handle, entityGroup: int):
     cxIdList = []
     dcgmHandle = pydcgm.DcgmHandle(handle=handle)
     dcgmSystem = dcgmHandle.GetSystem()
@@ -1883,7 +1888,7 @@ def get_live_entity_ids(handle, entityGroup):
 def run_with_nvsdm_mocked_cx():
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwds):
+        def wrapper(*args, **kwds) -> None:
             if 'handle' in kwds:
                 if not os.getenv(DCGM_NVSDM_MOCK_YAML, default=None):
                     raise Exception(
@@ -1908,7 +1913,7 @@ def run_with_nvsdm_mocked_cx():
 def run_only_with_live_cx():
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwds):
+        def wrapper(*args, **kwds) -> None:
             if 'handle' in kwds:
                 cxIds = get_live_entity_ids(
                     kwds['handle'], dcgm_fields.DCGM_FE_CONNECTX)
@@ -1933,7 +1938,7 @@ def run_with_diag_small_fb_mode():
     """
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwds):
+        def wrapper(*args, **kwds) -> None:
             # This environment variable tells DCGM to load injection NVML
             os.environ[DIAG_SMALL_FB_MODE_VAR] = '1'
             fn(*args, **kwds)
@@ -1971,7 +1976,7 @@ def get_live_gpu_ids(handle):
     return gpuIdList
 
 
-def get_live_gpu_count(handle):
+def get_live_gpu_count(handle) -> int:
     return len(get_live_gpu_ids(handle))
 
 
@@ -1981,7 +1986,7 @@ def run_only_with_live_gpus():
     """
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwds):
+        def wrapper(*args, **kwds) -> None:
             if 'handle' in kwds:
                 try:
                     gpuIds = get_live_gpu_ids(kwds['handle'])
@@ -2008,7 +2013,7 @@ def run_with_nvml_injected_gpus():
     """
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwds):
+        def wrapper(*args, **kwds) -> None:
             if 'handle' in kwds:
                 if os.getenv(INJECTION_MODE_VAR, default='False') != 'True':
                     raise Exception(
@@ -2050,7 +2055,7 @@ def run_only_with_live_cpus():
     """
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwds):
+        def wrapper(*args, **kwds) -> None:
             if 'handle' in kwds:
                 cpuIds = get_live_cpu_ids(kwds['handle'])
             else:
@@ -2075,7 +2080,7 @@ def run_clearing_gpus():
 
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwds):
+        def wrapper(*args, **kwds) -> None:
             if 'gpuIds' in kwds:
                 del kwds['gpuIds']
             fn(*args, **kwds)
@@ -2092,13 +2097,13 @@ class RunInjectionGpusState:
     tests, where they may have been deleted..
     """
 
-    def __init__(self, handle, gpuIds, gpuCount, kwds):
+    def __init__(self, handle, gpuIds, gpuCount, kwds) -> None:
         self.addGpuCount = gpuCount
         self.addGpus = []
 
         self.init(handle, gpuIds, kwds)
 
-    def init(self, handle, gpuIds, kwds):
+    def init(self, handle, gpuIds, kwds) -> None:
         deleted = []
 
         for addGpu in self.addGpus:
@@ -2132,7 +2137,7 @@ class RunInjectionGpusState:
             kwds['gpuIds'] = list(set(gpuIds + newGpuIds))
             self.addGpus = list(set(self.addGpus + newGpuIds))
 
-    def reset(self, kwds, itemKwds):
+    def reset(self, kwds, itemKwds) -> None:
         # If gpuIds is not present, we are probably managing GPUs one by one
         # in a different entry (e.g. gpuId). So, we do nothing to manage a
         # gpuIds set.
@@ -2140,13 +2145,13 @@ class RunInjectionGpusState:
             self.init(kwds['handle'], kwds['gpuIds'], kwds)
 
 
-def run_with_injection_gpus(gpuCount=1):
+def run_with_injection_gpus(gpuCount: int=1):
     """
     Run this test adding injection-only GPUs x gpuCount
     """
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwds):
+        def wrapper(*args, **kwds) -> None:
             global nvmlNotLoaded
 
             if 'handle' not in kwds:
@@ -2183,7 +2188,7 @@ def run_with_injection_gpus(gpuCount=1):
     return decorator
 
 
-def run_with_injection_gpu_instances(totalInstances=1, gpuOffset=0):
+def run_with_injection_gpu_instances(totalInstances: int=1, gpuOffset: int=0):
     """
     Run this test adding injection-only <totalInstances> GPU instances.
     Add the GPU instances to gpuIds[gpuOffset]
@@ -2192,7 +2197,7 @@ def run_with_injection_gpu_instances(totalInstances=1, gpuOffset=0):
     """
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwds):
+        def wrapper(*args, **kwds) -> None:
             if 'handle' not in kwds:
                 raise Exception(
                     "Not connected to remote or embedded host engine. Use approriate decorator")
@@ -2237,7 +2242,7 @@ def run_with_injection_gpu_instances(totalInstances=1, gpuOffset=0):
     return decorator
 
 
-def run_with_injection_gpu_compute_instances(totalCIs=1, giOffset=0):
+def run_with_injection_gpu_compute_instances(totalCIs: int=1, giOffset: int=0):
     """
     Run this test adding <totalCIs> fake compute instances under GI giOffset.
 
@@ -2245,7 +2250,7 @@ def run_with_injection_gpu_compute_instances(totalCIs=1, giOffset=0):
     """
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwds):
+        def wrapper(*args, **kwds) -> None:
             if 'handle' not in kwds:
                 raise Exception(
                     "Not connected to remote or embedded host engine. Use appropriate decorator")
@@ -2301,13 +2306,13 @@ def run_with_injection_gpu_compute_instances(totalCIs=1, giOffset=0):
 CPU_IDS_STR = 'cpuIds'
 
 
-def run_with_injection_cpus(totalCpus=1):
+def run_with_injection_cpus(totalCpus: int=1):
     """
     Run this test with <totalCpus> fake CPUs
     """
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwds):
+        def wrapper(*args, **kwds) -> None:
             if 'handle' not in kwds:
                 raise Exception(
                     "Not connected to remote or embedded host engine. Use appropriate decorator")
@@ -2334,13 +2339,13 @@ def run_with_injection_cpus(totalCpus=1):
     return decorator
 
 
-def run_with_injection_cpu_cores(totalCores=1):
+def run_with_injection_cpu_cores(totalCores: int=1):
     """
     Run this test with <totalCores> fake CPUs
     """
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwds):
+        def wrapper(*args, **kwds) -> None:
             if 'handle' not in kwds:
                 raise Exception(
                     "Not connected to remote or embedded host engine. Use appropriate decorator")
@@ -2389,7 +2394,7 @@ def run_with_ipv6_enabled():
     """
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwds):
+        def wrapper(*args, **kwds) -> None:
             try:
                 import socket
                 s = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
@@ -2407,10 +2412,10 @@ def run_with_ipv6_enabled():
 # Long timeout by default, but the app is terminated once the test has concluded
 
 
-def run_with_cuda_app(timeout=10000):
+def run_with_cuda_app(timeout: int=10000):
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwds):
+        def wrapper(*args, **kwds) -> None:
             if 'handle' not in kwds:
                 raise Exception(
                     "Not connected to remote or embedded host engine. Use appropriate decorator")
@@ -2462,7 +2467,7 @@ def get_live_nvswitch_ids(handle):
     return entityIdList
 
 
-def get_live_nvswitch_count(handle):
+def get_live_nvswitch_count(handle) -> int:
     return len(get_live_nvswitch_ids(handle))
 
 
@@ -2472,7 +2477,7 @@ def run_only_with_live_nvswitches():
     """
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwds):
+        def wrapper(*args, **kwds) -> None:
             if 'handle' in kwds:
                 entityIdList = get_live_nvswitch_ids(kwds['handle'])
             else:
@@ -2490,13 +2495,13 @@ def run_only_with_live_nvswitches():
     return decorator
 
 
-def run_with_injection_nvswitches(switchCount=1):
+def run_with_injection_nvswitches(switchCount: int=1):
     """
     Run this test with injection-only NvSwitches x switchCount
     """
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwds):
+        def wrapper(*args, **kwds) -> None:
             global nvmlNotLoaded
             if 'handle' not in kwds:
                 raise Exception(
@@ -2527,7 +2532,7 @@ def run_with_injection_nvswitches(switchCount=1):
     return decorator
 
 
-def skip_unhealthy_mem(handle, gpuIds):
+def skip_unhealthy_mem(handle, gpuIds) -> None:
     """
     Verifies that the DCGM health checks return healthy for all GPUs on live systems.
     """
@@ -2551,10 +2556,10 @@ def skip_unhealthy_mem(handle, gpuIds):
 
 def watch_all_fields(handle,
                      gpuIds,
-                     updateFreq=1000,  # 1ms
-                     maxKeepAge=86400.0,
-                     maxKeepEntries=1000,
-                     startTimestamp=0):
+                     updateFreq: int=1000,  # 1ms
+                     maxKeepAge: float=86400.0,
+                     maxKeepEntries: int=1000,
+                     startTimestamp: int=0) -> set[int]:
     '''
     Watch every field in DCGM and return a list of the fields that are watched.
     This also calls to make sure that the watched fields are updated at least once
@@ -2590,7 +2595,7 @@ def watch_all_fields(handle,
     return watchedFields
 
 
-def set_logging_state(enableLogging):
+def set_logging_state(enableLogging: bool) -> None:
     '''
     Helper function to enable or disable logging. Call restore_logging_state() to
     undo this call
@@ -2607,7 +2612,7 @@ def set_logging_state(enableLogging):
     logger.setup_environment()
 
 
-def restore_logging_state():
+def restore_logging_state() -> None:
     # Restore the state of logging to what it was before set_logging_state()
     global noLogging, noLoggingBackup
 
@@ -2618,7 +2623,7 @@ def restore_logging_state():
     logger.setup_environment()
 
 
-def try_capture_nvml_env(capture_nvml_environment_to):
+def try_capture_nvml_env(capture_nvml_environment_to: str) -> bool:
     try:
         import nvml_api_recorder
         with nvml_api_recorder.NVMLApiRecorder() as recorder:
@@ -2752,7 +2757,7 @@ def exclude_non_compute_gpus():
     '''
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwds):
+        def wrapper(*args, **kwds) -> None:
             gpuIds = []
             for gpuId in kwds['gpuIds']:
                 deviceId = get_device_id(kwds['handle'], gpuId)
@@ -2779,7 +2784,7 @@ def exclude_confidential_compute_gpus():
     '''
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwds):
+        def wrapper(*args, **kwds) -> None:
             gpuIds = []
             for gpuId in kwds['gpuIds']:
                 deviceAttrib = dcgm_agent.dcgmGetDeviceAttributes(
@@ -2805,7 +2810,7 @@ def run_only_if_gpus_available():
     '''
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwds):
+        def wrapper(*args, **kwds) -> None:
             if 'gpuIds' in kwds and len(kwds['gpuIds']) > 0:
                 result = fn(*args, **kwds)
             else:
@@ -2820,7 +2825,7 @@ def skip_test_on_vm():
     '''
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwds):
+        def wrapper(*args, **kwds) -> None:
             if utils.is_bare_metal_system():
                 result = fn(*args, **kwds)
             else:
@@ -2837,7 +2842,7 @@ def for_all_same_sku_gpus():
     '''
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwds):
+        def wrapper(*args, **kwds) -> None:
             gpuGroupList = group_gpu_ids_by_sku(kwds['handle'], kwds['gpuIds'])
             oldGpuIds = kwds['gpuIds']  # save this
 
@@ -2854,7 +2859,7 @@ def for_all_same_sku_gpus():
     return decorator
 
 
-def set_max_power_limit(handle, gpuIds):
+def set_max_power_limit(handle, gpuIds) -> None:
     handleObj = pydcgm.DcgmHandle(handle=handle)
     systemObj = handleObj.GetSystem()
     groupObj = systemObj.GetEmptyGroup("test1")
@@ -2900,7 +2905,7 @@ def run_with_max_power_limit_set():
     '''
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwds):
+        def wrapper(*args, **kwds) -> None:
             set_max_power_limit(kwds['handle'], kwds['gpuIds'])
             fn(*args, **kwds)
             return
@@ -2909,7 +2914,7 @@ def run_with_max_power_limit_set():
     return decorator
 
 
-def log_gpu_information(handle):
+def log_gpu_information(handle) -> int:
     '''
     Log information about the GPUs that DCGM is going to run against
 
@@ -2932,7 +2937,7 @@ def log_gpu_information(handle):
     return len(allDcgmGpuIds)
 
 
-def log_instance_information(handle):
+def log_instance_information(handle) -> None:
     hierarchy = dcgm_agent.dcgmGetGpuInstanceHierarchy(handle)
 
     # See Query.cpp::TopologicalSort for sorting details
@@ -2975,7 +2980,7 @@ def run_only_with_all_supported_gpus():
     """
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwds):
+        def wrapper(*args, **kwds) -> None:
             global nvmlNotLoaded
             if nvmlNotLoaded:
                 skip_test(
@@ -3005,7 +3010,7 @@ def run_only_with_all_same_sku_gpus():
     """
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwds):
+        def wrapper(*args, **kwds) -> None:
             global nvmlNotLoaded
             if nvmlNotLoaded:
                 skip_test(
@@ -3042,7 +3047,7 @@ def skip_denylisted_gpus(denylist=None):
 
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args, **kwargs) -> None:
             if (denylist is not None) and ('gpuIds' in kwargs):
                 gpu_ids = kwargs['gpuIds']
                 passed_ids = []
@@ -3062,13 +3067,13 @@ def skip_denylisted_gpus(denylist=None):
     return decorator
 
 
-def run_with_developer_mode(msg="Use developer mode to enable this test."):
+def run_with_developer_mode(msg: str="Use developer mode to enable this test."):
     """
     Run test only when developer mode is set.
     """
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwds):
+        def wrapper(*args, **kwds) -> None:
             if not option_parser.options.developer_mode:
                 skip_test(msg)
             fn(*args, **kwds)
@@ -3077,7 +3082,7 @@ def run_with_developer_mode(msg="Use developer mode to enable this test."):
     return decorator
 
 
-def are_any_nvlinks_down(handle):
+def are_any_nvlinks_down(handle) -> bool:
     handleObj = pydcgm.DcgmHandle(handle=handle)
     systemObj = handleObj.GetSystem()
 
@@ -3100,12 +3105,12 @@ def are_any_nvlinks_down(handle):
     return False
 
 
-def skip_test_if_any_nvlinks_down(handle):
+def skip_test_if_any_nvlinks_down(handle) -> None:
     if are_any_nvlinks_down(handle):
         skip_test("Skipping test due to a NvLink being down")
 
 
-def is_nvidia_fabricmanager_running():
+def is_nvidia_fabricmanager_running() -> bool:
     """
     Return True if nvidia-fabricmanager service is running on the system
     """
@@ -3119,7 +3124,7 @@ def is_nvidia_fabricmanager_running():
         return False
 
 
-def get_build_type():
+def get_build_type() -> str:
     """
     Return the build type: Debug or Release
     """
@@ -3133,7 +3138,7 @@ def get_build_type():
     return ""
 
 
-def is_framework_compatible():
+def is_framework_compatible() -> bool:
     """
     Checks whether the Test Framework is using the expected build version DCGM
     """
@@ -3152,7 +3157,7 @@ def is_framework_compatible():
             key, value = str.split(kv, ':', 1)
             versionInfo[key] = value
 
-    def validate_build_info(key, expected):
+    def validate_build_info(key: str, expected) -> bool:
         if key not in versionInfo:
             logger.warning(
                 "Key %s was expected but not provided in the build info" % key)
@@ -3195,7 +3200,7 @@ def is_framework_compatible():
     return True
 
 
-def is_test_environment_sane():
+def is_test_environment_sane() -> bool:
     """
     Checks whether the SUT (system under test) has any obvious issues
     before allowing the test framework to run
@@ -3229,7 +3234,7 @@ def run_with_persistence_mode_on():
         cmd = ['nvidia-smi', '-pm', '1']
 
         @wraps(fn)
-        def wrapper(*args, **kwds):
+        def wrapper(*args, **kwds) -> None:
             fnull = open(os.devnull, 'w')
             if not find_executable(cmd[0]):
                 logger.info("Could not find executable " +
@@ -3252,7 +3257,7 @@ def get_device_id(handle, gpuId):
     return attrs.identifiers.pciDeviceId >> 16
 
 
-def is_clocks_event_masked_by_nvvs(handle, gpuId, clocks_event):
+def is_clocks_event_masked_by_nvvs(handle, gpuId: int, clocks_event):
     deviceId = get_device_id(handle, gpuId)
     if deviceId == 0x102d or deviceId == 0x1eb8:
         return True
@@ -3308,13 +3313,13 @@ def mig_mode_helper():
 #
 
 
-def is_mig_mode_enabled():
+def is_mig_mode_enabled() -> bool:
     mig_enabled_gpus, _, _ = mig_mode_helper()
 
     return len(mig_enabled_gpus) > 0
 
 
-def is_mig_mode_disabled():
+def is_mig_mode_disabled() -> bool:
     mig_enabled_gpus, mig_disabled_gpus, non_mig_gpus = mig_mode_helper()
 
     return (len(mig_enabled_gpus) == 0) and ((len(mig_disabled_gpus) > 0) or (len(non_mig_gpus) > 0))
@@ -3326,7 +3331,7 @@ def run_only_if_mig_is_disabled():
     '''
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwds):
+        def wrapper(*args, **kwds) -> None:
             if is_mig_mode_disabled():
                 result = fn(*args, **kwds)
             else:
@@ -3342,7 +3347,7 @@ def run_only_if_mig_is_enabled():
     '''
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwds):
+        def wrapper(*args, **kwds) -> None:
             if is_mig_mode_enabled():
                 result = fn(*args, **kwds)
             else:
@@ -3357,7 +3362,7 @@ def run_only_on_mig_gpus():
     '''
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwds):
+        def wrapper(*args, **kwds) -> None:
             mig_enabled_gpus, _, _ = mig_mode_helper()
 
             mig_gpus = []
@@ -3382,7 +3387,7 @@ def run_only_on_non_mig_gpus():
     '''
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwds):
+        def wrapper(*args, **kwds) -> None:
             _, non_mig_enabled_gpus, _ = mig_mode_helper()
 
             non_mig_gpus = []
@@ -3408,7 +3413,7 @@ def run_with_non_mig_cuda_visible_devices():
     '''
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwds):
+        def wrapper(*args, **kwds) -> None:
             if 'handle' not in kwds:
                 skip_test(
                     "Can't get GPU uuids without a valid handle to DCGM, skipping test.")
@@ -3449,14 +3454,14 @@ def run_with_non_mig_cuda_visible_devices():
     return decorator
 
 
-def is_mig_incompatible_failure(failure_msg):
+def is_mig_incompatible_failure(failure_msg: str) -> bool:
     mig_incompatible_str = "MIG configuration is incompatible with the diagnostic because it prevents access to the entire GPU."
     pos = failure_msg.find(mig_incompatible_str)
     # Return true if this is the end of the error string
     return pos != -1 and pos + len(mig_incompatible_str) == len(failure_msg) - 1
 
 
-def diag_verify_json(jsonOutput):
+def diag_verify_json(jsonOutput) -> None:
     try:
         import jsonschema
         f = open('dcgm_diag_schema.json')
@@ -3470,7 +3475,7 @@ def diag_verify_json(jsonOutput):
             'Could not load \'dcgm_diag_schema.json\', json schema validation disabled')
 
 
-def mndiag_verify_json(jsonOutput):
+def mndiag_verify_json(jsonOutput) -> None:
     """
     Verify multi-node diagnostic JSON output against the schema
 
@@ -3489,7 +3494,7 @@ def mndiag_verify_json(jsonOutput):
             'Could not load \'dcgm_mndiag_schema.json\', multi-node diagnostic json schema validation disabled')
 
 
-def diag_execute_wrapper(dd, handle):
+def diag_execute_wrapper(dd: str, handle: c_dcgmCreateFakeEntities_v2):
     try:
         response = dd.Execute(handle)
         return response
@@ -3501,7 +3506,7 @@ def diag_execute_wrapper(dd, handle):
             raise e
 
 
-def action_validate_wrapper(runDiagInfo, handle, runDiagVersion=dcgm_structs.dcgmRunDiag_version10):
+def action_validate_wrapper(runDiagInfo, handle, runDiagVersion: int=dcgm_structs.dcgmRunDiag_version10):
     try:
         response = dcgm_agent.dcgmActionValidate_v2(
             handle, runDiagInfo, runDiagVersion)
@@ -3514,7 +3519,7 @@ def action_validate_wrapper(runDiagInfo, handle, runDiagVersion=dcgm_structs.dcg
             raise e
 
 
-def run_mndiagnostic_wrapper(handle, runMnDiagInfo, runMnDiagVersion=dcgm_structs.dcgmRunMnDiag_version1):
+def run_mndiagnostic_wrapper(handle, runMnDiagInfo, runMnDiagVersion: int=dcgm_structs.dcgmRunMnDiag_version1):
     try:
         response = dcgm_agent.dcgmRunMnDiagnostic(
             handle, runMnDiagInfo, runMnDiagVersion)
@@ -3529,7 +3534,7 @@ def run_only_if_checking_libraries():
     '''
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwds):
+        def wrapper(*args, **kwds) -> None:
             if option_parser.options.no_library_check:
                 skip_test(
                     "The test framework has been run with --no-library-check, skipping this test.")
@@ -3542,7 +3547,7 @@ def run_only_if_checking_libraries():
 def run_with_logging_on():
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwds):
+        def wrapper(*args, **kwds) -> None:
             set_logging_state(True)
             fn(*args, **kwds)
             restore_logging_state()
@@ -3551,7 +3556,7 @@ def run_with_logging_on():
     return decorator
 
 
-def set_nvvs_bin_path():
+def set_nvvs_bin_path() -> None:
     '''
     Helper to make sure that NVVS_BIN_PATH is set so that dcgmi diag will actually run
     '''
@@ -3570,7 +3575,7 @@ def set_nvvs_bin_path():
 def run_for_each_gpu_individually():
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args, **kwargs) -> None:
             gpu_ids = kwargs['gpuIds']
             del kwargs['gpuIds']
             for gpu_id in gpu_ids:
@@ -3585,10 +3590,10 @@ def run_for_each_gpu_individually():
     return decorator
 
 
-def with_service_account(serviceAccountName):
+def with_service_account(serviceAccountName: c_dcgmGroupEntityPair_t):
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args, **kwargs) -> None:
             try:
                 os.system('groupadd -r -f %s' % serviceAccountName)
                 os.system('useradd -r -g %s -s /usr/sbin/nologin -M %s' %
@@ -3601,7 +3606,7 @@ def with_service_account(serviceAccountName):
     return decorator
 
 
-def is_numa_system():
+def is_numa_system() -> bool:
     try:
         with open('/sys/devices/system/node/has_cpu') as f:
             node_contents = f.read()
@@ -3624,7 +3629,7 @@ def is_numa_system():
 def run_only_on_numa_systems():
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args, **kwargs) -> None:
             if not is_numa_system():
                 skip_test("This test only runs on NUMA-supported systems")
             fn(*args, **kwargs)
@@ -3632,7 +3637,7 @@ def run_only_on_numa_systems():
     return decorator
 
 
-def gpu_supports_gpm(handle, gpuId):
+def gpu_supports_gpm(handle, gpuId) -> bool:
     """
     Returns true if the given gpuId supports GPU Performance Monitoring (GPM). false if not
     """
@@ -3651,7 +3656,7 @@ def gpu_supports_gpm(handle, gpuId):
         return False
 
 
-def gpu_supports_ecc(handle, gpuId):
+def gpu_supports_ecc(handle, gpuId) -> bool:
     """
     Returns true if the given gpuId support ECC and it is enabled.
     """
@@ -3677,7 +3682,7 @@ def gpu_supports_ecc(handle, gpuId):
     return True
 
 
-def gpu_reports_sram_memory_errors(handle, gpuId):
+def gpu_reports_sram_memory_errors(handle, gpuId) -> bool:
     """
     Returns true if the given gpuId reports simplified (SRAM and DRAM) ECC
     Memory error counters (Turing and later do).
@@ -3710,7 +3715,7 @@ def filter_sku(skus):
     """
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args, **kwargs) -> None:
             gpuIds = kwargs['gpuIds']
             filteredGpuIds = []
             nvidiaSmi = nvidia_smi_utils.NvidiaSmiJob()
@@ -3737,7 +3742,7 @@ def filter_sku(skus):
     return decorator
 
 
-def helper_read_file(filename):
+def helper_read_file(filename: str) -> str:
     with open(filename) as f:
         return f.read()
 
@@ -3784,22 +3789,22 @@ def helper_read_numa_hierarchy():
     return g_numa_hierarchy
 
 
-def save_gpu_count(gpuCount):
+def save_gpu_count(gpuCount) -> None:
     global g_dcgmGpuCount
     g_dcgmGpuCount = gpuCount
 
 
-def get_gpu_count():
+def get_gpu_count() -> None:
     global g_dcgmGpuCount
     return g_dcgmGpuCount
 
 
-def save_current_skus_env(env):
+def save_current_skus_env(env) -> None:
     global g_dcgmCurrentSkusEnv
     g_dcgmCurrentSkusEnv = env
 
 
-def get_saved_skus_env():
+def get_saved_skus_env() -> None:
     global g_dcgmCurrentSkusEnv
     return g_dcgmCurrentSkusEnv
 
@@ -3807,7 +3812,7 @@ def get_saved_skus_env():
 def run_only_with_gpus_present():
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args, **kwargs) -> None:
             if get_gpu_count() == 0:
                 skip_test(
                     "This test requires there be GPUs present on the system")
@@ -3823,7 +3828,7 @@ def get_domainSocketFilename_and_heArgs():
     '''
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args, **kwargs) -> None:
             kwargs["domainSocketFilename"] = '/tmp/dcgm_test%s' % (
                 datetime.datetime.now().strftime("%j%f"))
             kwargs["heArgs"] = ['-d', kwargs["domainSocketFilename"]]
@@ -3863,7 +3868,7 @@ def unwrap(func):
 #
 
 
-def with_amortized_decorators(test_data_obj, ex, functions, do_unwrap, *args, **kwargs):
+def with_amortized_decorators(test_data_obj, ex, functions, do_unwrap, *args, **kwargs) -> None:
     fast_run_start_methods.Call(kwargs)
 
     for function in functions:
@@ -3913,7 +3918,7 @@ def with_amortized_decorators(test_data_obj, ex, functions, do_unwrap, *args, **
 #
 
 
-def with_amortized_exception_decorators(test_data_obj, ex, functions, do_unwrap, *args, **kwargs):
+def with_amortized_exception_decorators(test_data_obj, ex, functions, do_unwrap, *args, **kwargs) -> None:
     fast_run_reset_methods.Reset()
 
     for function in functions:
@@ -3953,7 +3958,7 @@ def run_only_with_nvsdm_live():
     """
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwds):
+        def wrapper(*args, **kwds) -> None:
             if 'handle' in kwds:
                 try:
                     backend = dcgm_agent_internal.dcgmNvswitchGetBackend(
@@ -3990,7 +3995,7 @@ def DebugLevelToString(debugLevel):
         return 'VERB'
 
 
-def get_current_skus_env(handle=None):
+def get_current_skus_env(handle=None) -> str:
     """
     Returns a comma-separated string of the upper 16 bits (first 4 hex digits, lowercase, no 0x) of the PCI device ID for each live GPU.
     """
@@ -4014,7 +4019,7 @@ def get_current_skus_env(handle=None):
     return ",".join(skus)
 
 
-def get_mpirun_path():
+def get_mpirun_path() -> str | None:
     """
     Returns the path to the mpirun command.
     """
@@ -4024,7 +4029,7 @@ def get_mpirun_path():
     return mpirun_path
 
 
-def get_mock_nvidia_smi_path():
+def get_mock_nvidia_smi_path() -> str:
     """
     Returns the path to the nvidia-smi command.
     """
@@ -4032,7 +4037,7 @@ def get_mock_nvidia_smi_path():
     return mock_path
 
 
-def get_mock_mnubergemm_path():
+def get_mock_mnubergemm_path() -> str:
     """
     Returns the path to the mock mnubergemm command.
     """
@@ -4040,7 +4045,7 @@ def get_mock_mnubergemm_path():
     return mock_path
 
 
-def get_mnubergemm_log_file_path():
+def get_mnubergemm_log_file_path() -> str:
     """
     Returns the path to the mnubergemm log file.
     """
@@ -4049,7 +4054,7 @@ def get_mnubergemm_log_file_path():
     return log_file
 
 
-def get_stderr_output_file_path():
+def get_stderr_output_file_path() -> str:
     """
     Returns the path to the stderr output file.
     """
@@ -4058,7 +4063,7 @@ def get_stderr_output_file_path():
     return log_file
 
 
-def get_updated_env_path_variable():
+def get_updated_env_path_variable() -> str:
     """
     Returns the path to the mock environment.
     """
@@ -4069,7 +4074,7 @@ def get_updated_env_path_variable():
     return updated_path
 
 
-def is_mpirun_openmpi():
+def is_mpirun_openmpi() -> bool:
     """
     Checks if the current mpirun is OpenMPI by running mpirun --version.
     """
@@ -4184,7 +4189,7 @@ def run_only_with_minimum_gpu_architecture(min_architecture):
     """
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwds):
+        def wrapper(*args, **kwds) -> None:
             if 'handle' not in kwds:
                 skip_test(
                     "Can't check GPU architecture without a valid handle to DCGM, skipping test.")
@@ -4224,7 +4229,7 @@ def run_only_with_ecc():
     """
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwds):
+        def wrapper(*args, **kwds) -> None:
             if 'handle' not in kwds:
                 skip_test(
                     "Not connected to remote or embedded host engine. Use appropriate decorator")
@@ -4278,7 +4283,7 @@ def skip_on_gpm_non_gpm_hybrid_system():
     return decorator
 
 
-def attach_detach_gpus(pcibusIds, sysFsPath: str):
+def attach_detach_gpus(pcibusIds, sysFsPath: str) -> None:
     for pcibusId in pcibusIds:
         if len(pcibusId) > 12:
             pcibusId = pcibusId[4:]
@@ -4297,14 +4302,14 @@ def attach_detach_gpus(pcibusIds, sysFsPath: str):
                 raise e
 
 
-def detach_gpus(pcibusIds):
+def detach_gpus(pcibusIds) -> None:
     """
     Detaches the GPUs with the given PCI bus IDs.
     """
     attach_detach_gpus(pcibusIds, "/sys/bus/pci/drivers/nvidia/unbind")
 
 
-def attach_gpus(pcibusIds):
+def attach_gpus(pcibusIds) -> None:
     """
     Restores the detached GPUs with the given PCI bus IDs.
     """
@@ -4317,7 +4322,7 @@ def run_with_pci_bus_ids():
     """
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args, **kwargs) -> None:
             pcibusIds = nvidia_smi_utils.get_gpu_pci_bus_ids()
             if pcibusIds is None:
                 skip_test("No GPUs found")
@@ -4335,7 +4340,7 @@ def auto_restore_detached_gpus(detachGpusBeforeHand=None):
     """
     def decorator(fn):
         @wraps(fn)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args, **kwargs) -> None:
             pcibusIds = kwargs['pcibusIds']
             if pcibusIds is None:
                 raise RuntimeError("PCI bus IDs are required")

@@ -25,13 +25,13 @@ class RunCudaAssert(app_runner.AppRunner):
         "Linux_aarch64": "./apps/cuda_ctx_create/cuda_assert_aarch64",
     }
 
-    def __init__(self, args, env=None):
+    def __init__(self, args, env=None) -> None:
         path = os.path.join(
             utils.script_dir, RunCudaAssert.paths[utils.platform_identifier])
         super(RunCudaAssert, self).__init__(
             path, args, cwd=os.path.dirname(path), env=env)
 
-    def start(self, timeout=app_runner.default_timeout):
+    def start(self, timeout: float=app_runner.default_timeout) -> None:
         """
         Blocks till cuda ctx is really created
         Raises Exception if assert does not work
@@ -44,5 +44,5 @@ class RunCudaAssert(app_runner.AppRunner):
             self.stdout_readtillmatch(
                 lambda x: x == "Assertion `false` failed")
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "RunCudaAssert on device " + super(RunCudaAssert, self).__str__()

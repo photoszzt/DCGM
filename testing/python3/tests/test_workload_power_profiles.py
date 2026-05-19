@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from dcgm_structs import c_dcgmDeviceConfig_v2
+from DcgmGroup import DcgmGroup
 import ctypes
 import dcgm_structs
 import dcgm_agent_internal
@@ -26,7 +28,7 @@ from _test_helpers import skip_test_if_no_dcgm_nvml
 from dcgm_structs import dcgmExceptionClass
 
 
-def helper_get_blank_dcgm_config_for_workload_power_profiles():
+def helper_get_blank_dcgm_config_for_workload_power_profiles() -> c_dcgmDeviceConfig_v2:
     config_values = dcgm_structs.c_dcgmDeviceConfig_v2()
     config_values.version = dcgm_structs.dcgmDeviceConfig_version2
     config_values.gpuId = dcgmvalue.DCGM_INT32_BLANK
@@ -40,7 +42,7 @@ def helper_get_blank_dcgm_config_for_workload_power_profiles():
     return config_values
 
 
-def helper_verify_target_config(groupObj, expectedMask):
+def helper_verify_target_config(groupObj: DcgmGroup, expectedMask: list[int]) -> None:
     # Get the target configuration
     getConfigValues = groupObj.config.Get(
         dcgm_structs.DCGM_CONFIG_TARGET_STATE)
@@ -55,7 +57,7 @@ def helper_verify_target_config(groupObj, expectedMask):
                 f"Workload power profile at index {bitmapIndex} is {getConfigValues[gpuId].mWorkloadPowerProfiles[bitmapIndex]}, expected {expectedMask[bitmapIndex]}"
 
 
-def helper_verify_current_config(groupObj, expectedMask):
+def helper_verify_current_config(groupObj: DcgmGroup, expectedMask: list[int]) -> None:
     # Get the current configuration
     getConfigValues = groupObj.config.Get(
         dcgm_structs.DCGM_CONFIG_CURRENT_STATE)
@@ -70,14 +72,14 @@ def helper_verify_current_config(groupObj, expectedMask):
                 f"Workload power profile at index {bitmapIndex} is {getConfigValues[gpuId].mWorkloadPowerProfiles[bitmapIndex]}, expected {expectedMask[bitmapIndex]}"
 
 
-def helper_initialize_config(initialMask):
+def helper_initialize_config(initialMask: list[int]) -> c_dcgmDeviceConfig_v2:
     setConfigValues = helper_get_blank_dcgm_config_for_workload_power_profiles()
     for bitmapIndex in range(dcgm_structs.DCGM_WORKLOAD_POWER_PROFILE_ARRAY_SIZE):
         setConfigValues.mWorkloadPowerProfiles[bitmapIndex] = initialMask[bitmapIndex]
     return setConfigValues
 
 
-def helper_set_workload_power_profiles_with_new_nvml_api(handle, gpuIds, setMechanism):
+def helper_set_workload_power_profiles_with_new_nvml_api(handle, gpuIds, setMechanism: str) -> None:
     handleObj = pydcgm.DcgmHandle(handle=handle)
     systemObj = handleObj.GetSystem()
     groupObj = systemObj.GetGroupWithGpuIds("testGroup", gpuIds)
@@ -155,7 +157,7 @@ def helper_set_workload_power_profiles_with_new_nvml_api(handle, gpuIds, setMech
     groupObj.Delete()
 
 
-def helper_set_workload_power_profiles_with_old_nvml_api(handle, gpuIds, setMechanism):
+def helper_set_workload_power_profiles_with_old_nvml_api(handle, gpuIds, setMechanism: str) -> None:
     handleObj = pydcgm.DcgmHandle(handle=handle)
     systemObj = handleObj.GetSystem()
     groupObj = systemObj.GetGroupWithGpuIds("testGroup", gpuIds)
@@ -253,7 +255,7 @@ def helper_set_workload_power_profiles_with_old_nvml_api(handle, gpuIds, setMech
     groupObj.Delete()
 
 
-def helper_set_workload_power_profiles_error_with_new_nvml_api(handle, gpuIds, setMechanism):
+def helper_set_workload_power_profiles_error_with_new_nvml_api(handle, gpuIds, setMechanism: str) -> None:
     handleObj = pydcgm.DcgmHandle(handle=handle)
     systemObj = handleObj.GetSystem()
     groupObj = systemObj.GetGroupWithGpuIds("testGroup", gpuIds)
@@ -300,7 +302,7 @@ def helper_set_workload_power_profiles_error_with_new_nvml_api(handle, gpuIds, s
     groupObj.Delete()
 
 
-def helper_set_workload_power_profiles_error_with_old_nvml_api(handle, gpuIds, setMechanism):
+def helper_set_workload_power_profiles_error_with_old_nvml_api(handle, gpuIds, setMechanism: str) -> None:
     handleObj = pydcgm.DcgmHandle(handle=handle)
     systemObj = handleObj.GetSystem()
     groupObj = systemObj.GetGroupWithGpuIds("testGroup", gpuIds)
@@ -355,7 +357,7 @@ def helper_set_workload_power_profiles_error_with_old_nvml_api(handle, gpuIds, s
     groupObj.Delete()
 
 
-def helper_verify_profile_merged_with_target_config(handle, gpuIds, setMechanism):
+def helper_verify_profile_merged_with_target_config(handle, gpuIds, setMechanism: str) -> None:
     handleObj = pydcgm.DcgmHandle(handle=handle)
     systemObj = handleObj.GetSystem()
     groupObj = systemObj.GetGroupWithGpuIds("testGroup", gpuIds)
@@ -411,7 +413,7 @@ def helper_verify_profile_merged_with_target_config(handle, gpuIds, setMechanism
 @test_utils.run_with_injection_nvml_using_specific_sku('H200.yaml')
 @test_utils.run_with_standalone_host_engine(30)
 @test_utils.run_with_nvml_injected_gpus()
-def test_dcgm_config_set_workload_power_profiles_with_new_nvml_api(handle, gpuIds):
+def test_dcgm_config_set_workload_power_profiles_with_new_nvml_api(handle, gpuIds) -> None:
     """
     Verifies that the correct nvml calls are made when the new api is available,
     and that the target config is set correctly.
@@ -425,7 +427,7 @@ def test_dcgm_config_set_workload_power_profiles_with_new_nvml_api(handle, gpuId
 @test_utils.run_with_injection_nvml_using_specific_sku('H200.yaml')
 @test_utils.run_with_standalone_host_engine(30)
 @test_utils.run_with_nvml_injected_gpus()
-def test_dcgm_config_set_workload_power_profiles_with_old_nvml_api(handle, gpuIds):
+def test_dcgm_config_set_workload_power_profiles_with_old_nvml_api(handle, gpuIds) -> None:
     """
     Verifies that the correct nvml calls are made when the new api is not available,
     and that the target config is set correctly.
@@ -439,7 +441,7 @@ def test_dcgm_config_set_workload_power_profiles_with_old_nvml_api(handle, gpuId
 @test_utils.run_with_injection_nvml_using_specific_sku('H200.yaml')
 @test_utils.run_with_standalone_host_engine(30)
 @test_utils.run_with_nvml_injected_gpus()
-def test_dcgm_set_workload_power_profiles_api_with_new_nvml_api(handle, gpuIds):
+def test_dcgm_set_workload_power_profiles_api_with_new_nvml_api(handle, gpuIds) -> None:
     """
     Verifies that the correct nvml calls are made when the new api is available,
     and that the target config is set correctly.
@@ -453,7 +455,7 @@ def test_dcgm_set_workload_power_profiles_api_with_new_nvml_api(handle, gpuIds):
 @test_utils.run_with_injection_nvml_using_specific_sku('H200.yaml')
 @test_utils.run_with_standalone_host_engine(30)
 @test_utils.run_with_nvml_injected_gpus()
-def test_dcgm_set_workload_power_profiles_api_with_old_nvml_api(handle, gpuIds):
+def test_dcgm_set_workload_power_profiles_api_with_old_nvml_api(handle, gpuIds) -> None:
     """
     Verifies that the correct nvml calls are made when the new api is available,
     and that the target config is set correctly.
@@ -467,7 +469,7 @@ def test_dcgm_set_workload_power_profiles_api_with_old_nvml_api(handle, gpuIds):
 @test_utils.run_with_injection_nvml_using_specific_sku('H200.yaml')
 @test_utils.run_with_standalone_host_engine(30)
 @test_utils.run_with_nvml_injected_gpus()
-def test_dcgm_config_set_workload_power_profiles_error_with_old_nvml_api(handle, gpuIds):
+def test_dcgm_config_set_workload_power_profiles_error_with_old_nvml_api(handle, gpuIds) -> None:
     """
     Verifies that when one of the GPUs returns an error, the error is propagated back.
     """
@@ -480,7 +482,7 @@ def test_dcgm_config_set_workload_power_profiles_error_with_old_nvml_api(handle,
 @test_utils.run_with_injection_nvml_using_specific_sku('H200.yaml')
 @test_utils.run_with_standalone_host_engine(30)
 @test_utils.run_with_nvml_injected_gpus()
-def test_dcgm_set_workload_power_profiles_error_with_old_nvml_api(handle, gpuIds):
+def test_dcgm_set_workload_power_profiles_error_with_old_nvml_api(handle, gpuIds) -> None:
     """
     Verifies that when one of the GPUs returns an error, the error is propagated back.
     """
@@ -493,7 +495,7 @@ def test_dcgm_set_workload_power_profiles_error_with_old_nvml_api(handle, gpuIds
 @test_utils.run_with_injection_nvml_using_specific_sku('H200.yaml')
 @test_utils.run_with_standalone_host_engine(30)
 @test_utils.run_with_nvml_injected_gpus()
-def test_dcgm_config_set_workload_power_profiles_error_with_new_nvml_api(handle, gpuIds):
+def test_dcgm_config_set_workload_power_profiles_error_with_new_nvml_api(handle, gpuIds) -> None:
     """
     Verifies that when one of the GPUs returns an error, the error is propagated back.
     """
@@ -506,7 +508,7 @@ def test_dcgm_config_set_workload_power_profiles_error_with_new_nvml_api(handle,
 @test_utils.run_with_injection_nvml_using_specific_sku('H200.yaml')
 @test_utils.run_with_standalone_host_engine(30)
 @test_utils.run_with_nvml_injected_gpus()
-def test_dcgm_set_workload_power_profiles_error_with_new_nvml_api(handle, gpuIds):
+def test_dcgm_set_workload_power_profiles_error_with_new_nvml_api(handle, gpuIds) -> None:
     """
     Verifies that when one of the GPUs returns an error, the error is propagated back.
     """
@@ -519,7 +521,7 @@ def test_dcgm_set_workload_power_profiles_error_with_new_nvml_api(handle, gpuIds
 @test_utils.run_with_injection_nvml_using_specific_sku('H200.yaml')
 @test_utils.run_with_standalone_host_engine(30)
 @test_utils.run_with_nvml_injected_gpus()
-def test_dcgm_set_workload_power_profiles_with_new_nvml_api_invalid_group_id(handle, gpuIds):
+def test_dcgm_set_workload_power_profiles_with_new_nvml_api_invalid_group_id(handle, gpuIds) -> None:
     """
     Verifies that when the group id is invalid, the error is propagated back.
     """
@@ -537,7 +539,7 @@ def test_dcgm_set_workload_power_profiles_with_new_nvml_api_invalid_group_id(han
 @test_utils.run_with_injection_nvml_using_specific_sku('H200.yaml')
 @test_utils.run_with_standalone_host_engine(30)
 @test_utils.run_with_nvml_injected_gpus()
-def test_dcgm_set_config_verify_profile_merged_with_target_config(handle, gpuIds):
+def test_dcgm_set_config_verify_profile_merged_with_target_config(handle, gpuIds) -> None:
     """
     Verifies that the profile is merged with the target config correctly.
     """
@@ -550,7 +552,7 @@ def test_dcgm_set_config_verify_profile_merged_with_target_config(handle, gpuIds
 @test_utils.run_with_injection_nvml_using_specific_sku('H200.yaml')
 @test_utils.run_with_standalone_host_engine(30)
 @test_utils.run_with_nvml_injected_gpus()
-def test_dcgm_set_workload_power_profile_verify_profile_merged_with_target_config(handle, gpuIds):
+def test_dcgm_set_workload_power_profile_verify_profile_merged_with_target_config(handle, gpuIds) -> None:
     """
     Verifies that the profile is merged with the target config correctly.
     """

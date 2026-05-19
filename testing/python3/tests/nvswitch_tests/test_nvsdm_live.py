@@ -25,7 +25,7 @@ import DcgmReader
 
 @test_utils.run_with_standalone_host_engine(initializedClient=True)
 @test_utils.run_only_with_nvsdm_live()
-def test_nvsdm_live_list_switches(handle):
+def test_nvsdm_live_list_switches(handle) -> None:
     """
     Try to list switches
     """
@@ -39,7 +39,7 @@ def test_nvsdm_live_list_switches(handle):
 @test_utils.run_with_standalone_host_engine(initializedClient=True)
 @test_utils.run_only_with_nvsdm_live()
 @test_utils.run_only_with_nvml()
-def test_nvsdm_live_port_telemetry(handle):
+def test_nvsdm_live_port_telemetry(handle) -> None:
     """
     Read port telemetry from NVSDM
     """
@@ -114,7 +114,7 @@ def test_nvsdm_live_port_telemetry(handle):
 
 @test_utils.run_with_standalone_host_engine(initializedClient=True)
 @test_utils.run_only_with_nvsdm_live()
-def test_nvsdm_live_platform_telemetry(handle):
+def test_nvsdm_live_platform_telemetry(handle) -> None:
     """
     Read platform telemetry from NVSDM
     """
@@ -188,7 +188,7 @@ def test_nvsdm_live_platform_telemetry(handle):
 
 @test_utils.run_with_standalone_host_engine(initializedClient=True)
 @test_utils.run_only_with_nvsdm_live()
-def test_nvsdm_live_nvlink_status(handle):
+def test_nvsdm_live_nvlink_status(handle) -> None:
     """
     Verify that dcgmGetNvLinkLinkStatus API executes successfully.
     """
@@ -198,7 +198,7 @@ def test_nvsdm_live_nvlink_status(handle):
 
 @test_utils.run_with_standalone_host_engine(initializedClient=True)
 @test_utils.run_only_with_nvsdm_live()
-def test_nvsdm_live_nvswitch_health_check(handle):
+def test_nvsdm_live_nvswitch_health_check(handle) -> None:
     """
     Verify NvSwitch health check API executes successfully.
     """
@@ -230,7 +230,7 @@ def test_nvsdm_live_nvswitch_health_check(handle):
 
 @test_utils.run_with_standalone_host_engine(initializedClient=True)
 @test_utils.run_only_with_nvsdm_live()
-def test_nvsdm_live_composite_field_telemetry(handle):
+def test_nvsdm_live_composite_field_telemetry(handle) -> None:
     """
     Read composite field telemetry from NVSDM
     """
@@ -295,7 +295,7 @@ def test_nvsdm_live_composite_field_telemetry(handle):
                 assert len(switchLatest[switchId]) == len(fieldIds), errmsg
 
 
-def helper_is_active_link(linkId, linkStates):
+def helper_is_active_link(linkId, linkStates) -> bool:
     for i in range(linkStates.numNvSwitches):
         if linkStates.nvSwitches[i].linkState[linkId - 1] != dcgm_structs_internal.DcgmEntityStatusOk:
             return False
@@ -304,5 +304,5 @@ def helper_is_active_link(linkId, linkStates):
 
 @test_utils.run_with_standalone_host_engine(initializedClient=True)
 @test_utils.run_only_with_nvsdm_live()
-def test_nvsdm_live_pause_resume(handle):
+def test_nvsdm_live_pause_resume(handle) -> None:
     nvsdm_helpers.helper_nvsdm_pause_resume(handle)

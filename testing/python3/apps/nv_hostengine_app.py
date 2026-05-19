@@ -51,7 +51,7 @@ class NvHostEngineApp(app_runner.AppRunner):
     ]
     supported_profile_tools = ['callgrind', 'massif']
 
-    def __init__(self, args=None, profile_dir=None, heEnv=None, pid_dir=None):
+    def __init__(self, args=None, profile_dir=None, heEnv=None, pid_dir=None) -> None:
         '''
         args: special args to execute nv-hostengine with
         profile_dir: output directory to create which will contain 
@@ -111,7 +111,7 @@ class NvHostEngineApp(app_runner.AppRunner):
 
         # logger.error("env: %s; heEnv: %s" % (str(self.env), str(heEnv)))
 
-    def _check_valgrind_installed(self):
+    def _check_valgrind_installed(self) -> None:
         output = subprocess.check_output('which valgrind', shell=True).strip()
         if output == '':
             raise Exception('Valgrind must be installed in order to run profiling. ' +
@@ -133,7 +133,7 @@ class NvHostEngineApp(app_runner.AppRunner):
         utils.create_dir(output_dir)
         return output_dir
 
-    def _create_profile_command(self, args, path, valgrind_tool):
+    def _create_profile_command(self, args, path: str, valgrind_tool):
         ''' 
         Return the proper (args, path) to initialize the AppRunner with in order 
         to run the hostengine under callgrind
@@ -180,7 +180,7 @@ class NvHostEngineApp(app_runner.AppRunner):
 
         return args, path
 
-    def _process_finish(self, stdout_buf, stderr_buf):
+    def _process_finish(self, stdout_buf, stderr_buf) -> None:
         super(NvHostEngineApp, self)._process_finish(stdout_buf, stderr_buf)
 
         if logger.log_dir is None:
@@ -192,10 +192,10 @@ class NvHostEngineApp(app_runner.AppRunner):
             assert stdout.find(
                 forbidden_text) == -1, "nv_hostengine printed \"%s\", this should never happen!" % forbidden_text
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "nv_hostengine" + super(NvHostEngineApp, self).__str__()
 
-    def start(self, timeout=default_timeout):
+    def start(self, timeout: float=default_timeout) -> None:
         # if an existing hostengine is running, stop it
         self._kill_hostengine(self._getpid())
 
@@ -231,14 +231,14 @@ class NvHostEngineApp(app_runner.AppRunner):
                 logger.error(line)
             raise RuntimeError('Failed to start hostengine app')
 
-    def _kill_hostengine(self, pid):
+    def _kill_hostengine(self, pid) -> None:
         if pid is None:
             return
 
         self._terminate_hostengine()
         utils.wait_for_pid_to_die(pid)
 
-    def _getpid_old(self):
+    def _getpid_old(self) -> int | None:
         # assuming that only one hostengine exists we do a pgrep for it
         # we have to specify --P=1 (init process) or else we will also get the PID of
         # the pgrep shell command.  Use -P instead of --parent because some versions of pgrep only have -P
@@ -257,7 +257,7 @@ class NvHostEngineApp(app_runner.AppRunner):
         except CalledProcessError:
             return None
 
-    def _getpid(self):
+    def _getpid(self) -> int | None:
         # Try to read the PID file for the host engine
         if not os.path.isfile(self._pidFilename):
             logger.debug("Pid file %s not found" % self._pidFilename)
@@ -299,7 +299,7 @@ class NvHostEngineApp(app_runner.AppRunner):
         else:
             return 1
 
-    def terminate(self):
+    def terminate(self) -> int:
         """
         Forcfully terminates the host engine daemon and return the app's error code/string.
 
@@ -314,7 +314,7 @@ class NvHostEngineApp(app_runner.AppRunner):
         self._retvalue = 0
         return self._retvalue
 
-    def _terminate_hostengine(self):
+    def _terminate_hostengine(self) -> None:
         try:
             subprocess.check_output([self.hostengine_executable, '--term', '--pid', self._pidFilename],
                                     stderr=subprocess.STDOUT)
@@ -328,16 +328,16 @@ class NvHostEngineApp(app_runner.AppRunner):
             # Log information about any running hostengine processes for better debugging info when failures occur
             test_utils.check_for_running_hostengine_and_log_details(False)
 
-    def _remove_useless_profiling_files(self, profiling_tool):
+    def _remove_useless_profiling_files(self, profiling_tool) -> None:
         ''' 
         Remove any callgrind files that are not useful.
         This happens since starting the nv-hostengine executable creates a new process
         so the initial starting process also is profiled by the profiling tool
         '''
-        def is_profiling_file(file):
+        def is_profiling_file(file: str):
             return (profiling_tool + '.out.') in file
 
-        def profiling_file_is_useful(file):
+        def profiling_file_is_useful(file: str) -> bool:
             if str(self._pid) in file:
                 return True
             return False

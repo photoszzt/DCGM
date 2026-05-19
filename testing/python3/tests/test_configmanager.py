@@ -13,6 +13,7 @@
 # limitations under the License.
 # test the policy manager for DCGM
 
+from DcgmGroup import DcgmGroup
 import pydcgm
 import dcgm_structs
 import dcgm_agent_internal
@@ -63,7 +64,7 @@ def helper_investigate_status(statusHandle):
 
 @test_utils.run_with_standalone_host_engine(20)
 @test_utils.run_only_with_nvml()
-def test_dcgm_config_standalone_get_devices(handle):
+def test_dcgm_config_standalone_get_devices(handle) -> None:
     """
     Verifies that DCGM Engine returns list of devices
     """
@@ -73,7 +74,7 @@ def test_dcgm_config_standalone_get_devices(handle):
     assert len(gpuIdList) >= 0, "Not able to find devices for standalone case"
 
 
-def helper_dcgm_config_get_attributes(handle):
+def helper_dcgm_config_get_attributes(handle) -> None:
     handleObj = pydcgm.DcgmHandle(handle=handle)
     systemObj = handleObj.GetSystem()
     groupObj = systemObj.GetDefaultGroup()
@@ -101,14 +102,14 @@ def helper_dcgm_config_get_attributes(handle):
 
 
 @test_utils.run_with_standalone_host_engine(20)
-def test_dcgm_config_standalone_get_attributes(handle):
+def test_dcgm_config_standalone_get_attributes(handle) -> None:
     """
         Get Device attributes for each GPU ID
         """
     helper_dcgm_config_get_attributes(handle)
 
 
-def helper_dcgm_config_set(handle):
+def helper_dcgm_config_set(handle) -> None:
     handleObj = pydcgm.DcgmHandle(handle=handle)
     systemObj = handleObj.GetSystem()
     groupObj = systemObj.GetDefaultGroup()
@@ -129,14 +130,14 @@ def helper_dcgm_config_set(handle):
 
 @test_utils.run_with_standalone_host_engine(20)
 @test_utils.run_only_as_root()
-def test_dcgm_config_set_standalone(handle):
+def test_dcgm_config_set_standalone(handle) -> None:
     """
     Verifies that the configuration can be set for a group
     """
     helper_dcgm_config_set(handle)
 
 
-def helper_dcgm_config_get(handle):
+def helper_dcgm_config_get(handle) -> None:
 
     handleObj = pydcgm.DcgmHandle(handle=handle)
     systemObj = handleObj.GetSystem()
@@ -179,14 +180,14 @@ def helper_dcgm_config_get(handle):
 @test_utils.run_with_standalone_host_engine(20)
 @test_utils.run_only_with_live_gpus()
 @test_utils.run_only_as_root()
-def test_dcgm_config_get_standalone(handle, gpuIds):
+def test_dcgm_config_get_standalone(handle, gpuIds) -> None:
     """
     Verifies "Get Configuration" Basic functionality
     """
     helper_dcgm_config_get(handle)
 
 
-def helper_dcgm_config_enforce(handle):
+def helper_dcgm_config_enforce(handle) -> None:
     handleObj = pydcgm.DcgmHandle(handle=handle)
     systemObj = handleObj.GetSystem()
     groupObj = systemObj.GetDefaultGroup()
@@ -210,7 +211,7 @@ def helper_dcgm_config_enforce(handle):
 @test_utils.run_with_standalone_host_engine(20)
 @test_utils.run_only_with_live_gpus()
 @test_utils.run_only_as_root()
-def test_dcgm_gpu_workload_power_profiles(handle, gpuIds):
+def test_dcgm_gpu_workload_power_profiles(handle, gpuIds) -> None:
     test_utils.skip_test(
         "Only supported on >=570 blackwell skus. Skipping for now.")
 
@@ -231,14 +232,14 @@ def test_dcgm_gpu_workload_power_profiles(handle, gpuIds):
 @test_utils.run_with_standalone_host_engine(20)
 @test_utils.run_only_with_live_gpus()
 @test_utils.run_only_as_root()
-def test_dcgm_config_enforce_standalone(handle, gpuIds):
+def test_dcgm_config_enforce_standalone(handle, gpuIds) -> None:
     """
     Verifies that the configuration can be enforced for a group
     """
     helper_dcgm_config_enforce(handle)
 
 
-def helper_dcgm_config_powerbudget(handle, gpuIds):
+def helper_dcgm_config_powerbudget(handle, gpuIds) -> None:
     handleObj = pydcgm.DcgmHandle(handle=handle)
     systemObj = handleObj.GetSystem()
     groupObj = systemObj.GetEmptyGroup("test1")
@@ -286,14 +287,14 @@ def helper_dcgm_config_powerbudget(handle, gpuIds):
 @test_utils.run_with_standalone_host_engine(20)
 @test_utils.run_only_with_live_gpus()
 @test_utils.run_only_as_root()
-def test_dcgm_config_powerbudget_standalone(handle, gpuIds):
+def test_dcgm_config_powerbudget_standalone(handle, gpuIds) -> None:
     """
     This method verfies setting power budget for a group of GPUs
     """
     helper_dcgm_config_powerbudget(handle, gpuIds)
 
 
-def helper_verify_power_value(groupObj, expected_power):
+def helper_verify_power_value(groupObj: DcgmGroup, expected_power: int) -> None:
     """
     Helper Method to verify power value
     """
@@ -312,7 +313,7 @@ def helper_verify_power_value(groupObj, expected_power):
         pass
 
 
-def helper_test_config_config_power_enforce(handle, gpuIds):
+def helper_test_config_config_power_enforce(handle, gpuIds) -> None:
     """
     Checks if DCGM can enforce the power settings if it's changed behind the scenes
     """
@@ -367,14 +368,14 @@ def helper_test_config_config_power_enforce(handle, gpuIds):
 @test_utils.run_with_standalone_host_engine(60)
 @test_utils.run_only_with_live_gpus()
 @test_utils.run_only_as_root()
-def test_dcgm_config_power_enforce_standalone(handle, gpuIds):
+def test_dcgm_config_power_enforce_standalone(handle, gpuIds) -> None:
     helper_test_config_config_power_enforce(handle, gpuIds)
 
 
 @test_utils.run_with_standalone_host_engine(60)
 @test_utils.run_only_with_live_gpus()
 @test_utils.run_only_as_root()
-def test_dcgm_default_status_handler(handle, gpuIds):
+def test_dcgm_default_status_handler(handle, gpuIds) -> None:
     handleObj = pydcgm.DcgmHandle(handle=handle)
     systemObj = handleObj.GetSystem()
     groupObj = systemObj.GetEmptyGroup("test1")
@@ -406,7 +407,7 @@ def test_dcgm_default_status_handler(handle, gpuIds):
 @test_utils.run_with_embedded_host_engine()
 @test_utils.run_only_with_live_gpus()
 @test_utils.run_only_as_root()
-def test_dcgm_configure_ecc_mode(handle, gpuIds):
+def test_dcgm_configure_ecc_mode(handle, gpuIds) -> None:
     test_utils.skip_test("Skipping this test until bug 200377294 is fixed")
 
     groupId = dcgm_agent.dcgmGroupCreate(
@@ -507,7 +508,7 @@ def test_dcgm_configure_ecc_mode(handle, gpuIds):
 
 @test_utils.run_with_standalone_host_engine(20, "127.0.0.1:5545", ["--port", "5545"])
 @test_utils.run_only_with_live_gpus()
-def test_dcgm_port_standalone(handle, gpuIds):
+def test_dcgm_port_standalone(handle, gpuIds) -> None:
     """
     Verifies that DCGM Engine works on different port
     """
@@ -516,7 +517,7 @@ def test_dcgm_port_standalone(handle, gpuIds):
         gpuIdList) >= 0, "Standalone host engine using different port number failed."
 
 
-def helper_dcgm_verify_sync_boost_single_gpu(handle, gpuIds):
+def helper_dcgm_verify_sync_boost_single_gpu(handle, gpuIds) -> None:
     handleObj = pydcgm.DcgmHandle(handle=handle)
     systemObj = handleObj.GetSystem()
     groupObj = systemObj.GetEmptyGroup("test1")
@@ -547,11 +548,11 @@ def helper_dcgm_verify_sync_boost_single_gpu(handle, gpuIds):
 @test_utils.run_with_standalone_host_engine(60)
 @test_utils.run_only_with_live_gpus()
 @test_utils.run_only_as_root()
-def test_dcgm_verify_sync_boost_single_gpu_standalone(handle, gpuIds):
+def test_dcgm_verify_sync_boost_single_gpu_standalone(handle, gpuIds) -> None:
     helper_dcgm_verify_sync_boost_single_gpu(handle, gpuIds)
 
 
-def helper_dcgm_verify_sync_boost_multi_gpu(handle, gpuIds):
+def helper_dcgm_verify_sync_boost_multi_gpu(handle, gpuIds) -> None:
     handleObj = pydcgm.DcgmHandle(handle=handle)
     systemObj = handleObj.GetSystem()
     groupObj = systemObj.GetEmptyGroup("test1")
@@ -595,14 +596,14 @@ def helper_dcgm_verify_sync_boost_multi_gpu(handle, gpuIds):
 @test_utils.run_only_with_live_gpus()
 @test_utils.for_all_same_sku_gpus()
 @test_utils.run_only_as_root()
-def test_dcgm_verify_sync_boost_multi_gpu_standalone(handle, gpuIds):
+def test_dcgm_verify_sync_boost_multi_gpu_standalone(handle, gpuIds) -> None:
     helper_dcgm_verify_sync_boost_multi_gpu(handle, gpuIds)
 
 
 @test_utils.run_with_standalone_host_engine(20)
 @test_utils.run_only_with_live_gpus()
 @test_utils.run_only_as_root()
-def test_dcgm_error_code_propagation(handle, gpuIds):
+def test_dcgm_error_code_propagation(handle, gpuIds) -> None:
     """
     Verifies error code propagation behavior:
     1. When all config operations fail with the same error code, that specific error code is returned

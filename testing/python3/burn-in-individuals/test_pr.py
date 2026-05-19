@@ -29,7 +29,7 @@ C_FUNC = CFUNCTYPE(None, POINTER(
     dcgm_structs.c_dcgmPolicyCallbackResponse_v2), c_uint64)
 
 
-def helper_verify_power_value_standalone(handle, groupId, expected_power):
+def helper_verify_power_value_standalone(handle, groupId, expected_power) -> None:
     """
     Helper Method to verify power value
     """
@@ -56,7 +56,7 @@ def helper_verify_power_value_standalone(handle, groupId, expected_power):
         ret == dcgm_structs.DCGM_ST_OK), "Failed to remove status handler, error: %s" % ret
 
 
-def callback_function(callbackResp, userData):
+def callback_function(callbackResp, userData) -> None:
     global callbackCalled
     callbackCalled = True
 

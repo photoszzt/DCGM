@@ -14,7 +14,7 @@
 from common.Struct import Struct
 
 
-def test_struct():
+def test_struct() -> None:
     s = Struct(field='field')
     assert s.field == 'field'  # pylint: disable=no-member
 

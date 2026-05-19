@@ -49,21 +49,21 @@ def DCGM_INT8_IS_BLANK(val):
     return val >= DCGM_INT8_BLANK
 
 
-def DCGM_INT32_IS_BLANK(val):
+def DCGM_INT32_IS_BLANK(val: int) -> bool:
     if val >= DCGM_INT32_BLANK:
         return True
     else:
         return False
 
 
-def DCGM_INT64_IS_BLANK(val):
+def DCGM_INT64_IS_BLANK(val: int) -> bool:
     if val >= DCGM_INT64_BLANK:
         return True
     else:
         return False
 
 
-def DCGM_FP64_IS_BLANK(val):
+def DCGM_FP64_IS_BLANK(val: float) -> bool:
     if val >= DCGM_FP64_BLANK:
         return True
     else:
@@ -72,7 +72,7 @@ def DCGM_FP64_IS_BLANK(val):
 # Looks for <<< at first position and >>> inside string
 
 
-def DCGM_STR_IS_BLANK(val):
+def DCGM_STR_IS_BLANK(val: str) -> bool:
     if 0 != val.find("<<<"):
         return False
     elif 0 > val.find(">>>"):
@@ -83,12 +83,12 @@ def DCGM_STR_IS_BLANK(val):
 
 
 class DcgmValue:
-    def __init__(self, value):
+    def __init__(self, value) -> None:
         # Contains either an integer (int64), string, or double of the actual value
         self.value = value
 
     ###########################################################################
-    def SetFromInt32(self, i32Value):
+    def SetFromInt32(self, i32Value: int) -> None:
         '''
         Handle the special case where our source data was an int32 but is currently
         stored in a python int (int64), dealing with blanks
@@ -109,7 +109,7 @@ class DcgmValue:
             self.value = DCGM_INT64_BLANK
 
     ###########################################################################
-    def IsBlank(self):
+    def IsBlank(self) -> bool:
         '''
         Returns True if the currently-stored value is a blank value. False if not
         '''
@@ -125,7 +125,7 @@ class DcgmValue:
             raise Exception("Unknown type: %s") % str(type(self.value))
 
     ###########################################################################
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.value)
 
     ###########################################################################
@@ -133,7 +133,7 @@ class DcgmValue:
 ###############################################################################
 
 
-def self_test():
+def self_test() -> None:
 
     v = DcgmValue(1.0)
     assert (not v.IsBlank())

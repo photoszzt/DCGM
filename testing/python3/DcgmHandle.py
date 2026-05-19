@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from dcgm_structs import c_dcgmConnectV3Params_v1
+from DcgmSystem import DcgmSystem
 import pydcgm
 import dcgm_structs
 import dcgm_agent
@@ -28,13 +30,13 @@ class DcgmHandle:
 
     def __init__(self,
                  handle=None,
-                 ipAddress=None,
-                 opMode=dcgm_structs.DCGM_OPERATION_MODE_AUTO,
-                 persistAfterDisconnect=False,
+                 ipAddress: c_dcgmConnectV3Params_v1 | None=None,
+                 opMode: int=dcgm_structs.DCGM_OPERATION_MODE_AUTO,
+                 persistAfterDisconnect: bool=False,
                  unixSocketPath=None,
-                 timeoutMs=0,
+                 timeoutMs: int=0,
                  decoratorHandle=None
-                 ):
+                 ) -> None:
         '''
         Constructor
 
@@ -112,7 +114,7 @@ class DcgmHandle:
                 DcgmHandle.handles.append(self)
 
     @classmethod
-    def reset(cls):
+    def reset(cls) -> None:
         with cls.handleLock:
             cleanup = cls.handles[:]
             cls.handles = []
@@ -122,7 +124,7 @@ class DcgmHandle:
             if handle._handleCreated:
                 handle.Shutdown()
 
-    def __del__(self):
+    def __del__(self) -> None:
         '''
         Destructor
         '''
@@ -130,13 +132,13 @@ class DcgmHandle:
         if self._handleCreated:
             self.Shutdown()
 
-    def GetSystem(self):
+    def GetSystem(self) -> DcgmSystem:
         '''
         Get a DcgmSystem instance for this handle
         '''
         return pydcgm.DcgmSystem(self)
 
-    def __StopDcgm__(self):
+    def __StopDcgm__(self) -> None:
         '''
         Shuts down either the hostengine or the embedded server
         '''
@@ -145,10 +147,10 @@ class DcgmHandle:
         else:
             dcgm_agent.dcgmDisconnect(self.handle)
 
-    def FromDecorator(self):
+    def FromDecorator(self) -> bool:
         return self._fromDecorator
 
-    def Shutdown(self):
+    def Shutdown(self) -> None:
         '''
         Shutdown DCGM hostengine
         '''
@@ -170,7 +172,7 @@ class DcgmHandle:
         self.handle = None
 
     @staticmethod
-    def Unload():
+    def Unload() -> None:
         '''
         Unload DCGM, removing any memory it is pointing at. Use this if you really
         want DCGM gone from your process. Shutdown() only closes the connection/embedded host engine

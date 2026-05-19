@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from dcgm_structs import c_dcgmRunDiag_v10
+from DcgmHandle import DcgmHandle
 import argparse
 import sys
 import logging
@@ -59,7 +61,7 @@ g_switches = []
 
 
 class Entity(object):
-    def __init__(self, entityId, entityType=dcgm_fields.DCGM_FE_GPU, uuid=None, bdf=None):
+    def __init__(self, entityId, entityType: int=dcgm_fields.DCGM_FE_GPU, uuid=None, bdf=None) -> None:
         self.health = BR_ST_HEALTHY
         self.entityType = entityType
         self.entityId = entityId
@@ -69,17 +71,17 @@ class Entity(object):
         if bdf:
             self.bdf = bdf
 
-    def IsHealthy(self):
+    def IsHealthy(self) -> bool:
         return self.health == BR_ST_HEALTHY
 
-    def MarkUnhealthy(self, failCondition, reason):
+    def MarkUnhealthy(self, failCondition, reason) -> None:
         self.health = self.health | failCondition
         self.reasonsUnhealthy.append(reason)
 
     def WhyUnhealthy(self):
         return self.reasonsUnhealthy
 
-    def SetEntityId(self, entityId):
+    def SetEntityId(self, entityId) -> None:
         self.entityId = entityId
 
     def GetEntityId(self):
@@ -92,7 +94,7 @@ class Entity(object):
         return self.bdf
 
 
-def mark_entity_unhealthy(entities, entityId, code, reason):
+def mark_entity_unhealthy(entities, entityId, code: int, reason) -> bool:
     found = False
     for entity in entities:
         if entityId == entity.GetEntityId():
@@ -102,14 +104,14 @@ def mark_entity_unhealthy(entities, entityId, code, reason):
     return found
 
 
-def addParamString(runDiagInfo, paramIndex, paramStr):
+def addParamString(runDiagInfo: c_dcgmRunDiag_v10, paramIndex: int, paramStr: str) -> None:
     strIndex = 0
     for c in paramStr:
         runDiagInfo.testParms[paramIndex][strIndex] = c
         strIndex = strIndex + 1
 
 
-def setTestDurations(runDiagInfo, timePercentage):
+def setTestDurations(runDiagInfo: c_dcgmRunDiag_v10, timePercentage) -> None:
     # We only are reducing the test time for the default case
     if runDiagInfo.validate != 3:
         return
@@ -188,7 +190,7 @@ def initialize_run_diag_info(settings):
     return runDiagInfo, activeGpuIds
 
 
-def mark_all_unhealthy(activeGpuIds, reason):
+def mark_all_unhealthy(activeGpuIds, reason: str) -> None:
     for gpuId in activeGpuIds:
         mark_entity_unhealthy(
             g_gpus, gpuId, BR_ST_FAILED_ACTIVE_HEALTH, reason)
@@ -207,7 +209,7 @@ def result_to_str(result):
         return 'NOT RUN'
 
 
-def check_passive_health_checks(response, activeGpuIds):
+def check_passive_health_checks(response, activeGpuIds) -> bool:
     # Returns `True` when any tests report failure results and marks all activeGpuIds as unhealthy.
     # Returns `False` otherwise, without marking any entities unhealthy.
 
@@ -242,7 +244,7 @@ def check_passive_health_checks(response, activeGpuIds):
     return unhealthy
 
 
-def check_gpu_diagnostic(handleObj, settings):
+def check_gpu_diagnostic(handleObj: DcgmHandle, settings) -> None:
     runDiagInfo, activeGpuIds = initialize_run_diag_info(settings)
     if len(activeGpuIds) == 0:
         return
@@ -288,7 +290,7 @@ def query_passive_health(handleObj, desired_watches):
     return dcgmGroup.health.Check()
 
 
-def denylist_from_passive_health_check(response):
+def denylist_from_passive_health_check(response) -> None:
     for incidentIndex in range(response.incidentCount):
         if response.incidents[incidentIndex].health != dcgm_structs.DCGM_HEALTH_RESULT_FAIL:
             # Only add to the denylist for failures; ignore warnings
@@ -306,14 +308,14 @@ def denylist_from_passive_health_check(response):
                                   BR_ST_FAILED_PASSIVE_HEALTH, errorString)
 
 
-def check_passive_health(handleObj, watches):
+def check_passive_health(handleObj: DcgmHandle, watches) -> None:
     response = query_passive_health(handleObj, watches)
 
     if response.overallHealth != dcgm_structs.DCGM_HEALTH_RESULT_PASS:
         denylist_from_passive_health_check(response)
 
 
-def initialize_devices(handle, flags):
+def initialize_devices(handle, flags) -> None:
     gpuIds = dcgm_agent.dcgmGetEntityGroupEntities(
         handle, dcgm_fields.DCGM_FE_GPU, flags)
     switchIds = dcgm_agent.dcgmGetEntityGroupEntities(
@@ -336,7 +338,7 @@ def initialize_devices(handle, flags):
 # Process command line arguments
 
 
-def __process_command_line__(settings):
+def __process_command_line__(settings) -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument('-g', '--num-gpus', dest='num_gpus', type=int,
                         help='The expected number of GPUs.')
@@ -440,7 +442,7 @@ def get_entity_id_list(entities):
     return ids
 
 
-def check_health(handleObj, settings, error_list):
+def check_health(handleObj: DcgmHandle, settings, error_list) -> None:
     initialize_devices(handleObj.handle, settings['entity_get_flags'])
 
     if 'numGpus' in settings:
@@ -459,7 +461,7 @@ def check_health(handleObj, settings, error_list):
         check_gpu_diagnostic(handleObj, settings)
 
 
-def process_command_line(settings):
+def process_command_line(settings) -> str | None:
     try:
         __process_command_line__(settings)
     except ValueError as e:

@@ -15,7 +15,7 @@
 import os
 
 
-def test_ptx_version():
+def test_ptx_version() -> None:
     cu_dir = []
     ptx_files = []
 

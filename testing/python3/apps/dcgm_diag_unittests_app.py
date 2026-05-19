@@ -28,6 +28,6 @@ class TestDcgmDiagUnittestsApp(app_runner.AppRunner):
         "Windows_64bit": "./apps/amd64/testdiag.exe"
     }
 
-    def __init__(self, args=None):
+    def __init__(self, args=None) -> None:
         path = TestDcgmDiagUnittestsApp.paths[utils.platform_identifier]
         super(TestDcgmDiagUnittestsApp, self).__init__(path, args)

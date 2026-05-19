@@ -17,7 +17,7 @@ import dcgm_fields
 import dcgm_agent
 
 
-def helper_nvsdm_pause_resume(handle):
+def helper_nvsdm_pause_resume(handle) -> None:
     flags = 0
     switchIds = dcgm_agent.dcgmGetEntityGroupEntities(
         handle, dcgm_fields.DCGM_FE_SWITCH, flags)
@@ -37,7 +37,7 @@ def helper_nvsdm_pause_resume(handle):
     newPortIds = dcgm_agent.dcgmGetEntityGroupEntities(
         handle, dcgm_fields.DCGM_FE_LINK, flags)
 
-    def assertIdListIsTheSame(old, new, name):
+    def assertIdListIsTheSame(old, new, name: str) -> None:
         assert len(old) == len(
             new), f"The length of {name} does not match: old length is [{len(old)}], new length is [{len(new)}]."
         for i in range(len(old)):

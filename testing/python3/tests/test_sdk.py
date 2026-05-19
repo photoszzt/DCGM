@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from subprocess import Popen
 import dcgm_structs
 import dcgm_agent_internal
 import dcgm_agent
@@ -46,7 +47,7 @@ sdk_path = paths[utils.platform_identifier]
 sdk_sample_scripts_path = "./sdk_samples/scripts"
 
 
-def initialize_sdk(fileName):
+def initialize_sdk(fileName: str) -> Popen[bytes]:
 
     sdk_executable = sdk_path + fileName
 
@@ -68,7 +69,7 @@ def initialize_sdk(fileName):
 @test_utils.run_only_with_live_gpus()
 @test_utils.run_only_as_root()
 @test_utils.for_all_same_sku_gpus()
-def test_sdk_configuration_sample_standalone(handle, gpuIds):
+def test_sdk_configuration_sample_standalone(handle, gpuIds) -> None:
     """
     Test SDK configuration sample
     """
@@ -89,7 +90,7 @@ def test_sdk_configuration_sample_standalone(handle, gpuIds):
 
 @test_utils.run_with_standalone_host_engine(20)
 @test_utils.run_only_with_live_gpus()
-def test_sdk_health_sample_standalone(handle, gpuIds):
+def test_sdk_health_sample_standalone(handle, gpuIds) -> None:
     """
     Test SDK health sample
     """
@@ -116,7 +117,7 @@ def test_sdk_health_sample_standalone(handle, gpuIds):
 @test_utils.run_with_standalone_host_engine(20)
 @test_utils.run_only_with_live_gpus()
 @test_utils.for_all_same_sku_gpus()
-def test_sdk_policy_sample_standalone(handle, gpuIds):
+def test_sdk_policy_sample_standalone(handle, gpuIds) -> None:
     """
     Test SDK policy sample
     """
@@ -137,7 +138,7 @@ def test_sdk_policy_sample_standalone(handle, gpuIds):
 @test_utils.run_with_standalone_host_engine(20)
 @test_utils.run_only_with_live_gpus()
 @test_utils.for_all_same_sku_gpus()
-def test_sdk_field_value_sample_standalone(handle, gpuIds):
+def test_sdk_field_value_sample_standalone(handle, gpuIds) -> None:
     """
     Test SDK policy sample
     """
@@ -159,7 +160,7 @@ def test_sdk_field_value_sample_standalone(handle, gpuIds):
 @test_utils.run_with_standalone_host_engine(timeout=SAMPLE_SCRIPT_TIMEOUT)
 @test_utils.run_only_as_root()
 @test_utils.run_only_with_nvml()
-def test_sdk_example_script_smoke_standalone_auto(handle):
+def test_sdk_example_script_smoke_standalone_auto(handle) -> None:
     """
     Smoke test ensuring that the example script for using dcgm does not fail
     for a standalone hostengine with auto operation mode
@@ -173,7 +174,7 @@ def test_sdk_example_script_smoke_standalone_auto(handle):
 
 @test_utils.run_only_as_root()
 @test_utils.run_only_with_nvml()
-def test_sdk_example_script_smoke_embedded_auto():
+def test_sdk_example_script_smoke_embedded_auto() -> None:
     """
     Smoke test ensuring that the example script for using dcgm does not fail
     for an embedded hostengine with auto operation mode
@@ -187,7 +188,7 @@ def test_sdk_example_script_smoke_embedded_auto():
 
 @test_utils.run_only_as_root()
 @test_utils.run_only_with_nvml()
-def test_sdk_example_script_smoke_embedded_manual():
+def test_sdk_example_script_smoke_embedded_manual() -> None:
     """
     Smoke test ensuring that the example script for using dcgm does not fail 
     for an embedded hostengine with manual operation mode

@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from nvml_injection import c_injectNvmlRet_t
 import pydcgm
 import dcgm_structs
 import logger
@@ -49,7 +50,7 @@ injection_offset = 3
 ################# General tests #################
 
 
-def support_temperature_threshold(gpuId):
+def support_temperature_threshold(gpuId) -> bool:
     dcgm_nvml.nvmlInit()
     handle = dcgm_nvml.nvmlDeviceGetHandleByIndex(gpuId)
     supported = False
@@ -65,7 +66,7 @@ def support_temperature_threshold(gpuId):
 # Fail early behavior tests
 
 
-def verify_early_fail_checks_for_test(handle, gpuId, test_name, extraTestInfo):
+def verify_early_fail_checks_for_test(handle, gpuId, test_name: str, extraTestInfo: list[str] | None) -> None:
     # We will inject DCGM_FI_DEV_GPU_TEMP to trigger a failure.
     # When the GPU does not support a temperature threshold, the temperature check will be irrelevant or meaningless
     # and not triggering a failure.
@@ -181,7 +182,7 @@ def verify_early_fail_checks_for_test(handle, gpuId, test_name, extraTestInfo):
 @test_utils.run_only_with_live_gpus()
 @test_utils.exclude_confidential_compute_gpus()
 @test_utils.run_only_if_mig_is_disabled()
-def test_nvvs_plugin_fail_early_diagnostic_standalone(handle, gpuIds):
+def test_nvvs_plugin_fail_early_diagnostic_standalone(handle, gpuIds) -> None:
     verify_early_fail_checks_for_test(handle, gpuIds[0], TEST_DIAGNOSTIC, None)
 
 
@@ -189,7 +190,7 @@ def test_nvvs_plugin_fail_early_diagnostic_standalone(handle, gpuIds):
 @test_utils.run_only_with_live_gpus()
 @test_utils.exclude_confidential_compute_gpus()
 @test_utils.run_only_if_mig_is_disabled()
-def test_nvvs_plugin_fail_early_targeted_stress_standalone(handle, gpuIds):
+def test_nvvs_plugin_fail_early_targeted_stress_standalone(handle, gpuIds) -> None:
     verify_early_fail_checks_for_test(
         handle, gpuIds[0], TEST_TARGETED_STRESS, None)
 
@@ -198,7 +199,7 @@ def test_nvvs_plugin_fail_early_targeted_stress_standalone(handle, gpuIds):
 @test_utils.run_only_with_live_gpus()
 @test_utils.exclude_confidential_compute_gpus()
 @test_utils.run_only_if_mig_is_disabled()
-def test_nvvs_plugin_fail_early_targeted_power_standalone(handle, gpuIds):
+def test_nvvs_plugin_fail_early_targeted_power_standalone(handle, gpuIds) -> None:
     verify_early_fail_checks_for_test(
         handle, gpuIds[0], TEST_TARGETED_POWER, None)
 
@@ -207,7 +208,7 @@ def test_nvvs_plugin_fail_early_targeted_power_standalone(handle, gpuIds):
 @test_utils.run_only_with_live_gpus()
 @test_utils.exclude_confidential_compute_gpus()
 @test_utils.run_only_if_mig_is_disabled()
-def test_nvvs_plugin_fail_early_two_tests_standalone(handle, gpuIds):
+def test_nvvs_plugin_fail_early_two_tests_standalone(handle, gpuIds) -> None:
     extraTestInfo = [TEST_PCIE]
     verify_early_fail_checks_for_test(
         handle, gpuIds[0], TEST_DIAGNOSTIC, extraTestInfo)
@@ -215,7 +216,7 @@ def test_nvvs_plugin_fail_early_two_tests_standalone(handle, gpuIds):
 ################# Software plugin tests #################
 
 
-def pageRetirementErrorsPresent(response):
+def pageRetirementErrorsPresent(response) -> bool:
     """Returns `True` when known errors associated with page retirement are present, `False` otherwise."""
     import re
     assert response.numTests == 1
@@ -230,7 +231,7 @@ def pageRetirementErrorsPresent(response):
     return False
 
 
-def expectTestFailures(response):
+def expectTestFailures(response) -> bool:
     """Returns `True` if there is one or more test failure, `False` otherwise."""
     assert response.numTests == 1
     for test in response.tests[:min(response.numTests, dcgm_structs.DCGM_DIAG_RESPONSE_TESTS_MAX)]:
@@ -245,7 +246,7 @@ def expectTestFailures(response):
     return False
 
 
-def helper_check_software_page_retirements_fail_on_pending_retirements(handle, gpuId):
+def helper_check_software_page_retirements_fail_on_pending_retirements(handle, gpuId) -> None:
     """
     Ensure that the software test for page retirements fails when there are pending page retirements.
     """
@@ -278,13 +279,13 @@ def helper_check_software_page_retirements_fail_on_pending_retirements(handle, g
 
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_injection_gpus(2)
-def test_nvvs_plugin_software_pending_page_retirements_standalone(handle, gpuIds):
+def test_nvvs_plugin_software_pending_page_retirements_standalone(handle, gpuIds) -> None:
     # Injection tests can only work with the standalone host engine
     helper_check_software_page_retirements_fail_on_pending_retirements(
         handle, gpuIds[0])
 
 
-def helper_check_software_page_retirements_fail_total_retirements(handle, gpuId):
+def helper_check_software_page_retirements_fail_total_retirements(handle, gpuId) -> None:
     """
     Ensure that the software test for page retirements fails when there are mroe than 60 page retirements.
     """
@@ -326,7 +327,7 @@ def helper_check_software_page_retirements_fail_total_retirements(handle, gpuId)
 
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_injection_gpus(2)
-def test_nvvs_plugin_software_total_page_retirements_standalone(handle, gpuIds):
+def test_nvvs_plugin_software_total_page_retirements_standalone(handle, gpuIds) -> None:
     # Injection tests can only work with the standalone host engine
     helper_check_software_page_retirements_fail_total_retirements(
         handle, gpuIds[0])
@@ -336,7 +337,7 @@ def test_nvvs_plugin_software_total_page_retirements_standalone(handle, gpuIds):
 @test_utils.run_only_with_live_gpus()
 @test_utils.run_only_if_mig_is_disabled()
 @test_utils.for_all_same_sku_gpus()
-def test_nvvs_plugin_software_inforom_embedded(handle, gpuIds):
+def test_nvvs_plugin_software_inforom_embedded(handle, gpuIds) -> None:
     dd = DcgmDiag.DcgmDiag(gpuIds=gpuIds, testNamesStr="short")
     response = test_utils.diag_execute_wrapper(dd, handle)
     # Prior code explicitly looked for the Inforom test. Currently, only the results for
@@ -351,7 +352,7 @@ def test_nvvs_plugin_software_inforom_embedded(handle, gpuIds):
         assert len(foundResults) > 0
 
 
-def test_nvvs_plugins_required_symbols():
+def test_nvvs_plugins_required_symbols() -> None:
     nmPath = find_executable('nm')
     if nmPath is None:
         test_utils.skip_test("'nm' is not installed on the system.")
@@ -416,9 +417,9 @@ def test_nvvs_plugins_required_symbols():
 @test_utils.run_with_nvml_injected_gpus()
 @test_utils.run_only_if_mig_is_disabled()
 @test_utils.for_all_same_sku_gpus()
-def test_software_on_fabric_manager(handle, gpuIds):
+def test_software_on_fabric_manager(handle, gpuIds) -> None:
     class Case:
-        def __init__(self):
+        def __init__(self) -> None:
             self.nvmlFunRet = dcgm_nvml.NVML_SUCCESS
             self.fbState = dcgm_nvml.NVML_GPU_FABRIC_STATE_COMPLETED
             self.fbStatus = dcgm_nvml.NVML_SUCCESS
@@ -427,37 +428,37 @@ def test_software_on_fabric_manager(handle, gpuIds):
             self.expectedErrorMsg = ""
             self.caseName = ""
 
-        def SetNvmlFunRet(self, ret):
+        def SetNvmlFunRet(self, ret: int) -> None:
             self.nvmlFunRet = ret
 
-        def SetFbState(self, state):
+        def SetFbState(self, state: int) -> None:
             self.fbState = state
 
-        def SetFbStatus(self, status):
+        def SetFbStatus(self, status: int) -> None:
             self.fbStatus = status
 
-        def SetFbHealthMask(self, healthMask):
+        def SetFbHealthMask(self, healthMask: int) -> None:
             self.fbHealthMask = healthMask
 
-        def SetIsPass(self, isPass):
+        def SetIsPass(self, isPass: bool) -> None:
             self.isPass = isPass
 
-        def SetExpectedErrorMsg(self, msg):
+        def SetExpectedErrorMsg(self, msg: str) -> None:
             self.expectedErrorMsg = msg
 
-        def SetCaseName(self, name):
+        def SetCaseName(self, name: str) -> None:
             self.caseName = name
 
-        def GetIsPass(self):
+        def GetIsPass(self) -> bool:
             return self.isPass
 
-        def GetExpectedErrorMsg(self):
+        def GetExpectedErrorMsg(self) -> str:
             return self.expectedErrorMsg
 
-        def GetCaseName(self):
+        def GetCaseName(self) -> str:
             return self.caseName
 
-        def GenerateInjectedStructure(self):
+        def GenerateInjectedStructure(self) -> c_injectNvmlRet_t:
             injectedRet = nvml_injection.c_injectNvmlRet_t()
             injectedRet.nvmlRet = self.nvmlFunRet
             injectedRet.values[0].type = nvml_injection_structs.c_injectionArgType_t.INJECTION_GPUFABRICINFOV
@@ -558,7 +559,7 @@ def test_software_on_fabric_manager(handle, gpuIds):
             )) != -1, f"Case: [{currentCase.GetCaseName()}], expected error: [{currentCase.GetExpectedErrorMsg()}], actual error message: [{response.errors[0].msg}]"
 
 
-def assert_gpu_result(response, gpuId, testId, expectedResult):
+def assert_gpu_result(response, gpuId, testId: int, expectedResult: int) -> None:
     gpuResult = next(filter(lambda cur: cur.entity.entityGroupId == dcgm_fields.DCGM_FE_GPU and cur.entity.entityId ==
                      gpuId and cur.testId == testId, response.results[:min(response.numResults, dcgm_structs.DCGM_DIAG_RESPONSE_RESULTS_MAX)]), None)
     assert gpuResult, f"Expected to find a result for gpu {gpuId} with testId {testId}"
@@ -567,7 +568,7 @@ def assert_gpu_result(response, gpuId, testId, expectedResult):
 
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_injection_gpus(2)
-def test_nvvs_plugin_skip_memtest_if_pre_defined_errors_present(handle, gpuIds):
+def test_nvvs_plugin_skip_memtest_if_pre_defined_errors_present(handle, gpuIds) -> None:
     dd = DcgmDiag.DcgmDiag(
         gpuIds=gpuIds, testNamesStr="memtest", paramsStr="memtest.test_duration=10")
     dd.UseFakeGpus()
@@ -619,7 +620,7 @@ def test_nvvs_plugin_skip_memtest_if_pre_defined_errors_present(handle, gpuIds):
 
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_injection_gpus(2)
-def test_nvvs_plugin_skip_memtest_if_all_entities_have_pre_defined_errors_present(handle, gpuIds):
+def test_nvvs_plugin_skip_memtest_if_all_entities_have_pre_defined_errors_present(handle, gpuIds) -> None:
     dd = DcgmDiag.DcgmDiag(
         gpuIds=gpuIds, testNamesStr="memtest", paramsStr="memtest.test_duration=10")
     dd.UseFakeGpus()
@@ -658,7 +659,7 @@ def test_nvvs_plugin_skip_memtest_if_all_entities_have_pre_defined_errors_presen
 @test_utils.run_with_standalone_host_engine(320)
 @test_utils.run_only_with_live_gpus()
 @test_utils.for_all_same_sku_gpus()
-def test_nvvs_executes_directly(handle, gpuIds):
+def test_nvvs_executes_directly(handle, gpuIds) -> None:
     nvvs = AppRunner("./apps/nvvs/nvvs",
                      ["--entity-id", str(gpuIds[0]), "--specifiedtest", "short"])
     nvvs.start(timeout=60)
@@ -673,8 +674,8 @@ def test_nvvs_executes_directly(handle, gpuIds):
 @test_utils.run_with_nvml_injected_gpus()
 @test_utils.run_only_if_mig_is_disabled()
 @test_utils.for_all_same_sku_gpus()
-def test_software_parameters(handle, gpuIds):
-    def mock_persistence_mode_off():
+def test_software_parameters(handle, gpuIds) -> None:
+    def mock_persistence_mode_off() -> None:
         injectedRet = nvml_injection.c_injectNvmlRet_t()
         injectedRet.nvmlRet = dcgm_nvml.NVML_SUCCESS
         injectedRet.values[0].type = nvml_injection_structs.c_injectionArgType_t.INJECTION_ENABLESTATE

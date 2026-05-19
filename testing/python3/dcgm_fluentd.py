@@ -27,17 +27,17 @@ DEFAULT_FLUENTD_PORT = 24225
 
 class DcgmFluentd(DcgmJsonReader):
     ###########################################################################
-    def __init__(self, publish_hostname, publish_port, **kwargs):
+    def __init__(self, publish_hostname, publish_port, **kwargs) -> None:
         self.m_sock = socket(AF_INET, SOCK_DGRAM)
         self.m_dest = (publish_hostname, publish_port)
         super(DcgmFluentd, self).__init__(**kwargs)
 
     ###########################################################################
-    def SendToFluentd(self, payload):
+    def SendToFluentd(self, payload) -> None:
         self.m_sock.sendto(payload, self.m_dest)
 
     ###########################################################################
-    def CustomJsonHandler(self, outJson):
+    def CustomJsonHandler(self, outJson) -> None:
         self.SendToFluentd(outJson)
 
 

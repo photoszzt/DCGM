@@ -32,7 +32,7 @@ class LspciApp(app_runner.AppRunner):
         "Linux_aarch64": "./lspci/Linux-aarch64/",
     }
 
-    def __init__(self, busId, flags):
+    def __init__(self, busId, flags) -> None:
         path = os.path.join(os.path.dirname(os.path.realpath(
             __file__)), LspciApp.paths[utils.platform_identifier])
         exepath = path + "/sbin/lspci"

@@ -23,7 +23,7 @@ class MockMnubergemmController:
     Controller class to manage mock mnubergemm behavior and output
     """
 
-    def __init__(self, mockPath, mockNvidiaSmiPath):
+    def __init__(self, mockPath, mockNvidiaSmiPath) -> None:
         self.mockPath = mockPath
         self.mockNvidiaSmiPath = mockNvidiaSmiPath
         self.originalEnv = {}
@@ -31,7 +31,7 @@ class MockMnubergemmController:
         self.envFile = "/tmp/multinode_env.sh"
         self.counter_file = "/tmp/nvidia_smi_call_count"
 
-    def setup_localhost_mock_environment(self, config):
+    def setup_localhost_mock_environment(self, config) -> None:
         # Set the environment variables
         self.originalEnv = os.environ.copy()
         self.config = config
@@ -42,7 +42,7 @@ class MockMnubergemmController:
         # Set expected output
         self._set_output()
 
-    def setup_multinode_mock_environment(self, config):
+    def setup_multinode_mock_environment(self, config) -> None:
         # Get test nodes, localhost is head node
         test_nodes = config['test_nodes']
 
@@ -81,7 +81,7 @@ class MockMnubergemmController:
         # Setup localhost mock env
         self.setup_localhost_mock_environment(config)
 
-    def cleanup_mock_environment(self):
+    def cleanup_mock_environment(self) -> None:
         # Restore the original environment if it was saved
         if hasattr(self, 'originalEnv') and self.originalEnv:
             os.environ.clear()
@@ -94,7 +94,7 @@ class MockMnubergemmController:
         # Restore original nvidia-smi
         self._restore_nvidia_smi()
 
-    def cleanup_multinode_mock_environment(self, config):
+    def cleanup_multinode_mock_environment(self, config) -> None:
         test_nodes = config['test_nodes']
         test_nodes = [node for node in test_nodes if node.get(
             "ip", "") != "localhost"]
@@ -141,7 +141,7 @@ class MockMnubergemmController:
 
         return error_entities
 
-    def get_driver_versions(self, config):
+    def get_driver_versions(self, config) -> set[str]:
         driver_versions = set()
 
         # Get driver version for head node (localhost)
@@ -172,7 +172,7 @@ class MockMnubergemmController:
         return driver_versions
 
     # -------------------------------------
-    def _get_bash_script_template(self):
+    def _get_bash_script_template(self) -> str:
         """Return the bash script template for the mock."""
         return '''#!/bin/bash
 
@@ -204,7 +204,7 @@ done
 sleep $time_to_run
 '''
 
-    def _create_mock_script(self, lines):
+    def _create_mock_script(self, lines: list[str]) -> None:
         """Create the mock shell script."""
         try:
             # Sanitize lines to prevent shell injection
@@ -224,7 +224,7 @@ sleep $time_to_run
             raise RuntimeError(
                 f"Failed to create mock script at {self.mockPath}: {e}")
 
-    def _set_output(self):
+    def _set_output(self) -> None:
         """
         Generate and set the output for the mock mnubergemm, supporting per-entityId info and error messages
         """
@@ -249,7 +249,7 @@ sleep $time_to_run
         self._create_mock_script(lines)
 
     # ----------------
-    def _generate_mock_nvidia_smi_local(self):
+    def _generate_mock_nvidia_smi_local(self) -> None:
         """
         Create temporary mock nvidia-smi script that outputs hardcoded process info
         Uses a counter file to track number of calls and return different outputs
@@ -301,7 +301,7 @@ fi
                  stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH)
 
     # ----------------
-    def _restore_nvidia_smi(self):
+    def _restore_nvidia_smi(self) -> None:
         """
         Restore original nvidia-smi environment by:
         1. Removing the mock nvidia-smi directory from PATH
@@ -322,7 +322,7 @@ fi
             delattr(self, 'mockNvidiaSmiPath')
 
     # ----------------
-    def _run_hostengine(self, ssh_cmd, ip, hostengine_path):
+    def _run_hostengine(self, ssh_cmd: str, ip, hostengine_path) -> None:
         # Check if hostengine binary exists
         check_bin_cmd = f"{ssh_cmd} 'test -x {hostengine_path} && echo OK || echo FAIL'"
         bin_check_result = os.popen(check_bin_cmd).read().strip()
@@ -334,14 +334,14 @@ fi
             f"{ssh_cmd} 'source {self.envFile} && {hostengine_path} --log-level debug'")
 
     # ----------------
-    def _save_env_file(self, username, ip, env_lines):
+    def _save_env_file(self, username, ip, env_lines) -> None:
         with open(self.envFile, "w") as f:
             f.write("\n".join(env_lines) + "\n")
         os.system(f"scp {self.envFile} {username}@{ip}:{self.envFile}")
         os.remove(self.envFile)
 
     # ----------------
-    def _generate_mock_mnubergemm_remote(self, ssh_cmd, config, node, username, ip, env_lines):
+    def _generate_mock_mnubergemm_remote(self, ssh_cmd: str, config, node, username, ip, env_lines) -> None:
         node_config = config.copy()
         node_config['hostList'] = [ip]
         node_config['gpu_required_info'] = node.get('gpu_required_info', {})
@@ -364,7 +364,7 @@ fi
         os.remove(self.mockPath)
 
     # ----------------
-    def _check_and_update_mpirun_path(self, ssh_cmd, ip, env_lines):
+    def _check_and_update_mpirun_path(self, ssh_cmd: str, ip, env_lines) -> None:
         mpirun_path_cmd = f"{ssh_cmd} 'which mpirun'"
         mpirun_path = os.popen(mpirun_path_cmd).read().strip().split('\n')[-1]
         if not mpirun_path:
@@ -373,7 +373,7 @@ fi
         env_lines.append(f"export DCGM_MNDIAG_MPIRUN_PATH={mpirun_path} ")
 
     # ----------------
-    def _generate_mock_nvidia_smi_remote(self, ssh_cmd, username, ip, env_lines):
+    def _generate_mock_nvidia_smi_remote(self, ssh_cmd: str, username, ip, env_lines) -> None:
         self._generate_mock_nvidia_smi_local()
 
         # Copy mock nvidia-smi to remote node

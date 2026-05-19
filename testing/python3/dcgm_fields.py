@@ -1067,7 +1067,7 @@ class _PrintableStructure(dcgm_structs._DcgmStructure):
     """
     _fmt_ = {}
 
-    def __str__(self):
+    def __str__(self) -> str:
         result = []
         for x in self._fields_:
             key = x[0]
@@ -1125,7 +1125,7 @@ class pySamplingProperties:
     The instance of this class is used to hold information related to each sampling event type.
     '''
 
-    def __init__(self, name, sampling_type, sample_val_type, timeIntervalIdle, timeIntervalBoost, min_value, max_value):
+    def __init__(self, name, sampling_type, sample_val_type, timeIntervalIdle, timeIntervalBoost, min_value, max_value) -> None:
         self.name = name
         self.sampling_type = sampling_type
         self.timeIntervalIdle = timeIntervalIdle
@@ -1135,13 +1135,13 @@ class pySamplingProperties:
         self.sample_val_type = sample_val_type
 
 
-def DcgmFieldsInit():
+def DcgmFieldsInit() -> None:
     fn = dcgmFP("DcgmFieldsInit")
     ret = fn()
     assert ret == 0, "Got return %d from DcgmFieldsInit" % ret
 
 
-def DcgmFieldGetById(fieldId):
+def DcgmFieldGetById(fieldId) -> c_dcgm_field_meta_t | None:
     '''
     Get metadata for a field, given its fieldId
 
@@ -1162,7 +1162,7 @@ def DcgmFieldGetById(fieldId):
     return retVal
 
 
-def DcgmFieldGetByTag(tag):
+def DcgmFieldGetByTag(tag) -> c_dcgm_field_meta_t | None:
     '''
     Get metadata for a field, given its string tag
 

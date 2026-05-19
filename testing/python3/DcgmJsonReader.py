@@ -27,7 +27,7 @@ class DcgmJsonReader(DcgmReader):
         return self.m_fieldIdToInfo[fieldId].tag
 
     ###########################################################################
-    def PrepareJson(self, gpuId, obj):
+    def PrepareJson(self, gpuId, obj) -> str:
         '''
         Receive an object with measurements turn it into an equivalent JSON. We
         add the GPU UUID first.
@@ -38,7 +38,7 @@ class DcgmJsonReader(DcgmReader):
         return toJson(obj)
 
     ###########################################################################
-    def CustomDataHandler(self, fvs):
+    def CustomDataHandler(self, fvs) -> None:
         for gpuId in list(fvs.keys()):
             # We don't need the keys because each value has a `fieldId`
             # So just get the values
@@ -58,7 +58,7 @@ class DcgmJsonReader(DcgmReader):
             self.CustomJsonHandler(outJson)
 
     ###########################################################################
-    def CustomJsonHandler(self, outJson):
+    def CustomJsonHandler(self, outJson: str) -> None:
         '''
         This method should be overriden by subclasses to handle the JSON objects
         received.

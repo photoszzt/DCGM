@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from argparse import Namespace
+from argparse import ArgumentParser
 from os import environ
 import argparse
 import logging
@@ -20,15 +22,15 @@ import sys
 
 
 def create_parser(
-        publish_port=8000,
-        interval=10,
+        publish_port: int=8000,
+        interval: int=10,
         # Replace with 'prometheus', 'telegraf', etc.
-        name='the monitoring tool',
+        name: str='the monitoring tool',
         field_ids=None,
         log_file=None,
-        log_level='INFO',
-        dcgm_hostname=environ.get('DCGM_HOSTNAME') or 'localhost',
-):
+        log_level: str='INFO',
+        dcgm_hostname: str=environ.get('DCGM_HOSTNAME') or 'localhost',
+) -> ArgumentParser:
     '''
     Create a parser that defaults to sane parameters.
 
@@ -66,13 +68,13 @@ def create_parser(
     return parser
 
 
-def add_custom_argument(parser, *args, **kwargs):
+def add_custom_argument(parser, *args, **kwargs) -> None:
     parser.add_argument(*args, **kwargs)
 
 ###############################################################################
 
 
-def add_target_host_argument(name, parser, default_target='localhost'):
+def add_target_host_argument(name, parser: ArgumentParser, default_target='localhost') -> None:
     parser.add_argument('-t', '--publish-hostname', dest='publish_hostname',
                         type=str, default=default_target,
                         help='The hostname at which the client will publish the readings to {}'.format(name))
@@ -80,7 +82,7 @@ def add_target_host_argument(name, parser, default_target='localhost'):
 ###############################################################################
 
 
-def run_parser(parser):
+def run_parser(parser: ArgumentParser) -> Namespace:
     '''
     Run a parser created using create_parser
     '''
@@ -89,7 +91,7 @@ def run_parser(parser):
 ###############################################################################
 
 
-def get_field_ids(args):
+def get_field_ids(args: Namespace):
     # This indicates the user supplied a string, so we should override the
     # default
     if isinstance(args.field_ids, str):
@@ -103,7 +105,7 @@ def get_field_ids(args):
 ###############################################################################
 
 
-def get_log_level(args):
+def get_log_level(args: Namespace):
     levelStr = args.loglevel.upper()
     if levelStr == '0' or levelStr == 'CRITICAL':
         numeric_log_level = logging.CRITICAL
@@ -125,7 +127,7 @@ def get_log_level(args):
 ###############################################################################
 
 
-def parse_command_line(name, default_port, add_target_host=False):
+def parse_command_line(name, default_port, add_target_host: bool=False):
     # Fields we accept raw from the CLI
     FIELDS_AS_IS = ['publish_port', 'interval', 'logfile', 'publish_hostname']
 

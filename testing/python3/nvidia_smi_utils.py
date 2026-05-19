@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from xml.etree.ElementTree import Element
 import threading
 import xml.etree.ElementTree as ET
 import time
@@ -98,7 +99,7 @@ emptyStrIdealField = [dcgm_fields.DCGM_FI_DEV_CLOCKS_EVENT_REASONS]
 falseIdealField = [dcgm_fields.DCGM_FI_DEV_INFOROM_CONFIG_VALID]
 
 
-def parse_int_from_nvml_xml(text):
+def parse_int_from_nvml_xml(text: str | None) -> int:
     if text == 'N/A':
         return 0
     try:
@@ -113,7 +114,7 @@ class NvidiaSmiJob(threading.Thread):
     ################################################################################
     # Constructor
     ################################################################################
-    def __init__(self):
+    def __init__(self) -> None:
         threading.Thread.__init__(self)
         self.m_shutdownFlag = threading.Event()
         self.m_data = {}
@@ -125,20 +126,20 @@ class NvidiaSmiJob(threading.Thread):
     ################################################################################
     # Map the fieldId to the information for supporting that field id
     ################################################################################
-    def InitializeSupportedFields(self):
+    def InitializeSupportedFields(self) -> None:
         for fieldInfo in supportedFields:
             self.m_supportedFields[fieldInfo[0]] = fieldInfo
 
     ################################################################################
     # Sets the sleep interval between querying nvidia-smi
     ################################################################################
-    def SetIterationInterval(self, interval):
+    def SetIterationInterval(self, interval) -> None:
         self.m_sleepInterval = interval
 
     ################################################################################
     # Looks at the volatile XML node to find the total double bit errors
     ################################################################################
-    def ParseEccErrors(self, ecc_subnode, gpudata, isVolatile):
+    def ParseEccErrors(self, ecc_subnode: Element, gpudata: dict[int, str], isVolatile: bool) -> None:
         for child in ecc_subnode:
             if child.tag == DB_FN:
                 for grandchild in child:
@@ -159,7 +160,7 @@ class NvidiaSmiJob(threading.Thread):
                             gpudata[dcgm_fields.DCGM_FI_DEV_ECC_SBE_AGG_TOTAL] = parse_int_from_nvml_xml(
                                 grandchild.text)
 
-    def ParseRetiredPagesCount(self, retired_sbe_node, gpudata, fieldId):
+    def ParseRetiredPagesCount(self, retired_sbe_node: Element, gpudata: dict[int, str], fieldId: int) -> None:
         for child in retired_sbe_node:
             if child.tag == RETIRED_COUNT_FN:
                 gpudata[fieldId] = parse_int_from_nvml_xml(child.text)
@@ -169,7 +170,7 @@ class NvidiaSmiJob(threading.Thread):
     # Reads the common failure conditions from the XML for this GPU
     # All non-error values are set to None to make it easier to read the map
     ################################################################################
-    def ParseSingleGpuDataFromXml(self, gpuxml_node):
+    def ParseSingleGpuDataFromXml(self, gpuxml_node: Element) -> None:
         gpudata = {}
         gpu_id = -1
         for child in gpuxml_node:
@@ -226,7 +227,7 @@ class NvidiaSmiJob(threading.Thread):
     ################################################################################
     # Finds each GPU's xml entry and passes it off to be read
     ################################################################################
-    def ParseDataFromXml(self, root):
+    def ParseDataFromXml(self, root: Element) -> None:
         for child in root:
             if child.tag == GPU_FN:
                 self.ParseSingleGpuDataFromXml(child)
@@ -236,7 +237,7 @@ class NvidiaSmiJob(threading.Thread):
     # Returns an XML ElementTree object on success
     # None on failure
     ################################################################################
-    def QueryNvidiaSmiXml(self, parseData=None):
+    def QueryNvidiaSmiXml(self, parseData=None) -> Element | None:
         if parseData is None:
             parseData = True
 
@@ -276,7 +277,7 @@ class NvidiaSmiJob(threading.Thread):
     ################################################################################
     # Reads thermal violation values from nvidia-smi stats
     ################################################################################
-    def QueryNvidiaSmiStats(self):
+    def QueryNvidiaSmiStats(self) -> None:
         nvsmi_cmd = "nvidia-smi stats -c 1 -d violThm"
         # Initialize lines as an empty list so we don't do anything if IO fails
         lines = []
@@ -330,7 +331,7 @@ class NvidiaSmiJob(threading.Thread):
         return self.GetAnyThermalClocksEventReasons()
 
     ################################################################################
-    def CheckInforom(self):
+    def CheckInforom(self) -> bool | None:
         nvsmi_cmd = "nvidia-smi"
         try:
             runner = subprocess.Popen(
@@ -349,7 +350,7 @@ class NvidiaSmiJob(threading.Thread):
 
     ################################################################################
 
-    def run(self):
+    def run(self) -> None:
         while not self.m_shutdownFlag.is_set():
             self.QueryNvidiaSmiXml(parseData=True)
             self.QueryNvidiaSmiStats()
@@ -396,7 +397,7 @@ class NvidiaSmiJob(threading.Thread):
 
         return None, None
 
-    def GetCorrectValue(self, fieldId):
+    def GetCorrectValue(self, fieldId: int):
         if fieldId not in self.m_supportedFields:
             return 'Unknown'
         else:
@@ -408,7 +409,7 @@ class NvidiaSmiJob(threading.Thread):
     # described in JIRA DCGM-1009
     ################################################################################
 
-    def CheckPageRetirementErrors(self):
+    def CheckPageRetirementErrors(self) -> bool:
 
         elemTree = self.QueryNvidiaSmiXml()
         if elemTree is None:
@@ -449,7 +450,7 @@ class NvidiaSmiJob(threading.Thread):
         return False
 
 
-def helper_nvidia_smi_xml():
+def helper_nvidia_smi_xml() -> Element | None:
     """
     Returns an XML representation of nvidia-smi -q output. Returns None if
     malformed.
@@ -480,7 +481,7 @@ def helper_nvidia_smi_xml():
     return tree
 
 
-def are_gpus_free():
+def are_gpus_free() -> bool:
     """
     Parses nvidia-smi xml output and discovers if any processes are using  the GPUs,
     returns  whether or not the GPUs are in use or not. True = GPUs are not being used.
@@ -516,7 +517,7 @@ def are_gpus_free():
     return True
 
 
-def is_power_smoothing_available(handle, gpuId):
+def is_power_smoothing_available(handle, gpuId) -> bool:
     """
     Returns True of power smoothing is available, False otherwise.
     """
@@ -543,7 +544,7 @@ def is_power_smoothing_available(handle, gpuId):
     return powerSmoothingAvailable
 
 
-def get_gpu_pci_bus_ids():
+def get_gpu_pci_bus_ids() -> list[str] | None:
     """
     Returns the PCI bus IDs of the GPUs.
     """
@@ -586,7 +587,7 @@ def enable_persistence_mode():
 ################################################################################
 
 
-def main():
+def main() -> None:
     # sc = check_sanity_nvml.SanityChecker()
     j = NvidiaSmiJob()
     j.start()

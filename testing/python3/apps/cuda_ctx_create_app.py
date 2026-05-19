@@ -28,14 +28,14 @@ class CudaCtxCreateApp(app_runner.AppRunner):
         "Windows_64bit": "./apps/cuda_ctx_create/cuda_ctx_create_64bit.exe"
     }
 
-    def __init__(self, device):
+    def __init__(self, device) -> None:
         self.device = device
         path = os.path.join(
             utils.script_dir, CudaCtxCreateApp.paths[utils.platform_identifier])
         super(CudaCtxCreateApp, self).__init__(
             path, ["-i", device.busId, "--getchar"], cwd=os.path.dirname(path))
 
-    def start(self, timeout=app_runner.default_timeout):
+    def start(self, timeout: float=app_runner.default_timeout) -> None:
         """
         Blocks till cuda ctx is really created
 
@@ -46,7 +46,7 @@ class CudaCtxCreateApp(app_runner.AppRunner):
         # if matching line is not found then EOFError exception is risen
         self.stdout_readtillmatch(lambda x: x == "Context created")
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "CudaCtxCreateApp on device " + str(self.device) + " with " + super(CudaCtxCreateApp, self).__str__()
 
 
@@ -67,11 +67,11 @@ class CudaCtxCreateAdvancedApp(app_runner.AppRunner):
         "Windows_64bit": "./apps/cuda_ctx_create/cuda_ctx_create_64bit.exe"
     }
 
-    def __init__(self, args, env=None):
+    def __init__(self, args, env=None) -> None:
         path = os.path.join(
             utils.script_dir, CudaCtxCreateAdvancedApp.paths[utils.platform_identifier])
         super(CudaCtxCreateAdvancedApp, self).__init__(
             path, args, cwd=os.path.dirname(path), env=env)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "CudaCtxCreateAdvancedApp with " + super(CudaCtxCreateAdvancedApp, self).__str__()

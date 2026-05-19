@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from types import FunctionType
+from trace import CoverageResults
 import sys
 import os
 import shutil
@@ -69,16 +71,16 @@ class LevelUpdateManager:
     handlers = set()
 
     @classmethod
-    def register(cls, handler):
+    def register(cls, handler) -> None:
         cls.handlers.add(handler)
 
     @classmethod
-    def deregister(cls, handler):
+    def deregister(cls, handler) -> None:
         if handler in cls.handlers:
             cls.handlers.remove(handler)
 
     @classmethod
-    def do_update(cls):
+    def do_update(cls) -> None:
         for handler in cls.handlers:
             handler.updateLogLevel()
 
@@ -99,7 +101,7 @@ def caller_function_details(depth=1):
     return (os.path.relpath(func.co_filename), func.co_name, func.co_firstlineno)
 
 
-def addtrace_logging(module, filter_fns=lambda name, fn: True):
+def addtrace_logging(module: Module[dcgm_structs], filter_fns=lambda name, fn: True) -> None:
     '''
     Find all functions in module and add logging before and after each call.
     '''
@@ -117,7 +119,7 @@ def addtrace_logging(module, filter_fns=lambda name, fn: True):
         if not filter_fns(name, fn):
             continue
 
-        def genfunc(fn):
+        def genfunc(fn: FunctionType):
             @wraps(fn)
             def tmpfn(*args, **kwargs):
                 debug("Call %s(args: %s kwargs: %s)" % (fn.__name__, list(
@@ -135,7 +137,7 @@ def addtrace_logging(module, filter_fns=lambda name, fn: True):
         setattr(module, name, genfunc(fn))
 
 
-def setup_environment():
+def setup_environment() -> None:
     global _log_file
     global _summary_file
     global log_dir
@@ -249,7 +251,7 @@ def setup_environment():
             pass
 
 
-def capture_dmesg():
+def capture_dmesg() -> None:
     if not utils.is_root():
         warning("Skipping capture of dmesg output because not running as root")
         return
@@ -284,7 +286,7 @@ def capture_dmesg():
     info("Dmesg output captured to %s" % dmesg_log_filename)
 
 
-def close():
+def close() -> None:
     """
     Closes all the debug file streams and archives all logs 
     into single zip file logger.log_archive_filename
@@ -309,7 +311,7 @@ def close():
             pass
 
 
-def run_with_coverage(fn):
+def run_with_coverage(fn) -> CoverageResults:
     """
     Runs the function (that shouldn't take any arguments!) with coverage tool.
     Stores the results in a log and returns the results.
@@ -337,8 +339,8 @@ log_lock = threading.Lock()
 _log_id = 0
 
 
-def log(level, msg, caller_depth=0, defer=False):
-    def apply_coloring(level, line):
+def log(level: int, msg: str, caller_depth=0, defer=False) -> int:
+    def apply_coloring(level: int, line: str):
         if option_parser.options.eris:
             return line
         if not _coloring_enabled:
@@ -420,7 +422,7 @@ def log(level, msg, caller_depth=0, defer=False):
     return _log_id
 
 
-def pop_defered(log_id):
+def pop_defered(log_id: int) -> bool:
     """
     Removes the message from deferred lines buffer and returns True. Removed log_id must be the last log_id on the list.
     If the log_id is not found returns False.
@@ -434,48 +436,48 @@ def pop_defered(log_id):
     return result
 
 
-def fatal(msg="\n", caller_depth=0, defer=False):
+def fatal(msg: str="\n", caller_depth: int=0, defer: bool=False) -> int:
     """
     Calls sys.exit at the end
     """
     return log(FATAL, msg, caller_depth + 1, defer)
 
 
-def error(msg="\n", caller_depth=0, defer=False):
+def error(msg: str="\n", caller_depth=0, defer=False) -> int:
     return log(ERROR, msg, caller_depth + 1, defer)
 
 
-def info(msg="\n", caller_depth=0, defer=False):
+def info(msg: str="\n", caller_depth: int | str=0, defer=False) -> int:
     return log(INFO, msg, caller_depth + 1, defer)
 
 
-def warning(msg="\n", caller_depth=0, defer=False):
+def warning(msg: str="\n", caller_depth=0, defer=False) -> int:
     return log(WARNING, msg, caller_depth + 1, defer)
 
 
-def debug(msg="\n", caller_depth=0, defer=False):
+def debug(msg: str="\n", caller_depth=0, defer=False) -> int:
     return log(DEBUG, msg, caller_depth + 1, defer)
 
 
-def indent_icrement(val=1):
+def indent_icrement(val: int=1) -> None:
     global _indent_lvl
     _indent_lvl += val
 
 
-def indent_decrement(val=1):
+def indent_decrement(val: int=1) -> None:
     global _indent_lvl
     _indent_lvl -= val
 
 
 class IndentBlock(object):
-    def __init__(self, val=1):
+    def __init__(self, val: int=1) -> None:
         self._old_indent = _indent_lvl
         self._val = val
 
-    def __enter__(self):
+    def __enter__(self) -> None:
         indent_icrement(self._val)
 
-    def __exit__(self, exception_type, exception, trace):
+    def __exit__(self, exception_type, exception, trace) -> None:
         indent_decrement(self._val)
 
 

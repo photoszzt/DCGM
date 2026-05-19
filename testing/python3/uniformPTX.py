@@ -24,7 +24,7 @@ This function gets the template defined for each build script
 """
 
 
-def getBuildScriptTemplate(arch, cuFileName, buildPTXName, buildHeaderName, addPythonLine=0, pythonLineArg="", compute=""):
+def getBuildScriptTemplate(arch: str, cuFileName: str, buildPTXName: str, buildHeaderName: str, addPythonLine: int=0, pythonLineArg: str="", compute="") -> str:
     pythonLine = ""
     if addPythonLine == 1:
         if pythonLineArg != "":
@@ -79,7 +79,7 @@ returns all the paths for given extension
 """
 
 
-def getPaths(rootDir, extension):
+def getPaths(rootDir: str, extension: str) -> list[str]:
     cuDir = []
     folderName = rootDir.split("/")[-1]
     for root, _, files in os.walk(rootDir):
@@ -96,7 +96,7 @@ return the cuda filename given in a directory
 """
 
 
-def getCuFileName(dir):
+def getCuFileName(dir: str) -> str:
     files = os.listdir(dir)
     filteredFiles = [file for file in files if file.endswith(".cu")]
     return filteredFiles[0]
@@ -108,7 +108,7 @@ returns the path of the build script given in a directory
 """
 
 
-def getPathOfBuildScript(dir):
+def getPathOfBuildScript(dir: str) -> str:
     path = ""
 
     # List all files in the directory
@@ -128,7 +128,7 @@ check if the dictionary has empty values and if yes add default values
 """
 
 
-def checkAndUpdateToDefault(parsedDic, cuFileName, arch):
+def checkAndUpdateToDefault(parsedDic, cuFileName: str, arch: str) -> None:
     if "arch" not in parsedDic.keys():
         parsedDic["arch"] = arch
     if "ptx" not in parsedDic.keys():
@@ -147,7 +147,7 @@ reformat existing build script for uniformity
 """
 
 
-def reformatBuildScript(path, cuFileName, arch):
+def reformatBuildScript(path: str, cuFileName: str, arch: str):
 
     bin2cExists = 0
     addPythonLine = 0
@@ -223,13 +223,13 @@ check if ptx and header exists
 """
 
 
-def filesExists(dir, filename):
+def filesExists(dir: str, filename) -> bool:
     value = os.path.exists(os.path.join(dir, filename))
     return value
 
 
 ###################################
-def generatePTXFile(dir, arch, cuFileName, ptxFileName):
+def generatePTXFile(dir: str, arch: str, cuFileName: str, ptxFileName) -> int:
     # get initial dir
     initialDir = os.getcwd()
 
@@ -255,7 +255,7 @@ def generatePTXFile(dir, arch, cuFileName, ptxFileName):
 
 
 ###################################
-def generateHeaderFile(dir, ptxFileName, headerFileName):
+def generateHeaderFile(dir: str, ptxFileName, headerFileName) -> int:
     # get initial dir
     initialDir = os.getcwd()
 
@@ -285,7 +285,7 @@ generate new build scripts
 """
 
 
-def generateBuildScripts(dir, cuFileName, arch="sm_30"):
+def generateBuildScripts(dir: str, cuFileName: str, arch: str="sm_30") -> tuple[str, str, str]:
     pathOfBuildScript = ""
 
     # file names
@@ -313,7 +313,7 @@ run given .sh file
 """
 
 
-def runBuildScript(dir, filePath, buildPTXName, buildHeaderName):
+def runBuildScript(dir: str, filePath: str, buildPTXName, buildHeaderName) -> dict[str, str]:
     generatedPaths = {
         "ptx": "",
         "header": ""
@@ -357,7 +357,7 @@ parse the generate ptx file and extract values
 """
 
 
-def parsePTXFile(ptxFilePath):
+def parsePTXFile(ptxFilePath: str) -> list[str]:
     # read the file
     ptxFp = open(ptxFilePath, "rt")
 
@@ -384,7 +384,7 @@ update the generated header file with the values from the parsed ptx
 """
 
 
-def updateHeaderFile(parsedValue, headerFilePath):
+def updateHeaderFile(parsedValue: list[str], headerFilePath: str) -> None:
     # open the header file
     headerFp = open(headerFilePath, "at")
 
@@ -403,7 +403,7 @@ generate a py file which can be used independently to parse ptx file and update 
 """
 
 
-def createPythonParserForPtxFile(dir, buildPTXName, buildHeaderName):
+def createPythonParserForPtxFile(dir: str, buildPTXName, buildHeaderName) -> None:
     fileName = FIND_PTX_FILENAME
 
     # code to be written to the python file
@@ -436,7 +436,7 @@ update the python run cmd in build script
 """
 
 
-def updateBuildScript(path):
+def updateBuildScript(path: str) -> None:
     newLine = "python find_ptx_symbols.py"
     try:
         # Open the .sh file in append mode
@@ -456,7 +456,7 @@ main function to iterate and check all build scripts
 """
 
 
-def normaliseAllFolders():
+def normaliseAllFolders() -> None:
     # local vars
     cuDir = []
     rootDirectory = os.getcwd() + "/dcgm"

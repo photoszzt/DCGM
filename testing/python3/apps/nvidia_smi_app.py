@@ -50,7 +50,7 @@ class NvidiaSmiApp(app_runner.AppRunner):
         "(null)",  # e.g. from printing %s from null ptr
     ]
 
-    def __init__(self, args=None):
+    def __init__(self, args=None) -> None:
         path = NvidiaSmiApp.paths[utils.platform_identifier]
         self.output_filename = None
         super(NvidiaSmiApp, self).__init__(path, args)
@@ -82,7 +82,7 @@ class NvidiaSmiApp(app_runner.AppRunner):
 
         return filename
 
-    def _process_finish(self, stdout_buf, stderr_buf):
+    def _process_finish(self, stdout_buf, stderr_buf) -> None:
         super(NvidiaSmiApp, self)._process_finish(stdout_buf, stderr_buf)
 
         # Skip this part if --no-logging option is used
@@ -98,5 +98,5 @@ class NvidiaSmiApp(app_runner.AppRunner):
             assert stdout.find(
                 forbidden_text) == -1, "nvidia-smi printed \"%s\", this should never happen!" % forbidden_text
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "nvidia-smi" + super(NvidiaSmiApp, self).__str__()

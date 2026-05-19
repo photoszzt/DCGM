@@ -25,7 +25,7 @@ import time
 
 @test_utils.run_only_on_linux()
 @test_utils.run_only_on_bare_metal()
-def test_nv_hostengine_app():
+def test_nv_hostengine_app() -> None:
     """
     Verifies that nv-hostengine can be lauched properly and 
     can run for whatever timeout it's given in seconds
@@ -48,7 +48,7 @@ def test_nv_hostengine_app():
 
 @test_utils.run_only_on_linux()
 @test_utils.run_only_on_bare_metal()
-def test_dcgmi_app():
+def test_dcgmi_app() -> None:
     """
     Verifies that dcgmi can be lauched properly with 
     2 parameters at least
@@ -74,7 +74,7 @@ def test_dcgmi_app():
 @test_utils.run_only_with_all_supported_gpus()
 @test_utils.skip_denylisted_gpus(["GeForce GT 640"])
 @test_utils.run_only_with_nvml()
-def test_dcgm_unittests_app(*args, **kwargs):
+def test_dcgm_unittests_app(*args, **kwargs) -> None:
     """
     Runs the testdcgmunittests app and verifies if there are any failing tests
     """

@@ -26,7 +26,7 @@ import dcgm_structs
 
 
 class NvSwitchCounterMonitor:
-    def __init__(self, hostname):
+    def __init__(self, hostname) -> None:
         # Add this to any names so we can run multiple instances
         self._pidPostfix = "_" + str(os.getpid())
         self._updateIntervalSecs = 30.0  # How often to print out new rows
@@ -35,7 +35,7 @@ class NvSwitchCounterMonitor:
         self._InitFieldLists()
         self._InitHandles()
 
-    def _InitFieldLists(self):
+    def _InitFieldLists(self) -> None:
         self._nvSwitchLatencyFieldIds = []
         # get the low/medium/high/max latency bucket field ids, each switch port has 4 values.
         # the field ids are contiguous, where first 4 ids are for port0, next 4 for port1 and so on.
@@ -54,7 +54,7 @@ class NvSwitchCounterMonitor:
         for i in range(dcgm_fields.DCGM_FI_DEV_NVSWITCH_BANDWIDTH_TX_1_P00, dcgm_fields.DCGM_FI_DEV_NVSWITCH_BANDWIDTH_RX_1_P17 + 1, 1):
             self._nvSwitchBandwidth1FieldIds.append(i)
 
-    def _InitHandles(self):
+    def _InitHandles(self) -> None:
         self._dcgmHandle = pydcgm.DcgmHandle(ipAddress=self._hostname)
 
         groupName = "bandwidth_mon_nvswitches" + self._pidPostfix
@@ -92,7 +92,7 @@ class NvSwitchCounterMonitor:
             self._nvSwitchBandwidth1FieldGroup, dcgm_structs.DCGM_OPERATION_MODE_AUTO,
             updateFreq, maxKeepAge, maxKeepSamples, 0)
 
-    def _MonitorOneCycle(self):
+    def _MonitorOneCycle(self) -> None:
         numErrors = 0
         nowStr = time.strftime("%m/%d/%Y %H:%M:%S")
         self._nvSwitchLatencyWatcher.GetMore()
@@ -153,7 +153,7 @@ class NvSwitchCounterMonitor:
         self._nvSwitchBandwidth0Watcher.EmptyValues()
         self._nvSwitchBandwidth1Watcher.EmptyValues()
 
-    def Monitor(self):
+    def Monitor(self) -> None:
         self._nvSwitchLatencyWatcher.EmptyValues()
         self._nvSwitchBandwidth0Watcher.EmptyValues()
         self._nvSwitchBandwidth1Watcher.EmptyValues()
@@ -167,7 +167,7 @@ class NvSwitchCounterMonitor:
             return
 
 
-def main():
+def main() -> None:
     if len(sys.argv) > 1:
         hostname = sys.argv[1]
     else:

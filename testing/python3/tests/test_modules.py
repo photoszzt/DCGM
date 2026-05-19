@@ -23,7 +23,7 @@ import os
 # It asserts if not.
 
 
-def check_loaded(status):
+def check_loaded(status) -> None:
     assert (status == dcgm_structs.DcgmModuleStatusLoaded), "%d != %d" % (
         status, dcgm_structs.DcgmModuleStatusLoaded)
 
@@ -31,7 +31,7 @@ def check_loaded(status):
 # It asserts if not.
 
 
-def check_not_loaded(status):
+def check_not_loaded(status) -> None:
     assert (status == dcgm_structs.DcgmModuleStatusNotLoaded), "%d != %d" % (
         status, dcgm_structs.DcgmModuleStatusNotLoaded)
 
@@ -39,13 +39,13 @@ def check_not_loaded(status):
 # It asserts if not.
 
 
-def check_not_loaded_or_reloadable(status):
+def check_not_loaded_or_reloadable(status) -> None:
     assert (status == dcgm_structs.DcgmModuleStatusNotLoaded) or (status == dcgm_structs.DcgmModuleStatusReloadable), "%d != %d or %d " % (
         status, dcgm_structs.DcgmModuleStatusNotLoaded, dcgm_structs.DcgmModuleStatusReloadable)
 
 
 @test_utils.run_with_embedded_host_engine()
-def test_dcgm_modules_get_statuses(handle):
+def test_dcgm_modules_get_statuses(handle) -> None:
     '''
     Do a basic sanity check of the DCGM module statuses returned
     '''
@@ -69,7 +69,7 @@ def test_dcgm_modules_get_statuses(handle):
 
 
 @test_utils.run_with_embedded_host_engine()
-def test_dcgm_modules_in_use_introspection(handle):
+def test_dcgm_modules_in_use_introspection(handle) -> None:
     '''
     Make sure that the introspection module cannot be added to denylist after it's loaded
     '''
@@ -90,7 +90,7 @@ def test_dcgm_modules_in_use_introspection(handle):
 
 
 @test_utils.run_with_embedded_host_engine()
-def test_dcgm_modules_denylist_introspection(handle):
+def test_dcgm_modules_denylist_introspection(handle) -> None:
     '''
     Make sure that the introspection module can be added to the denylist
     '''
@@ -106,7 +106,7 @@ def test_dcgm_modules_denylist_introspection(handle):
 
 
 @test_utils.run_with_embedded_host_engine()
-def test_dcgm_modules_in_use_health(handle):
+def test_dcgm_modules_in_use_health(handle) -> None:
     '''
     Make sure that the health module cannot be added to the denylist after it's loaded
     '''
@@ -128,7 +128,7 @@ def test_dcgm_modules_in_use_health(handle):
 
 
 @test_utils.run_with_embedded_host_engine()
-def test_dcgm_modules_denylist_health(handle):
+def test_dcgm_modules_denylist_health(handle) -> None:
     '''
     Make sure that the health module can be added to the denylist
     '''
@@ -145,7 +145,7 @@ def test_dcgm_modules_denylist_health(handle):
 
 
 @test_utils.run_with_embedded_host_engine()
-def test_dcgm_modules_paused(handle):
+def test_dcgm_modules_paused(handle) -> None:
     """
     Make sure that a module is loaded in the paused state if the DCGM is paused
     And that it is resumed when DCGM is resumed
@@ -180,7 +180,7 @@ def test_dcgm_modules_paused(handle):
 
 
 @test_utils.run_only_if_checking_libraries()
-def test_dcgm_library_existence():
+def test_dcgm_library_existence() -> None:
     libraries = [
         'libdcgmmoduleconfig.so.4',
         'libdcgmmodulehealth.so.4',

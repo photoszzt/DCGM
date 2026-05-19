@@ -12,6 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Self
+from dcgm_structs import c_dcgmPolicy_v1
+from dcgm_field_helpers import DcgmFieldValueEntityCollection
+from dcgm_field_helpers import DcgmFieldValueCollection
 import pydcgm
 import dcgm_agent
 import dcgm_structs
@@ -23,7 +27,7 @@ from DcgmHandle import DcgmHandle
 
 
 class DcgmGroupConfig:
-    def __init__(self, dcgmHandle, groupId, dcgmGroup):
+    def __init__(self, dcgmHandle, groupId, dcgmGroup) -> None:
         self._dcgmHandle = dcgmHandle
         self._groupId = groupId
         self._dcgmGroup = dcgmGroup
@@ -36,7 +40,7 @@ class DcgmGroupConfig:
     Will throw an exception on error
     '''
 
-    def Set(self, config, checkStatusErrors=True):
+    def Set(self, config, checkStatusErrors: bool=True) -> None:
         status = pydcgm.DcgmStatus()
         ret = dcgm_structs.DCGM_ST_OK
 
@@ -77,7 +81,7 @@ class DcgmGroupConfig:
     Throws an exception on error
     '''
 
-    def Enforce(self):
+    def Enforce(self) -> None:
         status = pydcgm.DcgmStatus()
         ret = dcgm_structs.DCGM_ST_OK
         try:
@@ -94,7 +98,7 @@ class DcgmGroupConfig:
 
 class DcgmGroupSamples:
 
-    def __init__(self, dcgmHandle, groupId, dcgmGroup):
+    def __init__(self, dcgmHandle, groupId, dcgmGroup) -> None:
         self._dcgmHandle = dcgmHandle
         self._groupId = groupId
         self._dcgmGroup = dcgmGroup
@@ -112,7 +116,7 @@ class DcgmGroupSamples:
     handle.UpdateAllFields(True) to make sure that the fields have updated at least once.
     '''
 
-    def WatchFields(self, fieldGroup, updateFreq, maxKeepAge, maxKeepSamples):
+    def WatchFields(self, fieldGroup, updateFreq, maxKeepAge, maxKeepSamples) -> None:
         ret = dcgm_agent.dcgmWatchFields(
             self._dcgmHandle.handle, self._groupId, fieldGroup.fieldGroupId, updateFreq, maxKeepAge, maxKeepSamples)
         dcgm_structs._dcgmCheckReturn(ret)
@@ -123,7 +127,7 @@ class DcgmGroupSamples:
     fieldGroup: DcgmFieldGroup() instance tracking the fields we want to unwatch.
     '''
 
-    def UnwatchFields(self, fieldGroup):
+    def UnwatchFields(self, fieldGroup) -> None:
         ret = dcgm_agent.dcgmUnwatchFields(
             self._dcgmHandle.handle, self._groupId, fieldGroup.fieldGroupId)
         dcgm_structs._dcgmCheckReturn(ret)
@@ -136,7 +140,7 @@ class DcgmGroupSamples:
     Returns DcgmFieldValueCollection object. Use its .values[gpuId][fieldId][0].value to access values
     '''
 
-    def GetLatest(self, fieldGroup):
+    def GetLatest(self, fieldGroup) -> DcgmFieldValueCollection:
         dfvc = dcgm_field_helpers.DcgmFieldValueCollection(
             self._dcgmHandle.handle, self._groupId)
         dfvc.GetLatestValues(fieldGroup)
@@ -150,7 +154,7 @@ class DcgmGroupSamples:
     Returns DcgmFieldValueEntityCollection object. Use its .values[entityGroupId][entityId][fieldId][0].value to access values
     '''
 
-    def GetLatest_v2(self, fieldGroup):
+    def GetLatest_v2(self, fieldGroup) -> DcgmFieldValueEntityCollection:
         dfvec = dcgm_field_helpers.DcgmFieldValueEntityCollection(
             self._dcgmHandle.handle, self._groupId)
         dfvec.GetLatestValues(fieldGroup)
@@ -218,12 +222,12 @@ class DcgmGroupSamples:
     just this group's.
     '''
 
-    def UpdateAllFields(self, waitForUpdate):
+    def UpdateAllFields(self, waitForUpdate) -> None:
         self._dcgmHandle.UpdateAllFields(waitForUpdate)
 
 
 class DcgmGroupHealth:
-    def __init__(self, dcgmHandle, groupId, dcgmGroup):
+    def __init__(self, dcgmHandle, groupId, dcgmGroup) -> None:
         self._dcgmHandle = dcgmHandle
         self._groupId = groupId
         self._dcgmGroup = dcgmGroup
@@ -236,7 +240,7 @@ class DcgmGroupHealth:
     maxKeepAge: How long DCGM should keep health data around once it has been retrieved from the driver in seconds
     '''
 
-    def Set(self, systems, updateInterval=None, maxKeepAge=None):
+    def Set(self, systems, updateInterval=None, maxKeepAge=None) -> None:
         if updateInterval is None or maxKeepAge is None:
             ret = dcgm_agent.dcgmHealthSet(
                 self._dcgmHandle.handle, self._groupId, systems)
@@ -268,14 +272,14 @@ class DcgmGroupHealth:
     Returns a dcgm_structs.c_dcgmHealthResponse_* object that contains results for each GPU/entity
     '''
 
-    def Check(self, version=dcgm_structs.dcgmHealthResponse_version5):
+    def Check(self, version: int=dcgm_structs.dcgmHealthResponse_version5):
         resp = dcgm_agent.dcgmHealthCheck(
             self._dcgmHandle.handle, self._groupId, version)
         return resp
 
 
 class DcgmGroupPolicy:
-    def __init__(self, dcgmHandle, groupId, dcgmGroup):
+    def __init__(self, dcgmHandle, groupId, dcgmGroup) -> None:
         self._dcgmHandle = dcgmHandle
         self._groupId = groupId
         self._dcgmGroup = dcgmGroup
@@ -317,7 +321,7 @@ class DcgmGroupPolicy:
     Returns Nothing. Throws an exception on error
     '''
 
-    def Set(self, policy, statusHandle=None):
+    def Set(self, policy: c_dcgmPolicy_v1, statusHandle=None) -> None:
         if statusHandle:
             statusHandle = statusHandle.handle
         dcgm_agent.dcgmPolicySet(
@@ -346,7 +350,7 @@ class DcgmGroupPolicy:
     Returns Nothing. Throws an exception on error.
     '''
 
-    def Register(self, condition, callback=None, userData=None):
+    def Register(self, condition, callback=None, userData=None) -> None:
         if callback is None:
             raise pydcgm.DcgmException(
                 "Callback must be provided to register that is not None")
@@ -365,7 +369,7 @@ class DcgmGroupPolicy:
     Returns Nothing. Throws an exception on error.
     '''
 
-    def Unregister(self, condition):
+    def Unregister(self, condition) -> None:
         dcgm_agent.dcgmPolicyUnregister(
             self._dcgmHandle.handle, self._groupId, condition)
 
@@ -381,14 +385,14 @@ class DcgmGroupPolicy:
     policy manager was unable to perform another iteration.
     '''
 
-    def Trigger(self):
+    def Trigger(self) -> None:
         dcgm_agent.dcgmPolicyTrigger(self._dcgmHandle.handle)
 
     """
     Destructor: clean up any set policy or registered callback.
     """
 
-    def __del__(self):
+    def __del__(self) -> None:
         if self._condition != 0:
             logger.debug(
                 f"DcgmGroup Unregistering {self._condition} for group {self._groupId}")
@@ -419,7 +423,7 @@ class DcgmGroupPolicy:
 
 
 class DcgmGroupDiscovery:
-    def __init__(self, dcgmHandle, groupId, dcgmGroup):
+    def __init__(self, dcgmHandle, groupId, dcgmGroup) -> None:
         self._dcgmHandle = dcgmHandle
         self._groupId = groupId
         self._dcgmGroup = dcgmGroup
@@ -435,7 +439,7 @@ class DcgmGroupDiscovery:
 
 
 class DcgmGroupStats:
-    def __init__(self, dcgmHandle, groupId, dcgmGroup):
+    def __init__(self, dcgmHandle, groupId, dcgmGroup) -> None:
         self._dcgmHandle = dcgmHandle
         self._groupId = groupId
         self._dcgmGroup = dcgmGroup
@@ -452,7 +456,7 @@ class DcgmGroupStats:
     handle.UpdateAllFields(True) to make sure that the fields have updated at least once.
     '''
 
-    def WatchPidFields(self, updateFreq, maxKeepAge, maxKeepSamples):
+    def WatchPidFields(self, updateFreq, maxKeepAge, maxKeepSamples) -> None:
         ret = dcgm_agent.dcgmWatchPidFields(
             self._dcgmHandle.handle, self._groupId, updateFreq, maxKeepAge, maxKeepSamples)
         dcgm_structs._dcgmCheckReturn(ret)
@@ -480,7 +484,7 @@ class DcgmGroupStats:
     handle.UpdateAllFields(True) to make sure that the fields have updated at least once.
     '''
 
-    def WatchJobFields(self, updateFreq, maxKeepAge, maxKeepSamples):
+    def WatchJobFields(self, updateFreq, maxKeepAge, maxKeepSamples) -> None:
         ret = dcgm_agent.dcgmWatchJobFields(
             self._dcgmHandle.handle, self._groupId, updateFreq, maxKeepAge, maxKeepSamples)
         dcgm_structs._dcgmCheckReturn(ret)
@@ -499,7 +503,7 @@ class DcgmGroupStats:
     Returns Nothing (Will throw exception on error)
     '''
 
-    def StartJobStats(self, jobId):
+    def StartJobStats(self, jobId) -> None:
         ret = dcgm_agent.dcgmJobStartStats(
             self._dcgmHandle.handle, self._groupId, jobId)
         dcgm_structs._dcgmCheckReturn(ret)
@@ -515,7 +519,7 @@ class DcgmGroupStats:
     Returns Nothing (Will throw exception on error)
     '''
 
-    def StopJobStats(self, jobId):
+    def StopJobStats(self, jobId) -> None:
         ret = dcgm_agent.dcgmJobStopStats(self._dcgmHandle.handle, jobId)
         dcgm_structs._dcgmCheckReturn(ret)
 
@@ -561,7 +565,7 @@ class DcgmGroupStats:
 
 
 class DcgmGroupAction:
-    def __init__(self, dcgmHandle, groupId, dcgmGroup):
+    def __init__(self, dcgmHandle, groupId, dcgmGroup) -> None:
         self._dcgmHandle = dcgmHandle
         self._groupId = groupId
         self._dcgmGroup = dcgmGroup
@@ -616,7 +620,7 @@ class DcgmGroupAction:
 
 
 class DcgmGroupProfiling:
-    def __init__(self, dcgmHandle, groupId, dcgmGroup):
+    def __init__(self, dcgmHandle, groupId, dcgmGroup) -> None:
         """
 
         Parameters
@@ -666,7 +670,7 @@ class DcgmGroup:
     groupType is the type of group to create. See dcgm_structs.DCGM_GROUP_? constants.
     '''
 
-    def __init__(self, dcgmHandle, groupId=None, groupName=None, groupType=dcgm_structs.DCGM_GROUP_EMPTY):
+    def __init__(self, dcgmHandle, groupId=None, groupName: Self | None=None, groupType: int=dcgm_structs.DCGM_GROUP_EMPTY) -> None:
         self._dcgmHandle = dcgmHandle
 
         if groupId is None and groupName is None:
@@ -708,7 +712,7 @@ class DcgmGroup:
     Remove this group from DCGM. This object will no longer be valid after this call.
     '''
 
-    def Delete(self):
+    def Delete(self) -> None:
         del self.config
         self.config = None
         del self.samples
@@ -748,7 +752,7 @@ class DcgmGroup:
     # reset if you wish to delete them in a running standalone hostengine as
     # well
     @classmethod
-    def clear(cls, dcgmHandle=None):
+    def clear(cls, dcgmHandle=None) -> None:
         with cls.groupLock:
             if dcgmHandle is None:
                 cls.groups = {}
@@ -759,7 +763,7 @@ class DcgmGroup:
     # Besides calling clear() above, this also calls Delete() on the groups,
     # which has them deleted in the running standlone hostengine.
     @classmethod
-    def reset(cls):
+    def reset(cls) -> None:
         with cls.groupLock:
             for handle, groupDict in cls.groups.items():
                 remove = list(groupDict)
@@ -772,7 +776,7 @@ class DcgmGroup:
     Private method to determine if our groupId is a predefined one
     '''
 
-    def _IsGroupIdStatic(self):
+    def _IsGroupIdStatic(self) -> bool:
         if self._groupId == dcgm_structs.DCGM_GROUP_ALL_GPUS or \
            self._groupId == dcgm_structs.DCGM_GROUP_ALL_NVSWITCHES:
             return True
@@ -786,7 +790,7 @@ class DcgmGroup:
     Returns Nothing. Throws an exception on error
     '''
 
-    def AddGpu(self, gpuId):
+    def AddGpu(self, gpuId) -> None:
         if self._IsGroupIdStatic():
             raise pydcgm.DcgmException("Can't add a GPU to a static group")
 
@@ -803,7 +807,7 @@ class DcgmGroup:
     Returns Nothing. Throws an exception on error
     '''
 
-    def AddEntity(self, entityGroupId, entityId):
+    def AddEntity(self, entityGroupId, entityId) -> None:
         if self._IsGroupIdStatic():
             raise pydcgm.DcgmException("Can't add an entity to a static group")
 
@@ -819,7 +823,7 @@ class DcgmGroup:
     Returns Nothing. Throws an exception on error
     '''
 
-    def RemoveGpu(self, gpuId):
+    def RemoveGpu(self, gpuId) -> None:
         if self._IsGroupIdStatic():
             raise pydcgm.DcgmException(
                 "Can't remove a GPU from a static group")
@@ -837,7 +841,7 @@ class DcgmGroup:
     Returns Nothing. Throws an exception on error
     '''
 
-    def RemoveEntity(self, entityGroupId, entityId):
+    def RemoveEntity(self, entityGroupId, entityId) -> None:
         if self._IsGroupIdStatic():
             raise pydcgm.DcgmException(
                 "Can't remove an entity from a static group")

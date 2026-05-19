@@ -15,6 +15,15 @@
 # Python bindings for "dcgm_structs.h"
 ##
 
+from typing import Sequence
+from typing import Self
+from _ctypes import _SimpleCData
+from _ctypes import _Pointer
+from _ctypes import _CData
+from _ctypes import Union
+from _ctypes import Structure
+from _ctypes import CFuncPtr
+from _ctypes import Array
 from ctypes import *
 from ctypes.util import find_library
 import sys
@@ -354,7 +363,7 @@ class DCGMError(Exception):
         DCGM_ST_GPUS_DETACHED: "Cannot perform the requested operation because the GPUs are detached",
     }
 
-    def __new__(typ, value):
+    def __new__(typ, value) -> Self:
         """
         Maps value to a proper subclass of DCGMError.
         """
@@ -385,10 +394,10 @@ class DCGMError(Exception):
     def __eq__(self, other):
         return self.value == other.value
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(self.value)
 
-    def SetAdditionalInfo(self, msg):
+    def SetAdditionalInfo(self, msg) -> None:
         """
         Sets msg as additional information returned by the string representation of DCGMError and subclasses.
         Example output for DCGMError_Uninitialized subclass, with msg set to 'more info msg here' is 
@@ -403,7 +412,7 @@ def dcgmExceptionClass(error_code):
     return DCGMError._valClassMapping.get(error_code)
 
 
-def _extractDCGMErrorsAsClasses():
+def _extractDCGMErrorsAsClasses() -> None:
     '''
     Generates a hierarchy of classes on top of DCGMLError class.
 
@@ -447,7 +456,7 @@ _dcgmUnit_t = POINTER(struct_c_dcgmUnit_t)
 
 
 class _WrappedStructure():
-    def __init__(self, obj):
+    def __init__(self, obj) -> None:
         self.__dict__["_obj"] = obj
 
     def __getattr__(self, key):
@@ -500,8 +509,8 @@ class _DcgmStructure(Structure):
             return _WrappedStructure(value)
         return value
 
-    def __setattr__(self, key, raw_value):
-        def find_field_type(fields, key):
+    def __setattr__(self, key, raw_value) -> None:
+        def find_field_type(fields: Sequence[tuple[str, type[_CDataType]] | tuple[str, type[_CDataType], int]], key):
             field = (f[1] for f in fields if f[0] == key)
             try:
                 return next(field)
@@ -530,8 +539,8 @@ class DcgmUnion(Union):
             return _WrappedStructure(value)
         return value
 
-    def __setattr__(self, key, raw_value):
-        def find_field_type(fields, key):
+    def __setattr__(self, key, raw_value) -> None:
+        def find_field_type(fields: Sequence[tuple[str, type[_CDataType]] | tuple[str, type[_CDataType], int]], key):
             field = (f[1] for f in fields if f[0] == key)
             try:
                 return next(field)
@@ -572,7 +581,7 @@ class _PrintableStructure(_DcgmStructure):
     """
     _fmt_ = {}
 
-    def __str__(self):
+    def __str__(self) -> str:
         result = []
         for x in self._fields_:
             key = x[0]
@@ -585,7 +594,7 @@ class _PrintableStructure(_DcgmStructure):
             result.append(("%s: " + fmt) % (key, value))
         return self.__class__.__name__ + "(" + ", ".join(result) + ")"
 
-    def FieldsSizeof(self):
+    def FieldsSizeof(self) -> int:
         size = 0
         for s, t in self._fields_:
             size = size + sizeof(t)
@@ -595,7 +604,7 @@ class _PrintableStructure(_DcgmStructure):
 
 
 class DcgmJSONEncoder(json.JSONEncoder):
-    def default(self, o):   # pylint: disable=method-hidden
+    def default(self, o: _PrintableStructure):   # pylint: disable=method-hidden
         if isinstance(o, _PrintableStructure):
             retVal = {}
             for fieldName, fieldType in o._fields_:
@@ -626,7 +635,7 @@ class DcgmJSONEncoder(json.JSONEncoder):
 # Creates a unique version number for each struct
 
 
-def make_dcgm_version(struct, ver):
+def make_dcgm_version(struct: type[c_dcgmAllFieldGroup_v1] | type[c_dcgmComputeInstanceProfileInfo_v1] | type[c_dcgmComputeInstanceProfiles_v1] | type[c_dcgmConnectV2Params_v1] | type[c_dcgmConnectV2Params_v2] | type[c_dcgmConnectV3Params_v1] | type[c_dcgmCpuHierarchyOwnedCores_v1] | type[c_dcgmCpuHierarchy_v1] | type[c_dcgmCpuHierarchy_v2] | type[c_dcgmCreateMigEntity_v1] | type[c_dcgmDeleteMigEntity_v1] | type[c_dcgmDeviceAttributes_deprecated_v1] | type[c_dcgmDeviceAttributes_v3] | type[c_dcgmDeviceConfig_v2] | type[c_dcgmDeviceMigAttributesInfo_v1] | type[c_dcgmDeviceMigAttributes_v1] | type[c_dcgmDeviceTopology_v1] | type[c_dcgmDeviceVgpuConfig_v1] | type[c_dcgmDeviceVgpuTypeInfo_v2] | type[c_dcgmDeviceWorkloadPowerProfilesStatus_v1] | type[c_dcgmDiagResponse_v10] | type[c_dcgmDiagResponse_v11] | type[c_dcgmDiagResponse_v12] | type[c_dcgmDiagResponse_v9] | type[c_dcgmDiagStatus_v1] | type[c_dcgmDiagTestAuxData_v1] | type[c_dcgmEnvVarInfo_v1] | type[c_dcgmFieldGroupInfo_v1] | type[c_dcgmFieldSummaryRequest_v1] | type[c_dcgmFieldValue_v1] | type[c_dcgmFieldValue_v2] | type[c_dcgmGpuInstanceProfileInfo_v1] | type[c_dcgmGpuInstanceProfiles_v1] | type[c_dcgmGroupInfo_v3] | type[c_dcgmGroupTopology_v1] | type[c_dcgmHealthResponse_v5] | type[c_dcgmHealthSetParams_v2] | type[c_dcgmHostengineHealth_v1] | type[c_dcgmIntrospectCpuUtil_v1] | type[c_dcgmIntrospectMemory_v1] | type[c_dcgmJobInfo_v3] | type[c_dcgmMigHierarchy_v2] | type[c_dcgmMnDiagEntityResult_v1] | type[c_dcgmMnDiagEntity_v1] | type[c_dcgmMnDiagError_v1] | type[c_dcgmMnDiagHosts_v1] | type[c_dcgmMnDiagInfo_v1] | type[c_dcgmMnDiagResponse_v1] | type[c_dcgmMnDiagTestAuxData_v1] | type[c_dcgmMnDiagTestRun_v1] | type[c_dcgmModuleGetStatuses_v1] | type[c_dcgmModulesReloadable_v1] | type[c_dcgmNvLinkP2PStatus_v1] | type[c_dcgmNvLinkStatus_v2] | type[c_dcgmNvLinkStatus_v4] | type[c_dcgmPidInfo_v2] | type[c_dcgmPolicyUpdate_v1] | type[c_dcgmPolicyViolation_v1] | type[c_dcgmPolicy_v1] | type[c_dcgmProfGetMetricGroups_v3] | type[c_dcgmRunDiag_v10] | type[c_dcgmRunDiag_v7] | type[c_dcgmRunDiag_v8] | type[c_dcgmRunDiag_v9] | type[c_dcgmRunMnDiag_v1] | type[c_dcgmRunningProcess_v1] | type[c_dcgmSettingsSetLoggingSeverity_v2] | type[c_dcgmTopoSchedHint_v1] | type[c_dcgmUnwatchFieldValue_v1] | type[c_dcgmUpdateAllFields_v1] | type[c_dcgmVersionInfo_v2] | type[c_dcgmVgpuDeviceAttributes_v6] | type[c_dcgmVgpuDeviceAttributes_v7] | type[c_dcgmVgpuInstanceAttributes_v1] | type[c_dcgmWatchFieldValue_v1] | type[c_dcgmWorkloadPowerProfileInfo_v1] | type[c_dcgmWorkloadPowerProfileProfilesInfo_v1] | type[c_dcgmWorkloadPowerProfile_v1], ver: int) -> int:
     return sizeof(struct) | (ver << 24)
 
 
@@ -635,7 +644,7 @@ def make_dcgm_version(struct, ver):
 _dcgmGetFunctionPointer_cache = dict()
 
 
-def _dcgmGetFunctionPointer(name):
+def _dcgmGetFunctionPointer(name: str):
     global dcgmLib
 
     if name in _dcgmGetFunctionPointer_cache:
@@ -658,7 +667,7 @@ def _dcgmGetFunctionPointer(name):
 # C function wrappers ##
 
 
-def _LoadDcgmLibrary(libDcgmPath=None):
+def _LoadDcgmLibrary(libDcgmPath=None) -> None:
     """
     Load the library if it isn't loaded already
     :param libDcgmPath: Optional path to the libdcgm*.so libraries. Will use system defaults if not specified.
@@ -711,7 +720,7 @@ def _LoadDcgmLibrary(libDcgmPath=None):
             libLoadLock.release()
 
 
-def _dcgmInit(libDcgmPath=None):
+def _dcgmInit(libDcgmPath=None) -> None:
     _LoadDcgmLibrary(libDcgmPath)
     # Atomically update refcount
     global _dcgmLib_refcount
@@ -721,13 +730,13 @@ def _dcgmInit(libDcgmPath=None):
     return None
 
 
-def _dcgmCheckReturn(ret):
+def _dcgmCheckReturn(ret: int) -> int:
     if ret != DCGM_ST_OK:
         raise DCGMError(ret)
     return ret
 
 
-def _dcgmShutdown():
+def _dcgmShutdown() -> None:
     # Leave the library loaded, but shutdown the interface
     fn = _dcgmGetFunctionPointer("dcgmShutdown")
     ret = fn()
@@ -742,7 +751,7 @@ def _dcgmShutdown():
     return None
 
 
-def _dcgmErrorString(result):
+def _dcgmErrorString(result: object):
     fn = _dcgmGetFunctionPointer("dcgmErrorString")
     fn.restype = c_char_p  # otherwise return is an int
     str = fn(result)
@@ -767,7 +776,7 @@ class c_dcgm_link_t(_PrintableStructure):
         return (self.id << 24) | (self.index << 8) | self.type
 
     @raw.setter
-    def raw(self, value):
+    def raw(self, value) -> None:
         """Set the parsed fields by manually unpacking the raw entity ID"""
         self.type = value & 0xFF
         self.index = (value >> 8) & 0xFFFF
@@ -1593,7 +1602,7 @@ class c_dcgmDeviceVgpuConfig_v1(_PrintableStructure):
         ('mPowerLimit', c_dcgmConfigPowerLimit)
     ]
 
-    def SetBlank(self):
+    def SetBlank(self) -> None:
         # Does not set version or gpuId
         self.mEccMode = dcgmvalue.DCGM_INT32_BLANK
         self.mPerfState.syncBoost = dcgmvalue.DCGM_INT32_BLANK

@@ -21,7 +21,7 @@ from dcgm_structs import dcgmExceptionClass
 
 
 @test_utils.run_with_embedded_host_engine()
-def test_dcgm_field_group_duplicate_name(handle):
+def test_dcgm_field_group_duplicate_name(handle) -> None:
     fieldIds = [dcgm_fields.DCGM_FI_DRIVER_VERSION, ]
     handle = pydcgm.DcgmHandle(handle)
     fieldGroup = pydcgm.DcgmFieldGroup(handle, "dupeme", fieldIds)
@@ -30,7 +30,7 @@ def test_dcgm_field_group_duplicate_name(handle):
 
 
 @test_utils.run_with_embedded_host_engine()
-def test_dcgm_field_group_add_remove(handle):
+def test_dcgm_field_group_add_remove(handle) -> None:
     fieldIds = [dcgm_fields.DCGM_FI_DRIVER_VERSION,
                 dcgm_fields.DCGM_FI_DEV_NAME, dcgm_fields.DCGM_FI_DEV_BRAND]
     handle = pydcgm.DcgmHandle(handle)
@@ -54,7 +54,7 @@ def test_dcgm_field_group_add_remove(handle):
 
 
 @test_utils.run_with_embedded_host_engine()
-def test_dcgm_field_group_info(handle):
+def test_dcgm_field_group_info(handle) -> None:
     fieldIds = [dcgm_fields.DCGM_FI_DRIVER_VERSION,
                 dcgm_fields.DCGM_FI_DEV_NAME, dcgm_fields.DCGM_FI_DEV_BRAND]
     handle = pydcgm.DcgmHandle(handle)
@@ -76,7 +76,7 @@ def test_dcgm_field_group_info(handle):
 
 
 @test_utils.run_with_embedded_host_engine()
-def test_dcgm_field_group_get_by_name(handle):
+def test_dcgm_field_group_get_by_name(handle) -> None:
     fieldIds = [dcgm_fields.DCGM_FI_DRIVER_VERSION,
                 dcgm_fields.DCGM_FI_DEV_NAME, dcgm_fields.DCGM_FI_DEV_BRAND]
     handle = pydcgm.DcgmHandle(handle)

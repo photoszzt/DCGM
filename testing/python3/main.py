@@ -21,7 +21,7 @@ import sys
 print('Python version: {}'.format(sys.version))
 
 
-def _version_check():
+def _version_check() -> None:
     version = sys.version.split()[0]  # Discard compilation information
     version_tuple = tuple(map(int, version.split('.')))
     if version_tuple < (3, 5):
@@ -36,7 +36,7 @@ import importlib.util
 PATH_CHECK_MODNAME = 'test_utils'
 
 
-def _path_perms_check():
+def _path_perms_check() -> None:
     module_spec = importlib.util.find_spec(PATH_CHECK_MODNAME)
     if module_spec is None:
         print('Verify access permissions for the root user on all parent dirs of the working directory.')
@@ -59,7 +59,7 @@ from run_tests import run_tests
 from run_tests import print_test_info
 
 
-def is_file_binary(FileName):
+def is_file_binary(FileName) -> bool | None:
     """ Checks for binary files and skips logging if True """
     try:
         with open(FileName, 'rb') as f:
@@ -75,7 +75,7 @@ def is_file_binary(FileName):
         pass
 
 
-def _summarize_tests():
+def _summarize_tests() -> None:
 
     test_root = test_utils.SubTest.get_all_subtests()[0]
     tests_ok_count = test_root.stats[test_utils.SubTest.SUCCESS]
@@ -109,7 +109,7 @@ def _summarize_tests():
                     (logger.log_archive_filename))
 
 
-def _run_burn_in_tests():
+def _run_burn_in_tests() -> None:
     file_name = "burn_in_stress.py"
     if os.path.exists(file_name):
         logger.info(
@@ -138,7 +138,7 @@ def _run_burn_in_tests():
         logger.warning("burn_in_stress.py script not found!")
 
 
-def do_root_check_possibly_exit():
+def do_root_check_possibly_exit() -> None:
     if not option_parser.options.no_root_check:
         if not utils.is_root():
             print("The test framework must be run as root to function properly. Switch to root by running 'sudo su'.")
@@ -146,7 +146,7 @@ def do_root_check_possibly_exit():
 
 
 class TestFrameworkSetup(object):
-    def __enter__(self):
+    def __enter__(self) -> None:
         '''Initialize the test framework or exit on failure'''
 
         os.environ['__DCGM_TESTING_FRAMEWORK_ACTIVE'] = '1'
@@ -225,14 +225,14 @@ class TestFrameworkSetup(object):
         # Tell DCGM how to find our testing package's NVVS
         test_utils.set_nvvs_bin_path()
 
-    def __exit__(self, type, value, traceback):
+    def __exit__(self, type, value, traceback) -> None:
         logger.capture_dmesg()
         logger.close()
         del os.environ['__DCGM_TESTING_FRAMEWORK_ACTIVE']
         pass
 
 
-def main():
+def main() -> None:
     with TestFrameworkSetup():
         if not option_parser.options.no_env_check:
             if not test_utils.is_test_environment_sane():

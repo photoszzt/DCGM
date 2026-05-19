@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # {{{ http://code.activestate.com/recipes/577479/ (r1)
+from typing import Sized
 from collections import namedtuple
 from functools import wraps
 import ctypes
@@ -52,7 +53,7 @@ def cache():
     """
 
     def decorating_function(user_function,
-                            tuple=tuple, sorted=sorted, len=len, KeyError=KeyError):
+                            tuple: type[tuple]=tuple, sorted=sorted, len: (obj: Sized, /) -> int=len, KeyError: type[KeyError]=KeyError):
 
         cache = dict()
         hits_misses = [0, 0]
@@ -72,11 +73,11 @@ def cache():
                 hits_misses[1] += 1
             return result
 
-        def cache_info():
+        def cache_info() -> _CacheInfo:
             """Report cache statistics"""
             return _CacheInfo(hits_misses[0], hits_misses[1], None, len(cache))
 
-        def cache_clear():
+        def cache_clear() -> None:
             """Clear the cache and cache statistics"""
             cache.clear()
             hits_misses = [0, 0]
@@ -93,7 +94,7 @@ def cache():
 if __name__ == '__main__':
 
     @cache()
-    def fib(n):
+    def fib(n: int):
         if n < 2:
             return 1
         return fib(n - 1) + fib(n - 2)
@@ -115,7 +116,7 @@ if __name__ == '__main__':
 # Log an exception message before raising it.
 
 
-def logException(msg):
+def logException(msg: str):
     logger.error("Exception. " + msg)
     raise Exception(msg)
 
@@ -143,14 +144,14 @@ _UserInfo = namedtuple("UserInfo", "uid, gid, name")
 
 
 @cache()
-def get_user_idinfo(username):
+def get_user_idinfo(username) -> _UserInfo:
     from pwd import getpwnam
     info = getpwnam(username)
     return _UserInfo(info.pw_uid, info.pw_gid, info.pw_name)
 
 
 @cache()
-def get_name_by_uid(uid):
+def get_name_by_uid(uid) -> str:
     from pwd import getpwuid
     return getpwuid(uid).pw_name
 
@@ -158,7 +159,7 @@ def get_name_by_uid(uid):
 script_dir = os.path.realpath(sys.path[0])
 
 
-def find_files(path=script_dir, mask="*", skipdirs=None, recurse=True, test_file_name="", skip_file_name=""):
+def find_files(path: str=script_dir, mask: str="*", skipdirs=None, recurse: bool=True, test_file_name: str="", skip_file_name: str=""):
     skipdirs = skipdirs or []
     # Recurse subdirectories?
     if recurse:
@@ -186,7 +187,7 @@ def find_files(path=script_dir, mask="*", skipdirs=None, recurse=True, test_file
                     yield os.path.abspath(os.path.join(root, filename))
 
 
-def which(name):
+def which(name) -> bool:
     """
     Returns True if command line application is in the PATH.
     """
@@ -214,28 +215,28 @@ if current_os == "VMkernel":
     current_os = "Linux"  # Treat VMkernel as normal Linux.
 
 
-def is_windows(os=current_os):
+def is_windows(os: str=current_os) -> bool:
     return os == "Windows"
 
 
-def is_linux(os=current_os):
+def is_linux(os: str=current_os) -> bool:
     return os == "Linux"
 
 
-def is_cuda_supported_system():
+def is_cuda_supported_system() -> bool:
     # CUDA is supported everywhere except in virtualization environments
     return is_bare_metal_system()
 
 
-def is_healthmon_supported_system():
+def is_healthmon_supported_system() -> bool:
     return is_linux() and is_cuda_supported_system()
 
 
-def is_esx_hypervisor_system():
+def is_esx_hypervisor_system() -> bool:
     return platform.system() == "VMkernel"
 
 
-def is_microsoft_hyper_v():
+def is_microsoft_hyper_v() -> bool | None:
 
     try:
         dmi = check_output(["which", "dmidecode"])
@@ -258,7 +259,7 @@ def is_microsoft_hyper_v():
 # DGX-2 VM uses QEMU
 
 
-def is_qemu_vm():
+def is_qemu_vm() -> bool:
     """
     Returns True if QEMU VM is running on the system()
     """
@@ -274,7 +275,7 @@ def is_qemu_vm():
         return False
 
 
-def is_bare_metal_system():
+def is_bare_metal_system() -> bool:
     if is_esx_hypervisor_system():
         return False
     elif is_linux() and linux_distribution()[0] == "XenServer":
@@ -287,21 +288,21 @@ def is_bare_metal_system():
         return True
 
 
-def is_64bit():
+def is_64bit() -> bool:
     if os.name == 'nt':
         if platform.uname()[4] == 'AMD64':
             return True
     return platform.architecture()[0] == "64bit"
 
 
-def is_32bit():
+def is_32bit() -> bool:
     if os.name == 'nt':
         if platform.uname()[4] == 'x86':
             return True
     return platform.architecture()[0] == "32bit"
 
 
-def is_system_64bit():
+def is_system_64bit() -> bool:
     return platform.machine() in ["x86_64", "AMD64"]
 
 
@@ -315,7 +316,7 @@ assert platform_identifier in ["Linux_32bit", "Linux_64bit", "Windows_64bit",
 valid_file_name_characters = "-_.() " + string.ascii_letters + string.digits
 
 
-def string_to_valid_file_name(s):
+def string_to_valid_file_name(s) -> str:
     """
     Replaces invalid characters from string and replaces with dot '.'
 
@@ -358,7 +359,7 @@ def gen_diff(left, right):
                     yield ("|", l, r)
 
 
-def plural_s(val):
+def plural_s(val) -> str:
     """
     returns "s" if val > 1 or "" otherwise.
     Can be used in strings to have proper plural form.
@@ -392,7 +393,7 @@ stat_everyone_read_write = stat.S_IROTH | stat.S_IWOTH | stat.S_IRUSR | stat.S_I
 # Exit if the current (effective) user can't create a file in the base test directory
 
 
-def verify_file_permissions(user):
+def verify_file_permissions(user: str) -> None:
 
     # Not a complete check, but enough to verify absolute path permission issues
     try:
@@ -410,7 +411,7 @@ def verify_file_permissions(user):
 # file system permissions for the test framework
 
 
-def verify_user_file_permissions():
+def verify_user_file_permissions() -> None:
     import test_utils
 
     # Check current user
@@ -430,7 +431,7 @@ def verify_user_file_permissions():
 # Exit if 'localhost' does not resolve to 127.0.0.1
 
 
-def verify_localhost_dns():
+def verify_localhost_dns() -> None:
     try:
         host_ip = socket.gethostbyname("localhost")
     except:
@@ -443,7 +444,7 @@ def verify_localhost_dns():
 # Util method to check if the mps server is running in the background
 
 
-def is_mps_server_running():
+def is_mps_server_running() -> bool:
     """
     Returns True if MPS server is running on the system
     """
@@ -465,7 +466,7 @@ def is_mps_server_running():
         return False
 
 
-def shorten_path(path, shorten_to_levels=2):
+def shorten_path(path: int, shorten_to_levels: int=2):
     '''
     Given a path, return a path of only the last "shorten_to_levels" levels.
     For example, shorten_path('a/b/c/d/e', 2) => "d/e"
@@ -475,7 +476,7 @@ def shorten_path(path, shorten_to_levels=2):
     return os.path.join(*shortened_paths)
 
 
-def create_dir(path):
+def create_dir(path) -> None:
     '''
     Create the full directory structure specified by path.  If the directory cannot be created 
     due to permission issues or because part of the path already exists and is not a directory
@@ -488,7 +489,7 @@ def create_dir(path):
             raise
 
 
-def wait_for_pid_to_die(pid):
+def wait_for_pid_to_die(pid) -> None:
     '''This function returns once the pid no longer exists'''
     while True:
         try:
@@ -497,7 +498,7 @@ def wait_for_pid_to_die(pid):
             break
 
 
-def verify_dcgm_service_not_active():
+def verify_dcgm_service_not_active() -> None:
     cmd = 'systemctl is-active --quiet dcgm'
     p = subprocess.Popen(
         cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -514,7 +515,7 @@ def verify_dcgm_service_not_active():
             "Tests cannot run because the Nvidia DCGM service is active")
 
 
-def verify_nvidia_fabricmanager_service_active_if_needed():
+def verify_nvidia_fabricmanager_service_active_if_needed() -> None:
     cmd = "find /dev -regextype egrep -regex '/dev/nvidia-nvswitch[0-9]+'"
     p = subprocess.Popen(
         cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -548,7 +549,7 @@ def verify_nvidia_fabricmanager_service_active_if_needed():
             logException(f'{errmsg} Resolve the problem before proceeding.')
 
 
-def checkDmesgForProblems():
+def checkDmesgForProblems() -> None:
     if not option_parser.options.dvssc_testing:
         ignore_reason = 'Ignored as \'--dvssc-testing\' is not set'
     if option_parser.options.ignore_dmesg_checks:
@@ -574,7 +575,7 @@ def checkDmesgForProblems():
         r'NVRM: .*Assertion failed:',
     ]
 
-    def check_display_limit():
+    def check_display_limit() -> None:
         if display_limit <= 0:
             logger.info(
                 "Maximum problems displayed. Further potential problems may be present and not displayed here.")
@@ -630,7 +631,7 @@ def checkDmesgForProblems():
                 check_display_limit()
 
 
-def checkProcesses():
+def checkProcesses() -> None:
     process_list = \
         [
             'nv-hostengine',
@@ -655,7 +656,7 @@ def checkProcesses():
                     f'{errmsg} Remove the conflicting processes before proceeding.')
 
 
-def checkSystemLoad():
+def checkSystemLoad() -> None:
     try:
         nproc = os.cpu_count()
         warnAt = 0.85 * nproc
@@ -685,13 +686,13 @@ def checkSystemLoad():
         return
 
 
-def checkMemoryPressure():
+def checkMemoryPressure() -> None:
     failAtMem = 0.95
     warnAtMem = 0.90
     failAtSwap = 1.00
     warnAtSwap = 0.50
 
-    def normalizeToKb(val, units):
+    def normalizeToKb(val: int, units: str) -> float | int:
         if not units:
             if val == 0:
                 return val
@@ -710,7 +711,7 @@ def checkMemoryPressure():
         else:
             raise ValueError(f'Unhandled unit type \"{units}\"')
 
-    def collectNormalizedVal(line):
+    def collectNormalizedVal(line: str) -> float | int:
         _, valWithUnits = line.split(':', 1)
         valWithUnits = valWithUnits.strip()
         try:
@@ -767,7 +768,7 @@ def checkMemoryPressure():
                            'retry before filing a bug report.')
 
 
-def verifyEcosystem():
+def verifyEcosystem() -> None:
     if option_parser.options.filter_tests:
         logger.warning(
             "filter_tests has been selected, skipping preflight checks.")
@@ -778,7 +779,7 @@ def verifyEcosystem():
     checkDmesgForProblems()
 
 
-def find_process_using_hostengine_port():
+def find_process_using_hostengine_port() -> int | None:
     cmd = 'lsof -i -P -n | grep -Fw 5555'
     p = subprocess.Popen(
         cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -820,7 +821,7 @@ Attempt to clean up zombie or accidentally left-open processes using port 5555
 '''
 
 
-def verify_hostengine_port_is_usable():
+def verify_hostengine_port_is_usable() -> None:
     pid = find_process_using_hostengine_port()
     if not pid:
         # no hostengine process, move on with life
@@ -832,7 +833,7 @@ def verify_hostengine_port_is_usable():
     return
 
 
-def get_testing_framework_library_path():
+def get_testing_framework_library_path() -> LiteralString:
     # type: () -> string
     """
     Returns platform dependent path to the dcgm libraries.
@@ -840,7 +841,7 @@ def get_testing_framework_library_path():
     :return: String with relative path to the libdcgm*.so libraries
     """
 
-    def _get_arch_string():
+    def _get_arch_string() -> str:
         # type: () -> string
         if platform.machine() in ["x86_64", "AMD64"]:
             return 'amd64'
@@ -858,7 +859,7 @@ def get_testing_framework_library_path():
 """
 
 
-def verify_binary_locations():
+def verify_binary_locations() -> LiteralString:
     nvvs_location = "%s/apps/nvvs/nvvs" % os.getcwd()
     if not os.path.isfile(nvvs_location):
         print(("nvvs is NOT installed in: %s\n" % nvvs_location))

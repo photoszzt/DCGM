@@ -20,7 +20,7 @@ _MOCK_DIR = os.path.abspath("mocks")
 _LIVE_NCCL_BASE = os.path.abspath("apps/nvvs/nccl")
 
 
-def _get_cuda_major_version():
+def _get_cuda_major_version() -> int:
     try:
         dcgm_nvml.nvmlInit()
         try:
@@ -33,7 +33,7 @@ def _get_cuda_major_version():
         return 13
 
 
-def _get_live_nccl_dir():
+def _get_live_nccl_dir() -> str:
     major = _get_cuda_major_version()
     return os.path.join(_LIVE_NCCL_BASE, f"cuda{major}")
 
@@ -73,19 +73,19 @@ _HE_ENV = {
 }
 
 
-def HE_Env(env):
+def HE_Env(env) -> dict[str, str]:
     return _HE_ENV[env].copy()
 
 
-def live_binary_path():
+def live_binary_path() -> str:
     return os.path.join(_get_live_nccl_dir(), "all_reduce_perf")
 
 
-def is_live_binary_available():
+def is_live_binary_available() -> bool:
     return os.path.isfile(live_binary_path())
 
 
-def HE_Env_Live(extra_env=None):
+def HE_Env_Live(extra_env=None) -> dict[str, str]:
     env = {
         "DCGM_NCCL_TESTS_BIN_PATH": _get_live_nccl_dir(),
         "DCGM_NCCL_TESTS_SKIP_BIN_PERMISSION_CHECK": "1",

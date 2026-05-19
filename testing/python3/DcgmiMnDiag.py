@@ -28,7 +28,7 @@ logFile = "nvvs_diag.log"
 
 class DcgmiMnDiag:
     def __init__(self, hostList=None, hostEngineAddress=None, testName=None, parameters=[],
-                 verbose=False, debugLevel=None, debugLogFile=None, dcgmiPrefix=""):
+                 verbose: bool=False, debugLevel=None, debugLogFile=None, dcgmiPrefix: str="") -> None:
         self.hostList = hostList
         self.hostEngineAddress = hostEngineAddress
         self.testName = testName
@@ -38,7 +38,7 @@ class DcgmiMnDiag:
         self.debugLogFile = debugLogFile
         self.dcgmiPrefix = dcgmiPrefix
 
-    def BuildDcgmiCommand(self):
+    def BuildDcgmiCommand(self) -> list[str]:
         cmd = []
 
         if self.dcgmiPrefix:
@@ -84,13 +84,13 @@ class DcgmiMnDiag:
 
         return cmd
 
-    def Run(self):
+    def Run(self) -> None:
         cmd = self.BuildDcgmiCommand()
         self.__RunDcgmiMnDiag__(cmd)
 
     #####################################
 
-    def __RunDcgmiMnDiag__(self, cmd):
+    def __RunDcgmiMnDiag__(self, cmd: list[str]) -> None:
         self.lastCmd = cmd
         self.lastStdout = ''
         self.lastStderr = ''
@@ -108,7 +108,7 @@ class DcgmiMnDiag:
         nsc.m_shutdownFlag.set()
         nsc.join()
 
-    def PrintLastRunStatus(self):
+    def PrintLastRunStatus(self) -> None:
         print("Ran '%s' and got return code %d" % (self.lastCmd, self.diagRet))
         print("stdout: \n\n%s" % self.lastStdout)
         if self.lastStderr:

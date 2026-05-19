@@ -23,7 +23,7 @@ import time
 @test_utils.run_only_on_linux()
 @test_utils.run_only_on_bare_metal()
 @test_utils.run_with_logging_on()
-def test_logging_env_var():
+def test_logging_env_var() -> None:
     """
     Verifies that we log to the supplied env var
     """
@@ -69,7 +69,7 @@ def test_logging_env_var():
 
 
 @test_utils.run_with_logging_on()
-def test_logging_modules():
+def test_logging_modules() -> None:
     """
     Verifies that module logging is functional
     """

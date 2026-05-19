@@ -15,6 +15,17 @@
 # pylint: skip-file
 # our build image does not have pynvml, skip this file
 
+from nvml_injection_structs import c_nvmlGpuFabricInfo_t_dcgm_ver
+from nvml_injection_structs import c_nvmlGpuFabricInfoV_t_dcgm_ver
+from dcgm_nvml import struct_c_nvmlDevice_t
+from dcgm_nvml import c_nvmlMemory_v2_t
+from dcgm_nvml import c_nvmlMemory_t
+from dcgm_nvml import c_nvmlEccSramErrorStatus_v1_t
+from ctypes import c_uint
+from _ctypes import _Pointer
+from _ctypes import _CData
+from _ctypes import Array
+from typing import Self
 from dcgm_nvml import *
 from typing import List
 import yaml
@@ -54,14 +65,14 @@ def run_nvml_func(func, *args, **kwargs):
         return error.value, 0
 
 
-def run_nvml_func_str(func_str, *args, **kwargs):
+def run_nvml_func_str(func_str: str, *args, **kwargs):
     try:
         return NVML_SUCCESS, eval(f"{func_str}(*args, **kwargs)")
     except NVMLError as error:
         return error.value, 0
 
 
-def run_nvml_no_output_func_str(func_str, *args, **kwargs):
+def run_nvml_no_output_func_str(func_str: str, *args, **kwargs):
     try:
         eval(f"{func_str}(*args, **kwargs)")
         return NVML_SUCCESS
@@ -69,7 +80,7 @@ def run_nvml_no_output_func_str(func_str, *args, **kwargs):
         return error.value
 
 
-def run_nvml_two_attrs_func_str(func_str, *args, **kwargs):
+def run_nvml_two_attrs_func_str(func_str: str, *args, **kwargs):
     try:
         ret_val1, ret_val2 = eval(f"{func_str}(*args, **kwargs)")
         return NVML_SUCCESS, ret_val1, ret_val2
@@ -94,11 +105,11 @@ def run_nvml_four_attrs_func_str(func_str, *args, **kwargs):
         return error.value, 0, 0, 0, 0
 
 
-def nvmlDeviceGetMemoryInfo_v2(handle):
+def nvmlDeviceGetMemoryInfo_v2(handle) -> c_nvmlMemory_t | c_nvmlMemory_v2_t:
     return nvmlDeviceGetMemoryInfo(handle, version=2)
 
 
-def nvml_func_key_suffix_extract(func_str):
+def nvml_func_key_suffix_extract(func_str: str) -> str:
     key_prefixes = [
         "nvmlDeviceGetHandleBy",
         "nvmlDeviceGet",
@@ -288,7 +299,7 @@ def sample_parser(values):
     return ret
 
 
-def topology_value_parser(devices):
+def topology_value_parser(devices) -> list[int]:
     ret = []
     for device in devices:
         device_idx = nvmlDeviceGetIndex(device)
@@ -527,7 +538,7 @@ def field_value_parser(field_value):
     return ret
 
 
-def accounting_pid_parser(count, pids):
+def accounting_pid_parser(count: c_uint, pids: Array[c_uint]):
     ret = []
     for i in range(count.value):
         ret.append(pids[i].value)
@@ -670,27 +681,27 @@ def bridge_chip_info_parser(value):
 
 
 class NVMLSimpleFunc(object):
-    def __init__(self, func_str, value_parser):
+    def __init__(self, func_str, value_parser) -> None:
         self._func_str = func_str
         self._value_parser = value_parser
 
 
 class NVMLSimpleVersionFunc(object):
-    def __init__(self, func_str, version, value_parser):
+    def __init__(self, func_str, version, value_parser) -> None:
         self._func_str = func_str
         self._version = version
         self._value_parser = value_parser
 
 
 class NVMLSimpleArrayOutputFunc(object):
-    def __init__(self, func_str, arr_size, value_parser):
+    def __init__(self, func_str, arr_size, value_parser) -> None:
         self._func_str = func_str
         self._arr_size = arr_size
         self._value_parser = value_parser
 
 
 class NVMLExtraKeyArrayOutputFunc(object):
-    def __init__(self, func_str, arr_size, possible_inputs: List[int], value_parser):
+    def __init__(self, func_str, arr_size, possible_inputs: List[int], value_parser) -> None:
         self._func_str = func_str
         self._arr_size = arr_size
         self._possible_inputs = possible_inputs
@@ -698,14 +709,14 @@ class NVMLExtraKeyArrayOutputFunc(object):
 
 
 class NVMLExtraKeyFunc(object):
-    def __init__(self, func_str, possible_inputs: List[int], value_parser):
+    def __init__(self, func_str, possible_inputs: List[int], value_parser) -> None:
         self._func_str = func_str
         self._possible_inputs = possible_inputs
         self._value_parser = value_parser
 
 
 class NVMLTwoKeysFunc(object):
-    def __init__(self, func_str, key1_possible_inputs: List[int], key2_possible_inputs: List[int], value_parser):
+    def __init__(self, func_str, key1_possible_inputs: List[int], key2_possible_inputs: List[int], value_parser) -> None:
         self._func_str = func_str
         self._key1_possible_inputs = key1_possible_inputs
         self._key2_possible_inputs = key2_possible_inputs
@@ -713,7 +724,7 @@ class NVMLTwoKeysFunc(object):
 
 
 class NVMLThreeKeysFunc(object):
-    def __init__(self, func_str, key1_possible_inputs: List[int], key2_possible_inputs: List[int], key3_possible_inputs: List[int], value_parser):
+    def __init__(self, func_str, key1_possible_inputs: List[int], key2_possible_inputs: List[int], key3_possible_inputs: List[int], value_parser) -> None:
         self._func_str = func_str
         self._key1_possible_inputs = key1_possible_inputs
         self._key2_possible_inputs = key2_possible_inputs
@@ -731,7 +742,7 @@ def fabric_info_parser(value):
     }
 
 
-def nvmlDeviceGetGpuFabricInfo(device):
+def nvmlDeviceGetGpuFabricInfo(device) -> c_nvmlGpuFabricInfo_t_dcgm_ver:
     import dcgm_nvml as pynvml
     import nvml_injection_structs
     c_fabricInfo = nvml_injection_structs.c_nvmlGpuFabricInfo_t_dcgm_ver()
@@ -751,7 +762,7 @@ def fabric_infov_parser(value):
     }
 
 
-def nvmlDeviceGetGpuFabricInfoV(device):
+def nvmlDeviceGetGpuFabricInfoV(device) -> c_nvmlGpuFabricInfoV_t_dcgm_ver:
     import dcgm_nvml as pynvml
     import nvml_injection_structs
     c_fabricInfo = nvml_injection_structs.c_nvmlGpuFabricInfoV_t_dcgm_ver()
@@ -778,7 +789,7 @@ def sram_ecc_error_status_parser(value):
     }
 
 
-def nvmlDeviceGetSramEccErrorStatus(device):
+def nvmlDeviceGetSramEccErrorStatus(device) -> c_nvmlEccSramErrorStatus_v1_t:
     import dcgm_nvml as pynvml
     c_sramErrStatus = pynvml.c_nvmlEccSramErrorStatus_v1_t()
     c_sramErrStatus.version = pynvml.nvmlEccSramErrorStatus_v1
@@ -1301,7 +1312,7 @@ class NVMLApiRecorder(object):
                        encoder_stats_parser),
     ]
 
-    def __enter__(self):
+    def __enter__(self) -> Self:
         self._attrs = {}
         # mapping all fake nvmlGpuInstance_t to (parent device uuid, real nvmlGpuInstance_t)
         self._gpu_instances_mapping = {}
@@ -1312,10 +1323,10 @@ class NVMLApiRecorder(object):
         nvmlInit()
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
         nvmlShutdown()
 
-    def _record_global_attr(self):
+    def _record_global_attr(self) -> None:
         self._attrs[GLOBAL_KEY] = {}
         for global_func in self._nvml_global_attr_funcs:
             suffix_key = nvml_func_key_suffix_extract(global_func._func_str)
@@ -1327,7 +1338,7 @@ class NVMLApiRecorder(object):
                     ret_val)
 
     # Some GPU does not support nvmlDeviceGetMemoryInfo_v2, add rollback layer
-    def _record_device_memory_info_func(self, nvml_device, device_attr):
+    def _record_device_memory_info_func(self, nvml_device: _Pointer[struct_c_nvmlDevice_t], device_attr) -> None:
         func_ret, ret_val = run_nvml_func(
             nvmlDeviceGetMemoryInfo_v2, nvml_device)
         suffix_key = "MemoryInfo"
@@ -1342,7 +1353,7 @@ class NVMLApiRecorder(object):
         if func_ret == NVML_SUCCESS:
             device_attr[suffix_key][RETURN_VAL] = memory_info_parser(ret_val)
 
-    def _record_device_fan_speed_func(self, nvml_device, device_attr):
+    def _record_device_fan_speed_func(self, nvml_device: _Pointer[struct_c_nvmlDevice_t], device_attr) -> None:
         if nvmlDeviceIsMigDeviceHandle(nvml_device):
             return
         num_fans = nvmlDeviceGetNumFans(nvml_device)
@@ -1363,7 +1374,7 @@ class NVMLApiRecorder(object):
                 device_attr[suffix_key][input][RETURN_VAL] = extra_key_func._value_parser(
                     ret_val)
 
-    def _record_device_supported_graphics_clocks(self, nvml_device, device_attr):
+    def _record_device_supported_graphics_clocks(self, nvml_device: _Pointer[struct_c_nvmlDevice_t], device_attr) -> None:
         func_ret, memory_clocks = run_nvml_func(
             nvmlDeviceGetSupportedMemoryClocks, nvml_device)
         suffix_key = nvml_func_key_suffix_extract(
@@ -1378,7 +1389,7 @@ class NVMLApiRecorder(object):
             device_attr[suffix_key][memory_clock][FUNC_RETURN] = func_ret
             device_attr[suffix_key][memory_clock][RETURN_VAL] = ret_val
 
-    def _record_device_accounting(self, nvml_device, device_attr):
+    def _record_device_accounting(self, nvml_device: _Pointer[struct_c_nvmlDevice_t], device_attr) -> None:
         func_ret, pids = run_nvml_func(
             nvmlDeviceGetAccountingPids, nvml_device)
         suffix_key = nvml_func_key_suffix_extract(
@@ -1394,7 +1405,7 @@ class NVMLApiRecorder(object):
             device_attr[suffix_key][pid][RETURN_VAL] = accounting_stat_parser(
                 ret_val)
 
-    def _record_device_vgpu_type_max_count(self, nvml_device, device_attr):
+    def _record_device_vgpu_type_max_count(self, nvml_device: _Pointer[struct_c_nvmlDevice_t], device_attr) -> None:
         func_ret, supported_vgpu_types = run_nvml_func(
             nvmlDeviceGetSupportedVgpus, nvml_device)
         if func_ret != NVML_SUCCESS:
@@ -1410,7 +1421,7 @@ class NVMLApiRecorder(object):
             device_attr[suffix_key][supported_vgpu_type][RETURN_VAL] = basic_type_value_parser(
                 ret_val)
 
-    def _record_device_field_values(self, nvml_device, device_attr):
+    def _record_device_field_values(self, nvml_device: _Pointer[struct_c_nvmlDevice_t], device_attr) -> None:
         func_ret, values = run_nvml_func(
             nvmlDeviceGetFieldValues, nvml_device, range(NVML_FI_MAX))
         suffix_key = nvml_func_key_suffix_extract("nvmlDeviceGetFieldValues")
@@ -1423,7 +1434,7 @@ class NVMLApiRecorder(object):
             parsed_value = field_value_parser(value)
             device_attr[suffix_key][RETURN_VAL][value.fieldId] = parsed_value
 
-    def _record_device_instance(self, nvml_device, device_attr, device_uuid):
+    def _record_device_instance(self, nvml_device: _Pointer[struct_c_nvmlDevice_t], device_attr, device_uuid) -> None:
         func_ret, current, _ = run_nvml_two_attrs_func_str(
             "nvmlDeviceGetMigMode", nvml_device)
         if func_ret != NVML_SUCCESS or current != NVML_DEVICE_MIG_ENABLE:
@@ -1471,7 +1482,7 @@ class NVMLApiRecorder(object):
                 self._gpu_instances_mapping[fake_gpu_instance] = (
                     device_uuid, c_profile_instances[i])
 
-    def _record_mig_devices_uuid(self, nvml_device, device_attr):
+    def _record_mig_devices_uuid(self, nvml_device: _Pointer[struct_c_nvmlDevice_t], device_attr) -> None:
         if nvmlDeviceIsMigDeviceHandle(nvml_device):
             return
         func_ret, mig_count = run_nvml_func(
@@ -1529,7 +1540,7 @@ class NVMLApiRecorder(object):
         else:
             return self._get_two_samples_normal_device(nvml_device)
 
-    def _record_gpm(self, nvml_device, device_attr):
+    def _record_gpm(self, nvml_device: _Pointer[struct_c_nvmlDevice_t], device_attr) -> None:
         func_ret, support = run_nvml_func(
             nvmlGpmQueryDeviceSupport, nvml_device)
         device_attr["QueryDeviceSupport"] = {}
@@ -1570,7 +1581,7 @@ class NVMLApiRecorder(object):
         nvmlGpmSampleFree(sample1)
         nvmlGpmSampleFree(sample2)
 
-    def _get_device_attrs(self, nvml_device, device_uuid):
+    def _get_device_attrs(self, nvml_device: _Pointer[struct_c_nvmlDevice_t], device_uuid):
         device_attr = {}
         for simple_func in self._nvml_device_attr_funcs:
             func_ret, ret_val = run_nvml_func_str(
@@ -1739,7 +1750,7 @@ class NVMLApiRecorder(object):
         self._record_gpm(nvml_device, device_attr)
         return device_attr
 
-    def _record_devices_funcs(self):
+    def _record_devices_funcs(self) -> None:
         self._attrs[DEVICE] = {}
         self._attrs[GLOBAL_KEY][DEVICE_ORDER] = []
         for device_idx in range(self._attrs[GLOBAL_KEY][COUNT][RETURN_VAL]):
@@ -1749,7 +1760,7 @@ class NVMLApiRecorder(object):
             self._attrs[DEVICE][device_uuid] = self._get_device_attrs(
                 nvml_device, device_uuid)
 
-    def _record_vgpu_types_funcs(self):
+    def _record_vgpu_types_funcs(self) -> None:
         self._attrs[VGPU_TYPE] = {}
         vgpu_type_ids = []
         for idx in range(self._attrs[GLOBAL_KEY][COUNT][RETURN_VAL]):
@@ -1810,7 +1821,7 @@ class NVMLApiRecorder(object):
                         self._attrs[VGPU_TYPE][vgpu_type_id][suffix_key][input][RETURN_VAL] = extra_key_func._value_parser(
                             ret_val1, ret_val2)
 
-    def _record_vgpu_instnace_accounting(self, vgpu_instance):
+    def _record_vgpu_instnace_accounting(self, vgpu_instance) -> None:
         count, c_pids = nvmlVgpuInstanceGetAccountingPids(vgpu_instance)
         pids = accounting_pid_parser(count, c_pids)
         suffix_key = nvml_func_key_suffix_extract(
@@ -1824,7 +1835,7 @@ class NVMLApiRecorder(object):
             self._attrs[VGPU_INSTANCE][vgpu_instance][suffix_key][pid][RETURN_VAL] = accounting_stat_parser(
                 ret_val)
 
-    def _record_vgpu_instances_funcs(self):
+    def _record_vgpu_instances_funcs(self) -> None:
         self._attrs[VGPU_INSTANCE] = {}
         vgpu_instances = []
         for idx in range(self._attrs[GLOBAL_KEY][COUNT][RETURN_VAL]):
@@ -1872,7 +1883,7 @@ class NVMLApiRecorder(object):
 
             self._record_vgpu_instnace_accounting(vgpu_instance)
 
-    def _record_excluded_devices(self):
+    def _record_excluded_devices(self) -> None:
         excluded_device_count = nvmlGetExcludedDeviceCount()
         self._attrs[EXCLUDED_DEVICE] = {}
         for idx in range(excluded_device_count):
@@ -1882,7 +1893,7 @@ class NVMLApiRecorder(object):
             self._attrs[EXCLUDED_DEVICE][excluded_device_info.uuid]["pci"] = pci_info_parser(
                 excluded_device_info.pci)
 
-    def _record_compute_instance(self):
+    def _record_compute_instance(self) -> None:
         self._attrs[COMPUTE_INSTANCE] = {}
         for fake_ci, instance_obj in self._compute_instance_mapping.items():
             self._attrs[COMPUTE_INSTANCE][fake_ci] = {}
@@ -1898,7 +1909,7 @@ class NVMLApiRecorder(object):
             self._attrs[COMPUTE_INSTANCE][fake_ci][suffix_key][RETURN_VAL] = ci_info_parser(
                 parent_device_uuid, fake_gpu_instance, ci_info)
 
-    def _record_gpu_instances(self):
+    def _record_gpu_instances(self) -> None:
         self._attrs[GPU_INSTANCE] = {}
         for fake_gpu_instance, instance_obj in self._gpu_instances_mapping.items():
             parent_device_uuid, real_gpu_instance = instance_obj
@@ -1968,13 +1979,13 @@ class NVMLApiRecorder(object):
                     self._attrs[GPU_INSTANCE][fake_gpu_instance][suffix_key][ci_profile_id].append(
                         fake_ci)
 
-    def _record_mig_devices_funcs(self):
+    def _record_mig_devices_funcs(self) -> None:
         self._attrs[MIG_DEVICE] = {}
         for mig_device_uuid, mig_device in self._mig_devices_collector:
             self._attrs[MIG_DEVICE][mig_device_uuid] = self._get_device_attrs(
                 mig_device, mig_device_uuid)
 
-    def record(self, out_file_path):
+    def record(self, out_file_path: str) -> None:
         self._record_global_attr()
         self._record_devices_funcs()
         self._record_vgpu_types_funcs()
@@ -2036,7 +2047,7 @@ class NVMLApiRecorder(object):
             funcs.append(func)
         return funcs
 
-    def known_but_skipped_funcs(self):
+    def known_but_skipped_funcs(self) -> list[str]:
         return self._nvml_not_captured_funcs
 
     def all_funcs_in_entry_points(self, entry_points_path):
@@ -2051,7 +2062,7 @@ class NVMLApiRecorder(object):
                 funcs.append(match)
         return funcs
 
-    def has_not_handled_funcs(self, entry_points_path):
+    def has_not_handled_funcs(self, entry_points_path) -> bool:
         all_handled = self.captured_funcs_list()
         known_but_skipped = self.known_but_skipped_funcs()
         all_handled.extend(known_but_skipped)

@@ -41,10 +41,10 @@ from ctypes import *
 @test_utils.run_with_injection_nvml_using_specific_sku('H200.yaml')
 @test_utils.run_with_standalone_host_engine(120)
 @test_utils.run_with_nvml_injected_gpus()
-def test_inject_memory_error_counter(handle, gpuIds):
+def test_inject_memory_error_counter(handle, gpuIds) -> None:
     gpuId = gpuIds[0]
 
-    def mock_memory_error_counter(handle, gpuId, errorType, counterType, locationType, nvmlRet, value):
+    def mock_memory_error_counter(handle, gpuId, errorType: int, counterType: int, locationType: int, nvmlRet: int, value: int) -> None:
         injectedRet = nvml_injection.c_injectNvmlRet_t()
         injectedRet.nvmlRet = nvmlRet
         injectedRet.values[0].type = nvml_injection_structs.c_injectionArgType_t.INJECTION_ULONG_LONG
@@ -64,7 +64,7 @@ def test_inject_memory_error_counter(handle, gpuIds):
             handle, gpuId, "MemoryErrorCounter", extraKeys, 3, injectedRet)
         assert (ret == dcgm_structs.DCGM_ST_OK)
 
-    def validate_ecc_values(handle, gpuId, fieldIds):
+    def validate_ecc_values(handle, gpuId, fieldIds: list[int]) -> None:
         entity = dcgm_structs.c_dcgmGroupEntityPair_t()
         entity.entityGroupId = dcgm_fields.DCGM_FE_GPU
         entity.entityId = gpuId

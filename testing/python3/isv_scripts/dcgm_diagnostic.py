@@ -23,7 +23,7 @@ C_FUNC = CFUNCTYPE(None, POINTER(
     dcgm_structs.c_dcgmPolicyCallbackResponse_v2), c_uint64)
 
 
-def callback_function(response, userData):
+def callback_function(response, userData) -> None:
     print("Received a callback from the policy manager")
 
 
@@ -32,7 +32,7 @@ c_callback = C_FUNC(callback_function)
 
 class RunDCGM():
 
-    def __init__(self, ip, opMode):
+    def __init__(self, ip, opMode) -> None:
         self.ip = ip
         self.opMode = opMode
 
@@ -42,7 +42,7 @@ class RunDCGM():
         self.handle = dcgm_agent.dcgmStartEmbedded(self.opMode)
         return self.handle
 
-    def __exit__(self, eType, value, traceback):
+    def __exit__(self, eType, value, traceback) -> None:
         dcgm_agent.dcgmShutdown()
 
 
