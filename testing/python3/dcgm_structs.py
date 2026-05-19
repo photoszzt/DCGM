@@ -15,8 +15,13 @@
 # Python bindings for "dcgm_structs.h"
 ##
 
+from typing import Any
+from typing import Callable
+from typing import ClassVar
 from typing import Sequence
 from typing import Self
+from typing import TypeAlias
+from typing import cast as type_cast
 from _ctypes import _SimpleCData
 from _ctypes import _Pointer
 from _ctypes import _CData
@@ -34,6 +39,9 @@ import json
 import dcgmvalue
 import platform
 from inspect import isclass
+
+_CtypesField: TypeAlias = tuple[str, Any] | tuple[str, Any, int]
+_CtypesFields: TypeAlias = Sequence[_CtypesField]
 
 DCGM_MAX_STR_LENGTH = 256
 DCGM_MAX_NUM_DEVICES = 32  # DCGM 2.0 and newer = 32. DCGM 1.8 and older = 16
@@ -284,16 +292,18 @@ class DCGM_INTROSPECT_STATE(object):
 
 
 # Lib loading
-dcgmLib = None
-libLoadLock = threading.Lock()
-_dcgmLib_refcount = 0  # Incremented on each dcgmInit and decremented on dcgmShutdown
+dcgmLib: Any | None = None
+libLoadLock: threading.Lock = threading.Lock()
+_dcgmLib_refcount: int = 0  # Incremented on each dcgmInit and decremented on dcgmShutdown
 
 
 class DCGMError(Exception):
     """ Class to return error values for DCGM """
-    _valClassMapping = dict()
+    value: int
+    info: object | None
+    _valClassMapping: ClassVar[dict[int, type["DCGMError"]]] = dict()
     # List of currently known error codes
-    _error_code_to_string = {
+    _error_code_to_string: ClassVar[dict[int, str]] = {
         DCGM_ST_OK: "Success",
         DCGM_ST_BADPARAM: "Bad parameter passed to function",
         DCGM_ST_GENERIC_ERROR: "Generic unspecified error",
@@ -363,18 +373,18 @@ class DCGMError(Exception):
         DCGM_ST_GPUS_DETACHED: "Cannot perform the requested operation because the GPUs are detached",
     }
 
-    def __new__(typ, value) -> Self:
+    def __new__(typ: type[Self], value: int) -> Self:
         """
         Maps value to a proper subclass of DCGMError.
         """
         if typ == DCGMError:
             typ = DCGMError._valClassMapping.get(value, typ)
-        obj = Exception.__new__(typ)
+        obj = type_cast(Self, Exception.__new__(typ))
         obj.info = None
         obj.value = value
         return obj
 
-    def __str__(self):
+    def __str__(self) -> str:
         msg = None
         try:
             if self.value not in DCGMError._error_code_to_string:
@@ -391,13 +401,13 @@ class DCGMError(Exception):
             msg += ": '%s'" % self.info
         return msg
 
-    def __eq__(self, other):
-        return self.value == other.value
+    def __eq__(self, other: object) -> bool:
+        return self.value == type_cast(Any, other).value
 
     def __hash__(self) -> int:
         return hash(self.value)
 
-    def SetAdditionalInfo(self, msg) -> None:
+    def SetAdditionalInfo(self, msg: object) -> None:
         """
         Sets msg as additional information returned by the string representation of DCGMError and subclasses.
         Example output for DCGMError_Uninitialized subclass, with msg set to 'more info msg here' is 
@@ -408,8 +418,8 @@ class DCGMError(Exception):
         self.info = msg
 
 
-def dcgmExceptionClass(error_code):
-    return DCGMError._valClassMapping.get(error_code)
+def dcgmExceptionClass(error_code: int) -> type[DCGMError]:
+    return type_cast(type[DCGMError], DCGMError._valClassMapping.get(error_code))
 
 
 def _extractDCGMErrorsAsClasses() -> None:
@@ -431,8 +441,8 @@ def _extractDCGMErrorsAsClasses() -> None:
                 "DCGM_ST_", ""), "_").replace("_", "")
         err_val = getattr(this_module, err_name)
 
-        def gen_new(val):
-            def new(typ):
+        def gen_new(val: int) -> Callable[[type[DCGMError]], DCGMError]:
+            def new(typ: type[DCGMError]) -> DCGMError:
                 # pylint: disable=E1121
                 obj = DCGMError.__new__(typ, val)
                 return obj
@@ -456,10 +466,12 @@ _dcgmUnit_t = POINTER(struct_c_dcgmUnit_t)
 
 
 class _WrappedStructure():
-    def __init__(self, obj) -> None:
+    _obj: Any
+
+    def __init__(self, obj: Any) -> None:
         self.__dict__["_obj"] = obj
 
-    def __getattr__(self, key):
+    def __getattr__(self, key: str) -> Any:
         value = getattr(self._obj, key)
         if isinstance(value, bytes):
             return value.decode('utf-8')
@@ -467,7 +479,7 @@ class _WrappedStructure():
             return _WrappedStructure(value)
         return value
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: object) -> Any:
         value = self._obj[key]
         if isinstance(value, bytes):
             return value.decode('utf-8')
@@ -475,89 +487,93 @@ class _WrappedStructure():
             return _WrappedStructure(value)
         return value
 
-    def __setattr__(self, key, raw_value):
-        def find_field_type(fields, key):
-            field = (f[1] for f in fields if f[0] == key)
+    def __setattr__(self, name: str, value: Any) -> None:
+        def find_field_type(fields: _CtypesFields, field_name: str) -> Any | None:
+            field = (f[1] for f in fields if f[0] == field_name)
             try:
                 return next(field)
             except StopIteration:
                 return None
 
-        if (key == '_obj'):
+        if (name == '_obj'):
             raise RuntimeError("Cannot set _obj")
 
-        value = raw_value
-        fieldtype = find_field_type(self._obj._fields_, key)
+        raw_value = value
+        fieldtype = find_field_type(type_cast(_CtypesFields, self._obj._fields_), name)
 
         if fieldtype == c_uint and not isinstance(value, c_uint32):
-            value = int(value)
+            value = int(type_cast(Any, value))
         elif fieldtype == c_int and not isinstance(value, c_int32):
-            value = int(value)
+            value = int(type_cast(Any, value))
         elif isinstance(raw_value, str):
             value = raw_value.encode('utf-8')
 
-        self._obj[key] = value
-        return value
+        self._obj[name] = value
+        return None
 
 
 class _DcgmStructure(Structure):
-    def __getattribute__(self, key):
-        value = super().__getattribute__(key)
+    _fields_: ClassVar[_CtypesFields]
+
+    def __getattribute__(self, name: str) -> Any:
+        value = super().__getattribute__(name)
         if isinstance(value, bytes):
             return value.decode('utf-8')
         if isclass(value):
             return _WrappedStructure(value)
         return value
 
-    def __setattr__(self, key, raw_value) -> None:
-        def find_field_type(fields: Sequence[tuple[str, type[_CDataType]] | tuple[str, type[_CDataType], int]], key):
-            field = (f[1] for f in fields if f[0] == key)
+    def __setattr__(self, name: str, value: Any) -> None:
+        def find_field_type(fields: _CtypesFields, field_name: str) -> Any | None:
+            field = (f[1] for f in fields if f[0] == field_name)
             try:
                 return next(field)
             except StopIteration:
                 return None
 
-        value = raw_value
-        fieldtype = find_field_type(self._fields_, key)
+        raw_value = value
+        fieldtype = find_field_type(self._fields_, name)
 
         if fieldtype == c_uint and not isinstance(value, c_uint32):
-            value = int(value)
+            value = int(type_cast(Any, value))
         elif fieldtype == c_int and not isinstance(value, c_int32):
-            value = int(value)
+            value = int(type_cast(Any, value))
         elif isinstance(raw_value, str):
             value = raw_value.encode('utf-8')
 
-        return super().__setattr__(key, value)
+        return super().__setattr__(name, value)
 
 
 class DcgmUnion(Union):
-    def __getattribute__(self, key):
-        value = super().__getattribute__(key)
+    _fields_: ClassVar[_CtypesFields]
+
+    def __getattribute__(self, name: str) -> Any:
+        value = super().__getattribute__(name)
         if isinstance(value, bytes):
             return value.decode('utf-8')
         if isclass(value):
             return _WrappedStructure(value)
         return value
 
-    def __setattr__(self, key, raw_value) -> None:
-        def find_field_type(fields: Sequence[tuple[str, type[_CDataType]] | tuple[str, type[_CDataType], int]], key):
-            field = (f[1] for f in fields if f[0] == key)
+    def __setattr__(self, name: str, value: Any) -> None:
+        def find_field_type(fields: _CtypesFields, field_name: str) -> Any | None:
+            field = (f[1] for f in fields if f[0] == field_name)
             try:
                 return next(field)
             except StopIteration:
                 return None
 
-        value = raw_value
-        fieldtype = find_field_type(self._fields_, key)
+        raw_value = value
+        fieldtype = find_field_type(self._fields_, name)
 
         if fieldtype == c_uint and not isinstance(value, c_uint32):
-            value = int(value)
+            value = int(type_cast(Any, value))
         elif fieldtype == c_int and not isinstance(value, c_int32):
-            value = int(value)
+            value = int(type_cast(Any, value))
         elif isinstance(raw_value, str):
             value = raw_value.encode('utf-8')
 
-        return super().__setattr__(key, value)
+        return super().__setattr__(name, value)
 
 
 class _PrintableStructure(_DcgmStructure):
@@ -579,7 +595,7 @@ class _PrintableStructure(_DcgmStructure):
 
     Exact format of returned str from this class is subject to change in the future.
     """
-    _fmt_ = {}
+    _fmt_: ClassVar[dict[str, str]] = {}
 
     def __str__(self) -> str:
         result = []
@@ -596,18 +612,19 @@ class _PrintableStructure(_DcgmStructure):
 
     def FieldsSizeof(self) -> int:
         size = 0
-        for s, t in self._fields_:
-            size = size + sizeof(t)
+        for field in self._fields_:
+            size = size + sizeof(field[1])
         return size
 
 # JSON serializer for DCGM structures
 
 
 class DcgmJSONEncoder(json.JSONEncoder):
-    def default(self, o: _PrintableStructure):   # pylint: disable=method-hidden
+    def default(self, o: object) -> object:   # pylint: disable=method-hidden
         if isinstance(o, _PrintableStructure):
-            retVal = {}
-            for fieldName, fieldType in o._fields_:
+            retVal: dict[str, object] = {}
+            for field in o._fields_:
+                fieldName = field[0]
                 subObj = getattr(o, fieldName)
                 if isinstance(subObj, _PrintableStructure):
                     subObj = self.default(subObj)
@@ -616,18 +633,20 @@ class DcgmJSONEncoder(json.JSONEncoder):
 
             return retVal
         elif isinstance(o, Array):
-            retVal = []
+            retList: list[object] = []
             for i in range(len(o)):
-                subVal = {}
-                for fieldName, fieldType in o[i]._fields_:
-                    subObj = getattr(o[i], fieldName)
+                item = type_cast(Any, o[i])
+                subVal: dict[str, object] = {}
+                for field in item._fields_:
+                    fieldName = field[0]
+                    subObj = getattr(item, fieldName)
                     if isinstance(subObj, _PrintableStructure):
                         subObj = self.default(subObj)
 
                     subVal[fieldName] = subObj
 
-                retVal.append(subVal)
-            return retVal
+                retList.append(subVal)
+            return retList
 
         # Let the parent class handle this/fail
         return json.JSONEncoder.default(self, o)
@@ -641,10 +660,10 @@ def make_dcgm_version(struct: type[c_dcgmAllFieldGroup_v1] | type[c_dcgmComputeI
 
 # Function access ##
 # function pointers are cached to prevent unnecessary libLoadLock locking
-_dcgmGetFunctionPointer_cache = dict()
+_dcgmGetFunctionPointer_cache: dict[str, Any] = dict()
 
 
-def _dcgmGetFunctionPointer(name: str):
+def _dcgmGetFunctionPointer(name: str) -> Any:
     global dcgmLib
 
     if name in _dcgmGetFunctionPointer_cache:
@@ -667,7 +686,7 @@ def _dcgmGetFunctionPointer(name: str):
 # C function wrappers ##
 
 
-def _LoadDcgmLibrary(libDcgmPath=None) -> None:
+def _LoadDcgmLibrary(libDcgmPath: str | None=None) -> None:
     """
     Load the library if it isn't loaded already
     :param libDcgmPath: Optional path to the libdcgm*.so libraries. Will use system defaults if not specified.
@@ -720,7 +739,7 @@ def _LoadDcgmLibrary(libDcgmPath=None) -> None:
             libLoadLock.release()
 
 
-def _dcgmInit(libDcgmPath=None) -> None:
+def _dcgmInit(libDcgmPath: str | None=None) -> None:
     _LoadDcgmLibrary(libDcgmPath)
     # Atomically update refcount
     global _dcgmLib_refcount
@@ -751,7 +770,7 @@ def _dcgmShutdown() -> None:
     return None
 
 
-def _dcgmErrorString(result: object):
+def _dcgmErrorString(result: object) -> bytes | None:
     fn = _dcgmGetFunctionPointer("dcgmErrorString")
     fn.restype = c_char_p  # otherwise return is an int
     str = fn(result)
@@ -770,13 +789,13 @@ class c_dcgm_link_t(_PrintableStructure):
     ]
 
     @property
-    def raw(self):
+    def raw(self) -> int:
         """Get the raw entity ID by manually packing the bit fields"""
         # C bit-field layout: [id:8][index:16][type:8]
         return (self.id << 24) | (self.index << 8) | self.type
 
     @raw.setter
-    def raw(self, value) -> None:
+    def raw(self, value: int) -> None:
         """Set the parsed fields by manually unpacking the raw entity ID"""
         self.type = value & 0xFF
         self.index = (value >> 8) & 0xFFFF
@@ -849,8 +868,8 @@ class c_dcgmGroupEntityPair_t(_PrintableStructure):
         ('entityId', c_uint32)  # Entity ID of the entity
     ]
 
-    def __eq__(self, other):
-        return (self.entityGroupId == other.entityGroupId) and (self.entityId == other.entityId)
+    def __eq__(self, other: object) -> bool:
+        return (self.entityGroupId == type_cast(Any, other).entityGroupId) and (self.entityId == type_cast(Any, other).entityId)
 
 # /**
 #  * Structure to store information for DCGM group (v3)
