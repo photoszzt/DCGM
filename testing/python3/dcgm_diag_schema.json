@@ -1,171 +1,312 @@
 {
-  "$schema": "http://json-schema.org/schema#",
-  "type": "object",
-  "properties": {
-    "DCGM Diagnostic": {
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "Schema for dcgmi diag --json output. The schema follows dcgmi/Diag.cpp JSON rendering rather than the binary dcgmDiagResponse structs.",
+  "oneOf": [
+    {
+      "$ref": "#/definitions/singleRunDiagnostic"
+    },
+    {
+      "$ref": "#/definitions/runtimeErrorDiagnostic"
+    },
+    {
+      "$ref": "#/definitions/multiIterationDiagnostic"
+    }
+  ],
+  "definitions": {
+    "status": {
+      "type": "string",
+      "enum": [
+        "Pass",
+        "Fail",
+        "Skip",
+        "Warn",
+        "Not Run",
+        ""
+      ]
+    },
+    "warning": {
       "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "warning": {
+          "type": "string"
+        },
+        "error_id": {
+          "type": "integer"
+        },
+        "error_category": {
+          "type": "integer"
+        },
+        "error_severity": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "warning",
+        "error_id",
+        "error_category",
+        "error_severity"
+      ]
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/warning"
+      }
+    },
+    "info": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "result": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "entity_group": {
+          "type": "string"
+        },
+        "entity_group_id": {
+          "type": "integer"
+        },
+        "entity_id": {
+          "type": "integer"
+        },
+        "status": {
+          "$ref": "#/definitions/status"
+        },
+        "warnings": {
+          "$ref": "#/definitions/warnings"
+        },
+        "info": {
+          "$ref": "#/definitions/info"
+        }
+      },
+      "required": [
+        "status"
+      ]
+    },
+    "testSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "$ref": "#/definitions/status"
+        },
+        "warnings": {
+          "$ref": "#/definitions/warnings"
+        },
+        "info": {
+          "$ref": "#/definitions/info"
+        }
+      },
+      "required": [
+        "status"
+      ]
+    },
+    "test": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "results": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/result"
+          }
+        },
+        "test_summary": {
+          "$ref": "#/definitions/testSummary"
+        }
+      },
+      "required": [
+        "name"
+      ]
+    },
+    "category": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "category": {
+          "type": "string"
+        },
+        "tests": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/test"
+          }
+        }
+      },
+      "required": [
+        "category"
+      ]
+    },
+    "dcgmDiagnostic": {
+      "type": "object",
+      "additionalProperties": false,
       "properties": {
         "test_categories": {
           "type": "array",
           "items": {
-            "type": "object",
-            "properties": {
-              "category": {
-                "type": "string"
-              },
-              "tests": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "name": {
-                      "type": "string"
-                    },
-                    "results": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "entity_group": {
-                            "type": "string"
-                          },
-                          "entity_group_id": {
-                            "type": "integer"
-                          },
-                          "entity_id": {
-                            "type": "integer"
-                          },
-                          "status": {
-                            "type": "string"
-                          },
-                          "warnings": {
-                            "type": "array",
-                            "items": {
-                              "type": "object",
-                              "properties": {
-                                "error_category": {
-                                  "type": "integer"
-                                },
-                                "error_id": {
-                                  "type": "integer"
-                                },
-                                "error_severity": {
-                                  "type": "integer"
-                                },
-                                "warning": {
-                                  "type": "string"
-                                }
-                              },
-                              "required": [
-                                "error_category",
-                                "error_id",
-                                "error_severity",
-                                "warning"
-                              ]
-                            }
-                          }
-                        },
-                        "required": [
-                          "entity_group",
-                          "entity_group_id",
-                          "entity_id",
-                          "status"
-                        ]
-                      }
-                    },
-                    "test_summary": {
-                      "type": "object",
-                      "properties": {
-                        "status": {
-                          "type": "string"
-                        }
-                      },
-                      "required": [
-                        "status"
-                      ]
-                    }
-                  },
-                  "required": [
-                    "name",
-                    "results",
-                    "test_summary"
-                  ]
-                }
-              }
-            },
-            "required": [
-              "category",
-              "tests"
-            ]
+            "$ref": "#/definitions/category"
           }
+        }
+      },
+      "required": [
+        "test_categories"
+      ]
+    },
+    "runtimeErrorBody": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "version": {
+          "type": "string"
         },
         "runtime_error": {
           "type": "string"
         }
-      }
+      },
+      "required": [
+        "version",
+        "runtime_error"
+      ]
     },
-    "entity_groups": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "entities": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "device_id": {
-                  "type": "string"
-                },
-                "entity_id": {
-                  "type": "integer"
-                },
-                "serial_num": {
-                  "type": "string"
-                }
-              },
-              "required": [
-                "device_id",
-                "entity_id"
-              ]
-            }
-          },
-          "entity_group": {
-            "type": "string"
-          },
-          "entity_group_id": {
-            "type": "integer"
-          }
+    "entity": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "type": "integer"
         },
-        "required": [
-          "entities",
-          "entity_group",
-          "entity_group_id"
-        ]
-      }
+        "device_id": {
+          "type": "string"
+        },
+        "serial_num": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "entity_id",
+        "device_id"
+      ]
+    },
+    "entityGroup": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "entity_group": {
+          "type": "string"
+        },
+        "entity_group_id": {
+          "type": "integer"
+        },
+        "entities": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/entity"
+          }
+        }
+      },
+      "required": [
+        "entity_group",
+        "entity_group_id",
+        "entities"
+      ]
     },
     "metadata": {
       "type": "object",
+      "additionalProperties": false,
       "properties": {
-        "Driver Version Detected": {
+        "version": {
           "type": "string"
         },
-        "version": {
+        "Driver Version Detected": {
           "type": "string"
         },
         "EUD Test Version": {
           "type": "string"
         },
+        "EUD Package Version": {
+          "type": "string"
+        },
         "CPU EUD Test Version": {
+          "type": "string"
+        },
+        "CPU EUD Package Version": {
+          "type": "string"
+        }
+      }
+    },
+    "singleRunDiagnostic": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "DCGM Diagnostic": {
+          "$ref": "#/definitions/dcgmDiagnostic"
+        },
+        "entity_groups": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/entityGroup"
+          }
+        },
+        "metadata": {
+          "$ref": "#/definitions/metadata"
+        }
+      }
+    },
+    "runtimeErrorDiagnostic": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "DCGM Diagnostic": {
+          "$ref": "#/definitions/runtimeErrorBody"
+        }
+      },
+      "required": [
+        "DCGM Diagnostic"
+      ]
+    },
+    "multiIterationItem": {
+      "oneOf": [
+        {
+          "$ref": "#/definitions/singleRunDiagnostic"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "multiIterationDiagnostic": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "iterations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/multiIterationItem"
+          }
+        },
+        "Overall Result": {
+          "type": "string",
+          "enum": [
+            "Pass",
+            "Fail"
+          ]
+        },
+        "Warning": {
           "type": "string"
         }
       },
       "required": [
-        "version"
+        "iterations",
+        "Overall Result"
       ]
     }
-  },
-  "required": [
-    "DCGM Diagnostic"
-  ]
+  }
 }
